@@ -27,7 +27,7 @@ class Settings {
 			'accent_color'       => '#16a34a',
 			'calendar_heading'   => __( 'Weekly Delivery Tours', 'tur-takvimi' ),
 			'location_slug_base' => 'teslimat',
-			'country'            => 'NL',
+			'country'            => 'DE',
 			'currency'           => 'EUR',
 			'working_days'       => array( 5, 6, 0 ), // Fri, Sat, Sun.
 			'calendar_weeks'     => 3,

@@ -1,8 +1,9 @@
 /**
- * Tur Takvimi — location editor: Leaflet map + PDOK address autocomplete.
+ * Tur Takvimi — location editor.
  *
- * Lets an admin search a Dutch address (postcode + coordinates filled
- * automatically) and click/drag a map pin to set the city coordinates.
+ * Search an address (geocoded via the REST proxy) to add a delivery stop with
+ * its postcode and coordinates. Each stop is shown as a pin on the map and as
+ * an editable row. State is serialized to a hidden input for saving.
  */
 ( function () {
 	'use strict';
@@ -12,64 +13,126 @@
 		return;
 	}
 
-	var latInput = document.getElementById( 'tt_lat' );
-	var lngInput = document.getElementById( 'tt_lng' );
-	var addresses = document.getElementById( 'tt_addresses' );
 	var mapEl = document.getElementById( 'tt-map' );
+	var listEl = document.getElementById( 'tt-address-list' );
+	var hidden = document.getElementById( 'tt_addresses_json' );
 	var search = document.getElementById( 'tt-geocode-search' );
 	var results = document.getElementById( 'tt-geocode-results' );
+	var addBtn = document.getElementById( 'tt-add-address' );
 
-	if ( ! mapEl ) {
+	if ( ! mapEl || ! listEl || ! hidden ) {
 		return;
 	}
 
-	var startLat = parseFloat( latInput && latInput.value ) || cfg.center.lat;
-	var startLng = parseFloat( lngInput && lngInput.value ) || cfg.center.lng;
-	var hasCoords = !! ( latInput && latInput.value && lngInput && lngInput.value );
+	var state = Array.isArray( cfg.addresses ) ? cfg.addresses.slice() : [];
+	var markers = [];
 
-	var map = L.map( mapEl ).setView( [ startLat, startLng ], hasCoords ? 13 : 7 );
+	var map = L.map( mapEl ).setView( [ cfg.center.lat, cfg.center.lng ], 6 );
 	L.tileLayer( 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
 		attribution: '© OpenStreetMap'
 	} ).addTo( map );
 
-	var marker = L.marker( [ startLat, startLng ], { draggable: true } );
-	if ( hasCoords ) {
-		marker.addTo( map );
+	function hasCoords( item ) {
+		return item && item.lat != null && item.lng != null && ! isNaN( item.lat ) && ! isNaN( item.lng );
 	}
 
-	function setCoords( lat, lng, recenter ) {
-		if ( latInput ) {
-			latInput.value = lat.toFixed( 6 );
-		}
-		if ( lngInput ) {
-			lngInput.value = lng.toFixed( 6 );
-		}
-		marker.setLatLng( [ lat, lng ] );
-		if ( ! map.hasLayer( marker ) ) {
-			marker.addTo( map );
-		}
-		if ( recenter ) {
-			map.setView( [ lat, lng ], 14 );
+	function sync() {
+		hidden.value = JSON.stringify( state );
+	}
+
+	function drawMarkers() {
+		markers.forEach( function ( m ) {
+			map.removeLayer( m );
+		} );
+		markers = [];
+
+		var pts = [];
+		state.forEach( function ( item ) {
+			if ( ! hasCoords( item ) ) {
+				return;
+			}
+			var m = L.marker( [ item.lat, item.lng ] ).addTo( map );
+			m.bindPopup( ( item.address || '' ) + ( item.postcode ? '<br>' + item.postcode : '' ) );
+			markers.push( m );
+			pts.push( [ item.lat, item.lng ] );
+		} );
+
+		if ( pts.length === 1 ) {
+			map.setView( pts[ 0 ], 14 );
+		} else if ( pts.length > 1 ) {
+			map.fitBounds( pts, { padding: [ 30, 30 ], maxZoom: 15 } );
 		}
 	}
 
-	map.on( 'click', function ( e ) {
-		setCoords( e.latlng.lat, e.latlng.lng, false );
-	} );
-	marker.on( 'dragend', function () {
-		var p = marker.getLatLng();
-		setCoords( p.lat, p.lng, false );
-	} );
-
-	// Fix Leaflet sizing inside a meta box that may render hidden/narrow.
-	setTimeout( function () {
-		map.invalidateSize();
-	}, 200 );
-
-	if ( ! search || ! results ) {
-		return;
+	function el( tag, className, text ) {
+		var n = document.createElement( tag );
+		if ( className ) {
+			n.className = className;
+		}
+		if ( text != null ) {
+			n.textContent = text;
+		}
+		return n;
 	}
+
+	function renderList() {
+		listEl.innerHTML = '';
+
+		if ( ! state.length ) {
+			listEl.appendChild( el( 'p', 'tt-address-list__empty', cfg.i18n.empty ) );
+			return;
+		}
+
+		state.forEach( function ( item, index ) {
+			var row = el( 'div', 'tt-address-row' );
+
+			var streetWrap = el( 'span', 'tt-address-row__pin', hasCoords( item ) ? '📍' : '•' );
+			row.appendChild( streetWrap );
+
+			var street = document.createElement( 'input' );
+			street.type = 'text';
+			street.className = 'tt-address-row__street';
+			street.value = item.address || '';
+			street.placeholder = cfg.i18n.street;
+			street.addEventListener( 'input', function () {
+				state[ index ].address = street.value;
+				sync();
+			} );
+			row.appendChild( street );
+
+			var pc = document.createElement( 'input' );
+			pc.type = 'text';
+			pc.className = 'tt-address-row__pc';
+			pc.value = item.postcode || '';
+			pc.placeholder = cfg.i18n.postcode;
+			pc.addEventListener( 'input', function () {
+				state[ index ].postcode = pc.value;
+				sync();
+			} );
+			row.appendChild( pc );
+
+			var rm = el( 'button', 'button-link tt-address-row__remove', cfg.i18n.remove );
+			rm.type = 'button';
+			rm.addEventListener( 'click', function () {
+				state.splice( index, 1 );
+				sync();
+				renderList();
+				drawMarkers();
+			} );
+			row.appendChild( rm );
+
+			listEl.appendChild( row );
+		} );
+	}
+
+	function refresh() {
+		sync();
+		renderList();
+		drawMarkers();
+	}
+
+	/* ---- Geocode autocomplete ---- */
 
 	var timer = null;
 
@@ -78,36 +141,26 @@
 		results.style.display = 'none';
 	}
 
-	function appendAddress( street, postcode ) {
-		if ( ! addresses ) {
-			return;
-		}
-		var line = postcode ? street + ' ; ' + postcode : street;
-		var val = addresses.value.replace( /\s+$/, '' );
-		addresses.value = val ? val + '\n' + line : line;
-	}
-
 	function choose( item ) {
-		appendAddress( item.street || item.label, item.postcode );
-		// Use the first geocoded address to seed the city coordinates.
-		if ( ! latInput.value || ! lngInput.value ) {
-			setCoords( item.lat, item.lng, true );
-		}
-		L.marker( [ item.lat, item.lng ] ).addTo( map );
+		state.push( {
+			address: item.street || item.label,
+			postcode: item.postcode || '',
+			lat: item.lat,
+			lng: item.lng
+		} );
 		search.value = '';
 		clearResults();
+		refresh();
 	}
 
-	function render( items ) {
+	function renderResults( items ) {
 		results.innerHTML = '';
 		if ( ! items.length ) {
 			clearResults();
 			return;
 		}
 		items.forEach( function ( item ) {
-			var li = document.createElement( 'li' );
-			li.className = 'tt-geocode__item';
-			li.textContent = item.label;
+			var li = el( 'li', 'tt-geocode__item', item.label );
 			li.addEventListener( 'click', function () {
 				choose( item );
 			} );
@@ -117,32 +170,49 @@
 	}
 
 	function lookup( q ) {
-		var url = cfg.rest + '/geocode?q=' + encodeURIComponent( q );
-		fetch( url, { headers: { 'X-WP-Nonce': cfg.nonce } } )
+		fetch( cfg.rest + '/geocode?q=' + encodeURIComponent( q ), {
+			headers: { 'X-WP-Nonce': cfg.nonce }
+		} )
 			.then( function ( r ) {
 				return r.json();
 			} )
 			.then( function ( data ) {
-				render( ( data && data.results ) || [] );
+				renderResults( ( data && data.results ) || [] );
 			} )
 			.catch( clearResults );
 	}
 
-	search.addEventListener( 'input', function () {
-		var q = search.value.trim();
-		clearTimeout( timer );
-		if ( q.length < 3 ) {
-			clearResults();
-			return;
-		}
-		timer = setTimeout( function () {
-			lookup( q );
-		}, 300 );
-	} );
+	if ( search && results ) {
+		search.addEventListener( 'input', function () {
+			var q = search.value.trim();
+			clearTimeout( timer );
+			if ( q.length < 3 ) {
+				clearResults();
+				return;
+			}
+			timer = setTimeout( function () {
+				lookup( q );
+			}, 300 );
+		} );
 
-	document.addEventListener( 'click', function ( e ) {
-		if ( e.target !== search && ! results.contains( e.target ) ) {
-			clearResults();
-		}
-	} );
+		document.addEventListener( 'click', function ( e ) {
+			if ( e.target !== search && ! results.contains( e.target ) ) {
+				clearResults();
+			}
+		} );
+	}
+
+	if ( addBtn ) {
+		addBtn.addEventListener( 'click', function () {
+			state.push( { address: '', postcode: '', lat: null, lng: null } );
+			refresh();
+		} );
+	}
+
+	// Initial paint.
+	renderList();
+	drawMarkers();
+	setTimeout( function () {
+		map.invalidateSize();
+	}, 200 );
 } )();

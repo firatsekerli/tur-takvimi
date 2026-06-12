@@ -108,6 +108,33 @@ msgstr "Adres ara (posta kodunu ve haritayı otomatik doldurur)"
 msgid "e.g. Damrak 1 Amsterdam"
 msgstr "örn. Damrak 1 Amsterdam"
 
+msgid "Search an address to add a delivery stop. The postcode and map pin are filled in automatically."
+msgstr "Teslimat durağı eklemek için bir adres arayın. Posta kodu ve harita iğnesi otomatik doldurulur."
+
+msgid "Search an address"
+msgstr "Adres ara"
+
+msgid "e.g. Frankenstr. 290 Essen"
+msgstr "örn. Frankenstr. 290 Essen"
+
+msgid "Delivery stops"
+msgstr "Teslimat durakları"
+
+msgid "Street address"
+msgstr "Sokak adresi"
+
+msgid "Postcode"
+msgstr "Posta kodu"
+
+msgid "Remove"
+msgstr "Kaldır"
+
+msgid "Add a stop manually"
+msgstr "Elle durak ekle"
+
+msgid "No stops yet. Search an address above to add one."
+msgstr "Henüz durak yok. Eklemek için yukarıdan bir adres arayın."
+
 msgid "Street addresses (one per line)"
 msgstr "Sokak adresleri (her satıra bir tane)"
 

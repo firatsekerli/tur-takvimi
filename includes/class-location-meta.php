@@ -2,8 +2,9 @@
 /**
  * Location edit-screen meta box.
  *
- * Lets an admin create/edit a location entirely in the backend — postcodes
- * covered, geo coordinates and the list of street addresses — without CSV.
+ * Admins build a city's delivery stops by searching addresses (geocoded:
+ * postcode + coordinates filled automatically). Each stop is stored with its
+ * coordinates so it can be shown as a map pin here and on the front end.
  *
  * @package TurTakvimi
  */
@@ -27,7 +28,7 @@ class Location_Meta {
 	}
 
 	/**
-	 * Enqueue Leaflet + the geocoding script on the location editor only.
+	 * Enqueue Leaflet + the address/map script on the location editor only.
 	 *
 	 * @param string $hook Current admin page.
 	 */
@@ -40,11 +41,6 @@ class Location_Meta {
 			return;
 		}
 
-		/**
-		 * Filter the Leaflet asset URLs so resellers can self-host them.
-		 *
-		 * @param string $url Default CDN URL.
-		 */
 		$leaflet_css = apply_filters( 'tur_takvimi_leaflet_css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' );
 		$leaflet_js  = apply_filters( 'tur_takvimi_leaflet_js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js' );
 
@@ -54,13 +50,24 @@ class Location_Meta {
 		wp_enqueue_script( 'leaflet', $leaflet_js, array(), '1.9.4', true );
 		wp_enqueue_script( 'tur-takvimi-admin-location', TURTAKVIMI_URL . 'assets/js/admin-location.js', array( 'leaflet' ), TURTAKVIMI_VERSION, true );
 
+		$post_id = get_the_ID();
+		$stored  = json_decode( (string) get_post_meta( $post_id, '_tt_addresses', true ), true );
+
 		wp_localize_script(
 			'tur-takvimi-admin-location',
 			'TurTakvimiAdmin',
 			array(
-				'rest'   => esc_url_raw( rest_url( Rest_Api::NS ) ),
-				'nonce'  => wp_create_nonce( 'wp_rest' ),
-				'center' => array( 'lat' => 52.1326, 'lng' => 5.2913 ), // NL centroid.
+				'rest'      => esc_url_raw( rest_url( Rest_Api::NS ) ),
+				'nonce'     => wp_create_nonce( 'wp_rest' ),
+				'center'    => array( 'lat' => 51.1657, 'lng' => 10.4515 ), // Germany centroid.
+				'addresses' => is_array( $stored ) ? array_values( $stored ) : array(),
+				'i18n'      => array(
+					'street'   => __( 'Street address', 'tur-takvimi' ),
+					'postcode' => __( 'Postcode', 'tur-takvimi' ),
+					'remove'   => __( 'Remove', 'tur-takvimi' ),
+					'addRow'   => __( 'Add a stop manually', 'tur-takvimi' ),
+					'empty'    => __( 'No stops yet. Search an address above to add one.', 'tur-takvimi' ),
+				),
 			)
 		);
 	}
@@ -87,60 +94,26 @@ class Location_Meta {
 	public function render( $post ): void {
 		wp_nonce_field( 'tt_location_save', 'tt_location_nonce' );
 
-		$postcodes = (string) get_post_meta( $post->ID, '_tt_postcodes', true );
-		$lat       = (string) get_post_meta( $post->ID, '_tt_lat', true );
-		$lng       = (string) get_post_meta( $post->ID, '_tt_lng', true );
-
 		$addresses = json_decode( (string) get_post_meta( $post->ID, '_tt_addresses', true ), true );
 		$addresses = is_array( $addresses ) ? $addresses : array();
-
-		// Render the address list as "street ; postcode" lines for easy editing.
-		$lines = array();
-		foreach ( $addresses as $a ) {
-			$street = isset( $a['address'] ) ? (string) $a['address'] : '';
-			$pc     = isset( $a['postcode'] ) ? (string) $a['postcode'] : '';
-			$lines[] = '' !== $pc ? $street . ' ; ' . $pc : $street;
-		}
-		$addresses_text = implode( "\n", $lines );
 		?>
-		<style>
-			.tt-field { margin: 0 0 1rem; }
-			.tt-field label { display:block; font-weight:600; margin-bottom:.25rem; }
-			.tt-grid { display:flex; gap:1rem; flex-wrap:wrap; }
-			.tt-grid .tt-field { flex:1; min-width:180px; }
-			#tt_addresses { width:100%; }
-		</style>
-
-		<div class="tt-field">
-			<label for="tt_postcodes"><?php esc_html_e( 'Postcodes covered', 'tur-takvimi' ); ?></label>
-			<input type="text" id="tt_postcodes" name="tt_postcodes" class="large-text" value="<?php echo esc_attr( $postcodes ); ?>" placeholder="1011 1071 1102">
-			<p class="description"><?php esc_html_e( 'Optional. Postcodes from the addresses below are added automatically; add extra covered postcodes here only if a stop has no street address.', 'tur-takvimi' ); ?></p>
-		</div>
+		<p class="description">
+			<?php esc_html_e( 'Search an address to add a delivery stop. The postcode and map pin are filled in automatically.', 'tur-takvimi' ); ?>
+		</p>
 
 		<div class="tt-field tt-geocode">
-			<label for="tt-geocode-search"><?php esc_html_e( 'Search an address (auto-fills postcode & map)', 'tur-takvimi' ); ?></label>
-			<input type="text" id="tt-geocode-search" class="large-text tt-geocode__input" autocomplete="off" placeholder="<?php esc_attr_e( 'e.g. Damrak 1 Amsterdam', 'tur-takvimi' ); ?>">
+			<label for="tt-geocode-search"><?php esc_html_e( 'Search an address', 'tur-takvimi' ); ?></label>
+			<input type="text" id="tt-geocode-search" class="large-text tt-geocode__input" autocomplete="off" placeholder="<?php esc_attr_e( 'e.g. Frankenstr. 290 Essen', 'tur-takvimi' ); ?>">
 			<ul id="tt-geocode-results" class="tt-geocode__results"></ul>
 		</div>
 
 		<div id="tt-map"></div>
 
-		<div class="tt-grid">
-			<div class="tt-field">
-				<label for="tt_lat"><?php esc_html_e( 'Latitude', 'tur-takvimi' ); ?></label>
-				<input type="text" id="tt_lat" name="tt_lat" value="<?php echo esc_attr( $lat ); ?>" placeholder="52.3676">
-			</div>
-			<div class="tt-field">
-				<label for="tt_lng"><?php esc_html_e( 'Longitude', 'tur-takvimi' ); ?></label>
-				<input type="text" id="tt_lng" name="tt_lng" value="<?php echo esc_attr( $lng ); ?>" placeholder="4.9041">
-			</div>
-		</div>
-		<p class="description"><?php esc_html_e( 'Coordinates power the "nearest stop" search. Click the map or drag the pin to set them.', 'tur-takvimi' ); ?></p>
-
 		<div class="tt-field">
-			<label for="tt_addresses"><?php esc_html_e( 'Street addresses (one per line)', 'tur-takvimi' ); ?></label>
-			<textarea id="tt_addresses" name="tt_addresses" rows="6" placeholder="Damrak 1 ; 1011&#10;Kalverstraat 92 ; 1012"><?php echo esc_textarea( $addresses_text ); ?></textarea>
-			<p class="description"><?php esc_html_e( 'Format: street ; postcode (postcode optional). One stop per line.', 'tur-takvimi' ); ?></p>
+			<label><?php esc_html_e( 'Delivery stops', 'tur-takvimi' ); ?></label>
+			<div id="tt-address-list" class="tt-address-list"></div>
+			<button type="button" class="button" id="tt-add-address"><?php esc_html_e( 'Add a stop manually', 'tur-takvimi' ); ?></button>
+			<input type="hidden" id="tt_addresses_json" name="tt_addresses_json" value="<?php echo esc_attr( wp_json_encode( array_values( $addresses ) ) ); ?>">
 		</div>
 		<?php
 	}
@@ -161,47 +134,52 @@ class Location_Meta {
 			return;
 		}
 
-		update_post_meta( $post_id, '_tt_postcodes', sanitize_text_field( wp_unslash( $_POST['tt_postcodes'] ?? '' ) ) );
+		$raw  = (string) wp_unslash( $_POST['tt_addresses_json'] ?? '[]' );
+		$rows = json_decode( $raw, true );
+		$rows = is_array( $rows ) ? $rows : array();
 
-		$lat = str_replace( ',', '.', sanitize_text_field( wp_unslash( $_POST['tt_lat'] ?? '' ) ) );
-		$lng = str_replace( ',', '.', sanitize_text_field( wp_unslash( $_POST['tt_lng'] ?? '' ) ) );
-		if ( is_numeric( $lat ) ) {
-			update_post_meta( $post_id, '_tt_lat', (float) $lat );
-		} else {
-			delete_post_meta( $post_id, '_tt_lat' );
-		}
-		if ( is_numeric( $lng ) ) {
-			update_post_meta( $post_id, '_tt_lng', (float) $lng );
-		} else {
-			delete_post_meta( $post_id, '_tt_lng' );
-		}
+		$addresses = array();
+		$postcodes = array();
+		$lat_sum   = 0.0;
+		$lng_sum   = 0.0;
+		$geo_count = 0;
 
-		// Parse the address list; each stop carries its own postcode.
-		$raw            = (string) wp_unslash( $_POST['tt_addresses'] ?? '' );
-		$addresses      = array();
-		$from_addresses = array();
-		foreach ( preg_split( '/\r\n|\r|\n/', $raw ) as $line ) {
-			$line = trim( $line );
-			if ( '' === $line ) {
+		foreach ( $rows as $row ) {
+			$street   = sanitize_text_field( (string) ( $row['address'] ?? '' ) );
+			$postcode = sanitize_text_field( (string) ( $row['postcode'] ?? '' ) );
+			if ( '' === $street && '' === $postcode ) {
 				continue;
 			}
-			$parts       = array_map( 'trim', explode( ';', $line, 2 ) );
-			$postcode    = sanitize_text_field( $parts[1] ?? '' );
-			$addresses[] = array(
-				'address'  => sanitize_text_field( $parts[0] ),
+
+			$entry = array(
+				'address'  => $street,
 				'postcode' => $postcode,
 			);
+
+			if ( isset( $row['lat'], $row['lng'] ) && is_numeric( $row['lat'] ) && is_numeric( $row['lng'] ) ) {
+				$entry['lat'] = (float) $row['lat'];
+				$entry['lng'] = (float) $row['lng'];
+				$lat_sum     += $entry['lat'];
+				$lng_sum     += $entry['lng'];
+				++$geo_count;
+			}
+
+			$addresses[] = $entry;
 			if ( '' !== $postcode ) {
-				$from_addresses[] = $postcode;
+				$postcodes[] = $postcode;
 			}
 		}
+
 		update_post_meta( $post_id, '_tt_addresses', wp_json_encode( $addresses ) );
 
-		// Covered postcodes = the optional explicit list UNION every per-address
-		// postcode, so matching always reflects the real stops — never a range.
-		$explicit = preg_split( '/[\s,]+/', (string) wp_unslash( $_POST['tt_postcodes'] ?? '' ), -1, PREG_SPLIT_NO_EMPTY );
-		$all      = array_map( 'sanitize_text_field', array_merge( (array) $explicit, $from_addresses ) );
-		$all      = array_values( array_unique( array_filter( $all ) ) );
-		update_post_meta( $post_id, '_tt_postcodes', implode( ' ', $all ) );
+		// Covered postcodes are derived from the stops — no separate field.
+		$postcodes = array_values( array_unique( $postcodes ) );
+		update_post_meta( $post_id, '_tt_postcodes', implode( ' ', $postcodes ) );
+
+		// City centroid = average of geocoded stops (used for the SEO map view).
+		if ( $geo_count > 0 ) {
+			update_post_meta( $post_id, '_tt_lat', round( $lat_sum / $geo_count, 6 ) );
+			update_post_meta( $post_id, '_tt_lng', round( $lng_sum / $geo_count, 6 ) );
+		}
 	}
 }

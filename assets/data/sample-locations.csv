@@ -1,11 +1,11 @@
 city,postcodes,lat,lng,region,address
-Amsterdam,1011 1071 1102,52.3676,4.9041,Noord-Holland,Damrak 1
-Haarlem,2011,52.3792,4.6406,Noord-Holland,Grote Markt 2
-Den Haag,2511,52.0767,4.3007,Zuid-Holland,Spuiplein 10
-Rotterdam,3011,51.9181,4.4849,Zuid-Holland,Coolsingel 40
-Utrecht,3511,52.0907,5.1214,Utrecht,Oudegracht 100
-Eindhoven,5611,51.4416,5.4697,Noord-Brabant,Markt 5
-Tilburg,5038,51.5606,5.0919,Noord-Brabant,Heuvelstraat 1
-Nijmegen,6511,51.8126,5.8372,Gelderland,Grote Markt 3
-Groningen,9711,53.2194,6.5665,Groningen,Vismarkt 12
-Zwolle,8011,52.5168,6.0830,Overijssel,Grote Markt 1
+Essen,45134 45139 45145,51.4556,7.0116,NRW Ruhr Batı,Frankenstr. 290
+Düsseldorf,40591,51.2217,6.7762,NRW Batı / Niederrhein,Mergelgasse 1
+Duisburg,47137 47166,51.4344,6.7623,NRW Batı / Niederrhein,Brückelstraße 91
+Köln,50737 50767,50.9375,6.9603,Köln-Bonn-Aachen / Rheinland,Mönchsgasse 35
+Mönchengladbach,41065,51.1805,6.4428,NRW Batı / Niederrhein,Lürriper Str. 36
+Gelsenkirchen,45879 45881,51.5177,7.0857,NRW Ruhr Batı,Wiehagen 26
+Frankfurt am Main,60311,50.1109,8.6821,Hessen / Rhein-Main / RLP,Zeil 100
+Stuttgart,70173,48.7758,9.1829,Stuttgart ve çevresi,Königstraße 1
+Nürnberg,90402,49.4521,11.0767,Bayern,Hauptmarkt 1
+Berlin,10115,52.5320,13.3846,Berlin,Invalidenstraße 1
