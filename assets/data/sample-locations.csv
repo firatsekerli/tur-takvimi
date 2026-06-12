@@ -1,0 +1,11 @@
+city,postcodes,lat,lng,region,address
+Amsterdam,1011 1071 1102,52.3676,4.9041,Noord-Holland,Damrak 1
+Haarlem,2011,52.3792,4.6406,Noord-Holland,Grote Markt 2
+Den Haag,2511,52.0767,4.3007,Zuid-Holland,Spuiplein 10
+Rotterdam,3011,51.9181,4.4849,Zuid-Holland,Coolsingel 40
+Utrecht,3511,52.0907,5.1214,Utrecht,Oudegracht 100
+Eindhoven,5611,51.4416,5.4697,Noord-Brabant,Markt 5
+Tilburg,5038,51.5606,5.0919,Noord-Brabant,Heuvelstraat 1
+Nijmegen,6511,51.8126,5.8372,Gelderland,Grote Markt 3
+Groningen,9711,53.2194,6.5665,Groningen,Vismarkt 12
+Zwolle,8011,52.5168,6.0830,Overijssel,Grote Markt 1

@@ -75,10 +75,10 @@ WooCommerce) is simply not installed.
 - **Driver manifest**: per-date run sheet of stops + prepaid orders.
 
 ## Build phases
-- **P0 — Scaffold & data:** plugin skeleton, CPTs/taxonomy/tables, i18n,
-  branding settings, CSV/XLSX importer (seed from the ESMA/Simit Excel).
-- **P1 — Front page (Core):** recurrence engine, calendar block, postcode
-  search.
+- **P0 — Scaffold & data:** ✅ plugin skeleton, CPTs/taxonomy/tables, i18n,
+  branding settings, route meta box, CSV importer, bundled NL postcode data.
+- **P1 — Front page (Core):** ✅ recurrence engine, calendar shortcode,
+  postcode search (REST + JS widget).
 - **P2 — Location SEO pages (Core):** single-city template, schema.org,
   sitemap, meta.
 - **P3 — Commerce: products:** Woo detection, product↔route linking,

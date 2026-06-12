@@ -1,0 +1,217 @@
+/* Tur Takvimi — front-end widget styles (clean, simple, white-label). */
+
+:root {
+	--tt-primary: #e3242b;
+	--tt-accent: #16a34a;
+	--tt-bg: #f7f7f8;
+	--tt-card: #ffffff;
+	--tt-border: #e5e7eb;
+	--tt-text: #1f2937;
+	--tt-muted: #6b7280;
+	--tt-radius: 14px;
+}
+
+.tt-calendar,
+.tt-search {
+	box-sizing: border-box;
+	max-width: 920px;
+	margin: 0 auto;
+	color: var(--tt-text);
+	font-family: inherit;
+}
+
+.tt-calendar *,
+.tt-search * {
+	box-sizing: border-box;
+}
+
+/* Calendar */
+.tt-calendar__heading {
+	text-align: center;
+	color: var(--tt-primary);
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	margin: 0 0 1.25rem;
+}
+
+.tt-calendar__empty {
+	text-align: center;
+	color: var(--tt-muted);
+}
+
+.tt-day {
+	background: var(--tt-card);
+	border: 1px solid var(--tt-border);
+	border-left: 5px solid var(--tt-accent);
+	border-radius: var(--tt-radius);
+	padding: 1rem 1.25rem;
+	margin-bottom: 1rem;
+	box-shadow: 0 1px 2px rgba( 0, 0, 0, 0.04 );
+}
+
+.tt-day--today {
+	border-left-color: var(--tt-primary);
+}
+
+.tt-day__header {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding-bottom: 0.75rem;
+	margin-bottom: 0.75rem;
+	border-bottom: 1px solid var(--tt-border);
+}
+
+.tt-day__date {
+	font-weight: 700;
+	font-size: 1.05rem;
+}
+
+.tt-day__badge {
+	background: var(--tt-primary);
+	color: #fff;
+	font-size: 0.7rem;
+	font-weight: 700;
+	padding: 0.15rem 0.6rem;
+	border-radius: 999px;
+	letter-spacing: 0.05em;
+}
+
+.tt-day__stops {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.tt-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	background: var(--tt-bg);
+	border: 1px solid var(--tt-border);
+	border-left: 3px solid var(--tt-primary);
+	border-radius: 10px;
+	padding: 0.4rem 0.75rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--tt-text);
+	text-decoration: none;
+	transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.tt-chip:hover {
+	background: #fff;
+	transform: translateY( -1px );
+}
+
+.tt-chip__pin {
+	color: var(--tt-accent);
+}
+
+/* Search */
+.tt-search__label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+}
+
+.tt-search__row {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.tt-search__input {
+	flex: 1;
+	padding: 0.75rem 1rem;
+	border: 1px solid var(--tt-border);
+	border-radius: 10px;
+	font-size: 1rem;
+}
+
+.tt-search__input:focus {
+	outline: 2px solid var(--tt-primary);
+	outline-offset: 1px;
+}
+
+.tt-search__button {
+	background: var(--tt-primary);
+	color: #fff;
+	border: 0;
+	border-radius: 10px;
+	padding: 0 1.25rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.tt-search__button:hover {
+	filter: brightness( 0.95 );
+}
+
+.tt-search__result {
+	margin-top: 1rem;
+}
+
+.tt-search__card {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+	background: var(--tt-card);
+	border: 1px solid var(--tt-border);
+	border-left: 5px solid var(--tt-accent);
+	border-radius: var(--tt-radius);
+	padding: 1rem 1.25rem;
+}
+
+.tt-search__nearest {
+	color: var(--tt-muted);
+	font-size: 0.85rem;
+	width: 100%;
+}
+
+.tt-search__city {
+	font-size: 1.2rem;
+}
+
+.tt-search__dist {
+	color: var(--tt-muted);
+	font-size: 0.85rem;
+}
+
+.tt-search__next {
+	width: 100%;
+	margin: 0.25rem 0 0;
+	font-weight: 600;
+}
+
+.tt-search__link {
+	display: inline-block;
+	margin-top: 0.5rem;
+	color: var(--tt-primary);
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.tt-search__link:hover {
+	text-decoration: underline;
+}
+
+.tt-search__loading,
+.tt-search__error {
+	color: var(--tt-muted);
+	margin: 0.5rem 0 0;
+}
+
+.tt-search__error {
+	color: var(--tt-primary);
+}
+
+@media ( max-width: 480px ) {
+	.tt-search__row {
+		flex-direction: column;
+	}
+	.tt-search__button {
+		padding: 0.75rem;
+	}
+}
