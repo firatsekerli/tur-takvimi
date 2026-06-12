@@ -14,8 +14,28 @@ itself is brand-neutral and resellable to vendors in other countries.
 - **SEO pages:** city-level (one page per city).
 - **Default language:** Turkish (fully translatable).
 - **Payments:** gateway-agnostic via WooCommerce (provider chosen per customer).
+- **Front-end builder:** Breakdance (demo). Plugin stays builder-agnostic —
+  features ship as shortcodes that work in any builder/theme.
+- **Maps:** Leaflet + OpenStreetMap (no API key).
+- **Custom fields:** native WP meta — **no ACF Pro dependency**.
 - **White-label:** no brand, slug, color, discount %, currency, or working-day
   value is hardcoded — all live in settings.
+
+## Stack & front-end integration
+- WordPress + PHP 8.x.
+- **Breakdance** owns header / footer / menu / homepage / page templates
+  (visual, no-code) — this is the "simple, clean, configurable front-end".
+- Plugin surfaces every interactive feature as a **shortcode → JS widget**
+  (calendar, postcode search, Leaflet map, products-on-tour). Shortcodes work
+  in Breakdance, Gutenberg, classic, any theme → keeps the plugin resellable.
+- **Optional** native Breakdance elements (thin wrappers) + Dynamic Data
+  registration so fields bind visually in the builder.
+- Location pages = a Breakdance Template on `tt_location` + our shortcodes for
+  interactive parts; plugin always injects JSON-LD schema + sitemap. A plain
+  PHP fallback template ships for non-Breakdance resellers.
+- Gutenberg blocks: optional later add-on for resellers not using Breakdance.
+- **Breakdance is a paid per-site license** — fine for the demo; not required
+  by the plugin (shortcodes cover everyone).
 
 ## Two-layer model
 
@@ -30,8 +50,8 @@ and location SEO, this is the whole product.
   data is a **per-country, pluggable module** — Netherlands first (Dutch
   `1234 AB` format, 4 digits + 2 letters), other countries added as datasets.
 - Schedule / recurrence engine (every 4 / 5 / 6 weeks → concrete dates).
-- Weekly **tour calendar** block (richer than the original mockup).
-- **Postcode search** block: PLZ → nearest stop + next visit date.
+- Weekly **tour calendar** shortcode/widget (richer than the original mockup).
+- **Postcode search** shortcode/widget: postcode → nearest stop + next date.
 - City **SEO pages**: schema.org (LocalBusiness / Event / Place), Turkish meta,
   XML sitemap, configurable slug base (e.g. `/teslimat/`).
 - **White-label branding** settings: name, logo, colors, header text, working
