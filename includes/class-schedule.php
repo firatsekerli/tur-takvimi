@@ -30,6 +30,10 @@ class Schedule {
 		add_action( 'save_post_' . Post_Types::ROUTE, array( $this, 'on_route_save' ), 20 );
 		add_action( 'tur_takvimi_daily_regen', array( $this, 'regenerate_all' ) );
 
+		// Remove materialized dates when a route is trashed or deleted.
+		add_action( 'wp_trash_post', array( $this, 'on_route_remove' ) );
+		add_action( 'before_delete_post', array( $this, 'on_route_remove' ) );
+
 		if ( ! wp_next_scheduled( 'tur_takvimi_daily_regen' ) ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'tur_takvimi_daily_regen' );
 		}
@@ -41,6 +45,19 @@ class Schedule {
 	private function table(): string {
 		global $wpdb;
 		return $wpdb->prefix . 'tt_schedule';
+	}
+
+	/**
+	 * Delete all schedule rows for a route when it is trashed or deleted.
+	 *
+	 * @param int $post_id Post being trashed/deleted.
+	 */
+	public function on_route_remove( $post_id ): void {
+		if ( Post_Types::ROUTE !== get_post_type( $post_id ) ) {
+			return;
+		}
+		global $wpdb;
+		$wpdb->delete( $this->table(), array( 'route_id' => (int) $post_id ), array( '%d' ) );
 	}
 
 	/**
