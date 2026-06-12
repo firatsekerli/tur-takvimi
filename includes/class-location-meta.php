@@ -74,7 +74,7 @@ class Location_Meta {
 		<div class="tt-field">
 			<label for="tt_postcodes"><?php esc_html_e( 'Postcodes covered', 'tur-takvimi' ); ?></label>
 			<input type="text" id="tt_postcodes" name="tt_postcodes" class="large-text" value="<?php echo esc_attr( $postcodes ); ?>" placeholder="1011 1071 1102">
-			<p class="description"><?php esc_html_e( 'Space- or comma-separated. Used to match a customer\'s postcode exactly.', 'tur-takvimi' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Optional. Postcodes from the addresses below are added automatically; add extra covered postcodes here only if a stop has no street address.', 'tur-takvimi' ); ?></p>
 		</div>
 
 		<div class="tt-grid">
@@ -128,19 +128,32 @@ class Location_Meta {
 			delete_post_meta( $post_id, '_tt_lng' );
 		}
 
-		$raw       = (string) wp_unslash( $_POST['tt_addresses'] ?? '' );
-		$addresses = array();
+		// Parse the address list; each stop carries its own postcode.
+		$raw            = (string) wp_unslash( $_POST['tt_addresses'] ?? '' );
+		$addresses      = array();
+		$from_addresses = array();
 		foreach ( preg_split( '/\r\n|\r|\n/', $raw ) as $line ) {
 			$line = trim( $line );
 			if ( '' === $line ) {
 				continue;
 			}
-			$parts     = array_map( 'trim', explode( ';', $line, 2 ) );
+			$parts       = array_map( 'trim', explode( ';', $line, 2 ) );
+			$postcode    = sanitize_text_field( $parts[1] ?? '' );
 			$addresses[] = array(
 				'address'  => sanitize_text_field( $parts[0] ),
-				'postcode' => sanitize_text_field( $parts[1] ?? '' ),
+				'postcode' => $postcode,
 			);
+			if ( '' !== $postcode ) {
+				$from_addresses[] = $postcode;
+			}
 		}
 		update_post_meta( $post_id, '_tt_addresses', wp_json_encode( $addresses ) );
+
+		// Covered postcodes = the optional explicit list UNION every per-address
+		// postcode, so matching always reflects the real stops — never a range.
+		$explicit = preg_split( '/[\s,]+/', (string) wp_unslash( $_POST['tt_postcodes'] ?? '' ), -1, PREG_SPLIT_NO_EMPTY );
+		$all      = array_map( 'sanitize_text_field', array_merge( (array) $explicit, $from_addresses ) );
+		$all      = array_values( array_unique( array_filter( $all ) ) );
+		update_post_meta( $post_id, '_tt_postcodes', implode( ' ', $all ) );
 	}
 }

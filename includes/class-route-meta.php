@@ -84,8 +84,14 @@ class Route_Meta {
 			<input type="number" id="tt_frequency" name="tt_frequency" min="1" max="26" value="<?php echo esc_attr( $frequency ?: 4 ); ?>">
 		</div>
 		<div class="tt-field">
-			<label for="tt_plz"><?php esc_html_e( 'Postcode range (display)', 'tur-takvimi' ); ?></label>
-			<input type="text" id="tt_plz" name="tt_plz" class="regular-text" value="<?php echo esc_attr( $plz ); ?>" placeholder="1011 - 1102">
+			<label><?php esc_html_e( 'Covered postcodes', 'tur-takvimi' ); ?></label>
+			<p class="description">
+				<?php
+				echo $plz
+					? esc_html( $plz )
+					: esc_html__( 'Computed automatically from the selected locations\' addresses when you save.', 'tur-takvimi' );
+				?>
+			</p>
 		</div>
 		<div class="tt-field">
 			<label><?php esc_html_e( 'Locations served (in visit order)', 'tur-takvimi' ); ?></label>
@@ -125,12 +131,22 @@ class Route_Meta {
 		update_post_meta( $post_id, '_tt_vehicle', sanitize_text_field( wp_unslash( $_POST['tt_vehicle'] ?? '' ) ) );
 		update_post_meta( $post_id, '_tt_anchor_date', sanitize_text_field( wp_unslash( $_POST['tt_anchor'] ?? '' ) ) );
 		update_post_meta( $post_id, '_tt_frequency_weeks', max( 1, absint( $_POST['tt_frequency'] ?? 4 ) ) );
-		update_post_meta( $post_id, '_tt_plz_range', sanitize_text_field( wp_unslash( $_POST['tt_plz'] ?? '' ) ) );
 
 		$ids = isset( $_POST['tt_location_ids'] ) && is_array( $_POST['tt_location_ids'] )
 			? array_values( array_map( 'absint', wp_unslash( $_POST['tt_location_ids'] ) ) )
 			: array();
 		update_post_meta( $post_id, '_tt_location_ids', wp_json_encode( $ids ) );
+
+		// Derive the covered-postcodes summary from the member locations'
+		// actual postcodes (display only — matching uses the per-location list).
+		$postcodes = array();
+		foreach ( $ids as $loc_id ) {
+			$list      = preg_split( '/[\s,]+/', (string) get_post_meta( $loc_id, '_tt_postcodes', true ), -1, PREG_SPLIT_NO_EMPTY );
+			$postcodes = array_merge( $postcodes, (array) $list );
+		}
+		$postcodes = array_values( array_unique( $postcodes ) );
+		sort( $postcodes );
+		update_post_meta( $post_id, '_tt_plz_range', implode( ', ', $postcodes ) );
 
 		// Recurrence is re-materialized by Schedule on the save_post hook.
 	}

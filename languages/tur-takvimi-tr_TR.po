@@ -130,6 +130,15 @@ msgstr "Tekrarlama (hafta)"
 msgid "Postcode range (display)"
 msgstr "Posta kodu aralığı (gösterim)"
 
+msgid "Covered postcodes"
+msgstr "Kapsanan posta kodları"
+
+msgid "Computed automatically from the selected locations' addresses when you save."
+msgstr "Kaydettiğinizde, seçili konumların adreslerinden otomatik olarak hesaplanır."
+
+msgid "Optional. Postcodes from the addresses below are added automatically; add extra covered postcodes here only if a stop has no street address."
+msgstr "İsteğe bağlı. Aşağıdaki adreslerin posta kodları otomatik eklenir; yalnızca sokak adresi olmayan bir durak için buraya ek posta kodu girin."
+
 msgid "Locations served (in visit order)"
 msgstr "Hizmet verilen konumlar (ziyaret sırasına göre)"
 
