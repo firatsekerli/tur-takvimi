@@ -3,8 +3,9 @@
 A resellable, white-label WordPress plugin for mobile/route-based delivery
 businesses (food trucks, mobile vendors, scheduled regional delivery).
 It turns a static weekly tour calendar into a full local-SEO + pre-order
-system. First customer / demo dataset: **Simit Express** (Turkish food,
-Germany). The product itself is brand-neutral.
+system. First customer / demo dataset: **Güzel Yayla** (Turkish dairy
+products, Netherlands — guzelyayla.nl, Turkish UI, EUR). The product
+itself is brand-neutral and resellable to vendors in other countries.
 
 ## Decisions locked in
 - **Name / slug:** `tur-takvimi` (brand-neutral, for resale).
@@ -25,14 +26,16 @@ and location SEO, this is the whole product.
 - Custom post types: `tt_location` (city = SEO page), `tt_route` (route package).
 - Taxonomy: `tt_region`.
 - Tables: `wp_tt_schedule` (materialized tour dates), `wp_tt_postcodes`
-  (bundled German PLZ → lat/lng centroids for nearest-stop search).
+  (bundled postcode → lat/lng centroids for nearest-stop search). Postcode
+  data is a **per-country, pluggable module** — Netherlands first (Dutch
+  `1234 AB` format, 4 digits + 2 letters), other countries added as datasets.
 - Schedule / recurrence engine (every 4 / 5 / 6 weeks → concrete dates).
 - Weekly **tour calendar** block (richer than the original mockup).
 - **Postcode search** block: PLZ → nearest stop + next visit date.
 - City **SEO pages**: schema.org (LocalBusiness / Event / Place), Turkish meta,
   XML sitemap, configurable slug base (e.g. `/teslimat/`).
 - **White-label branding** settings: name, logo, colors, header text, working
-  days, vehicle count, slug base, currency.
+  days, vehicle count, slug base, currency, **country + postcode format**.
 - **CSV/XLSX importer** with column-mapping UI (not hardwired to one sheet).
 
 ### Layer 2 — Commerce add-on (requires WooCommerce)
@@ -47,6 +50,7 @@ WooCommerce) is simply not installed.
   customer, no code change).
 - **10% upfront discount** auto-applied to prepaid orders.
 - Order locked to a specific **delivery date + stop**.
+- **Hard order deadline: 2 days before** the visit (configurable cutoff).
 - Custom order statuses: Prepaid → Out for delivery → Delivered.
 - **Driver manifest**: per-date run sheet of stops + prepaid orders.
 
@@ -66,16 +70,21 @@ WooCommerce) is simply not installed.
 ## Key technical notes
 - Recurrence is **materialized** into `wp_tt_schedule` so calendar/search are
   fast lookups, not per-request computation.
-- Postcode search bundles an **open German PLZ dataset** — no external API.
+- Postcode search bundles an **open postcode dataset per country** (Netherlands
+  first) — no external API. Dutch postcodes are `1234 AB`; search normalizes to
+  the 4-digit (PC4) area for nearest-stop matching.
+- Maps via **Leaflet + OpenStreetMap tiles** — no API key, no per-call cost.
 - Core never references WooCommerce classes directly; the Commerce layer hooks
   in only when Woo is active (graceful degradation).
 - All commerce/payment handled by WooCommerce — no hand-rolled payments.
 
-## Open items (decide at the relevant phase)
-- Map provider: Leaflet/OpenStreetMap (no API key, recommended) vs Google Maps.
-- Prepaid cutoff: hard order-deadline before each visit?
+## Resolved decisions
+- **Map provider:** Leaflet + OpenStreetMap from the start (no API key).
+- **Prepaid cutoff:** hard order deadline 2 days before each visit
+  (configurable).
 
 ## Demo dataset
-Simit Express = first configured tenant: 510 German addresses, ~16 regions,
-50 route packages, 9-week rotating calendar (Fri–Sun, 2 vehicles), imported
-from the working Excel.
+**Güzel Yayla** (Netherlands) = first configured tenant. Turkish dairy
+products (peynir & tereyağı, zeytin, kuruyemişler, tatlılar, yöreseller),
+Turkish UI, EUR, Dutch postcodes. Tour data to be supplied / imported via the
+CSV-XLSX importer (route stops, dates, vehicles).
