@@ -23,6 +23,46 @@ class Location_Meta {
 	public function register(): void {
 		add_action( 'add_meta_boxes', array( $this, 'add_box' ) );
 		add_action( 'save_post_' . Post_Types::LOCATION, array( $this, 'save' ), 10, 1 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+	}
+
+	/**
+	 * Enqueue Leaflet + the geocoding script on the location editor only.
+	 *
+	 * @param string $hook Current admin page.
+	 */
+	public function enqueue( $hook ): void {
+		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+			return;
+		}
+		$screen = get_current_screen();
+		if ( ! $screen || Post_Types::LOCATION !== $screen->post_type ) {
+			return;
+		}
+
+		/**
+		 * Filter the Leaflet asset URLs so resellers can self-host them.
+		 *
+		 * @param string $url Default CDN URL.
+		 */
+		$leaflet_css = apply_filters( 'tur_takvimi_leaflet_css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' );
+		$leaflet_js  = apply_filters( 'tur_takvimi_leaflet_js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js' );
+
+		wp_enqueue_style( 'leaflet', $leaflet_css, array(), '1.9.4' );
+		wp_enqueue_style( 'tur-takvimi-admin', TURTAKVIMI_URL . 'assets/css/admin.css', array( 'leaflet' ), TURTAKVIMI_VERSION );
+
+		wp_enqueue_script( 'leaflet', $leaflet_js, array(), '1.9.4', true );
+		wp_enqueue_script( 'tur-takvimi-admin-location', TURTAKVIMI_URL . 'assets/js/admin-location.js', array( 'leaflet' ), TURTAKVIMI_VERSION, true );
+
+		wp_localize_script(
+			'tur-takvimi-admin-location',
+			'TurTakvimiAdmin',
+			array(
+				'rest'   => esc_url_raw( rest_url( Rest_Api::NS ) ),
+				'nonce'  => wp_create_nonce( 'wp_rest' ),
+				'center' => array( 'lat' => 52.1326, 'lng' => 5.2913 ), // NL centroid.
+			)
+		);
 	}
 
 	/**
@@ -77,6 +117,14 @@ class Location_Meta {
 			<p class="description"><?php esc_html_e( 'Optional. Postcodes from the addresses below are added automatically; add extra covered postcodes here only if a stop has no street address.', 'tur-takvimi' ); ?></p>
 		</div>
 
+		<div class="tt-field tt-geocode">
+			<label for="tt-geocode-search"><?php esc_html_e( 'Search an address (auto-fills postcode & map)', 'tur-takvimi' ); ?></label>
+			<input type="text" id="tt-geocode-search" class="large-text tt-geocode__input" autocomplete="off" placeholder="<?php esc_attr_e( 'e.g. Damrak 1 Amsterdam', 'tur-takvimi' ); ?>">
+			<ul id="tt-geocode-results" class="tt-geocode__results"></ul>
+		</div>
+
+		<div id="tt-map"></div>
+
 		<div class="tt-grid">
 			<div class="tt-field">
 				<label for="tt_lat"><?php esc_html_e( 'Latitude', 'tur-takvimi' ); ?></label>
@@ -87,7 +135,7 @@ class Location_Meta {
 				<input type="text" id="tt_lng" name="tt_lng" value="<?php echo esc_attr( $lng ); ?>" placeholder="4.9041">
 			</div>
 		</div>
-		<p class="description"><?php esc_html_e( 'Coordinates power the "nearest stop" search. A map-pick helper comes in a later phase.', 'tur-takvimi' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Coordinates power the "nearest stop" search. Click the map or drag the pin to set them.', 'tur-takvimi' ); ?></p>
 
 		<div class="tt-field">
 			<label for="tt_addresses"><?php esc_html_e( 'Street addresses (one per line)', 'tur-takvimi' ); ?></label>

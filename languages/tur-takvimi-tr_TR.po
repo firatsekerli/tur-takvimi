@@ -99,8 +99,14 @@ msgstr "Enlem"
 msgid "Longitude"
 msgstr "Boylam"
 
-msgid "Coordinates power the \"nearest stop\" search. A map-pick helper comes in a later phase."
-msgstr "Koordinatlar \"en yakın durak\" aramasını çalıştırır. Haritadan seçme yardımcısı ileriki bir aşamada gelecek."
+msgid "Coordinates power the \"nearest stop\" search. Click the map or drag the pin to set them."
+msgstr "Koordinatlar \"en yakın durak\" aramasını çalıştırır. Ayarlamak için haritaya tıklayın veya iğneyi sürükleyin."
+
+msgid "Search an address (auto-fills postcode & map)"
+msgstr "Adres ara (posta kodunu ve haritayı otomatik doldurur)"
+
+msgid "e.g. Damrak 1 Amsterdam"
+msgstr "örn. Damrak 1 Amsterdam"
 
 msgid "Street addresses (one per line)"
 msgstr "Sokak adresleri (her satıra bir tane)"

@@ -1,0 +1,51 @@
+/* Tur Takvimi — admin (location editor) styles. */
+
+#tt-map {
+	height: 320px;
+	margin: 0 0 1rem;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	z-index: 0;
+}
+
+.tt-geocode {
+	position: relative;
+	margin: 0 0 1rem;
+}
+
+.tt-geocode__input {
+	width: 100%;
+}
+
+.tt-geocode__results {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 100%;
+	margin: 2px 0 0;
+	padding: 0;
+	list-style: none;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 0 0 6px 6px;
+	box-shadow: 0 4px 10px rgba( 0, 0, 0, 0.08 );
+	max-height: 240px;
+	overflow: auto;
+	display: none;
+	z-index: 10;
+}
+
+.tt-geocode__item {
+	padding: 0.5rem 0.75rem;
+	cursor: pointer;
+	font-size: 0.92rem;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.tt-geocode__item:last-child {
+	border-bottom: 0;
+}
+
+.tt-geocode__item:hover {
+	background: #f6f7f7;
+}

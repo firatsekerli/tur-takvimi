@@ -62,6 +62,109 @@ class Rest_Api {
 				),
 			)
 		);
+
+		// Admin-only geocoding proxy (Dutch PDOK Locatieserver).
+		register_rest_route(
+			self::NS,
+			'/geocode',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'permission_callback' => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+				'callback'            => array( $this, 'geocode' ),
+				'args'                => array(
+					'q' => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Proxy an address lookup to the PDOK Locatieserver and normalize results.
+	 *
+	 * PDOK is the Dutch government's free geocoder (no API key). Proxying it
+	 * server-side avoids browser CORS issues and centralizes the integration.
+	 *
+	 * @param \WP_REST_Request $req Request.
+	 * @return \WP_REST_Response
+	 */
+	public function geocode( \WP_REST_Request $req ): \WP_REST_Response {
+		$query = trim( (string) $req->get_param( 'q' ) );
+		if ( strlen( $query ) < 3 ) {
+			return new \WP_REST_Response( array( 'results' => array() ) );
+		}
+
+		$endpoint = add_query_arg(
+			array(
+				'q'    => rawurlencode( $query ),
+				'fq'   => 'type:adres',
+				'rows' => 6,
+				'fl'   => 'weergavenaam,straatnaam,huis_nlt,woonplaatsnaam,postcode,centroide_ll',
+			),
+			'https://api.pdok.nl/bzk/locatieserver/search/v3_1/free'
+		);
+
+		/**
+		 * Allow swapping the geocoder endpoint (e.g. another country's service).
+		 *
+		 * @param string $endpoint Fully-built request URL.
+		 * @param string $query    The raw user query.
+		 */
+		$endpoint = apply_filters( 'tur_takvimi_geocode_endpoint', $endpoint, $query );
+
+		$response = wp_remote_get(
+			$endpoint,
+			array(
+				'timeout' => 6,
+				'headers' => array( 'Accept' => 'application/json' ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return new \WP_REST_Response( array( 'results' => array() ), 200 );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$docs = $body['response']['docs'] ?? array();
+
+		$results = array();
+		foreach ( (array) $docs as $doc ) {
+			$coords = self::parse_point( (string) ( $doc['centroide_ll'] ?? '' ) );
+			if ( null === $coords ) {
+				continue;
+			}
+			$street = trim( ( $doc['straatnaam'] ?? '' ) . ' ' . ( $doc['huis_nlt'] ?? '' ) );
+			$results[] = array(
+				'label'    => (string) ( $doc['weergavenaam'] ?? $street ),
+				'street'   => $street,
+				'city'     => (string) ( $doc['woonplaatsnaam'] ?? '' ),
+				'postcode' => (string) ( $doc['postcode'] ?? '' ),
+				'lat'      => $coords['lat'],
+				'lng'      => $coords['lng'],
+			);
+		}
+
+		return new \WP_REST_Response( array( 'results' => $results ) );
+	}
+
+	/**
+	 * Parse a PDOK "POINT(lng lat)" WGS84 string into lat/lng.
+	 *
+	 * @param string $point POINT() WKT string.
+	 * @return array{lat:float,lng:float}|null
+	 */
+	private static function parse_point( string $point ): ?array {
+		if ( preg_match( '/POINT\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/', $point, $m ) ) {
+			return array(
+				'lng' => (float) $m[1],
+				'lat' => (float) $m[2],
+			);
+		}
+		return null;
 	}
 
 	/**
