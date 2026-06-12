@@ -43,12 +43,25 @@ register_activation_hook( __FILE__, array( '\\TurTakvimi\\Activator', 'activate'
 register_deactivation_hook( __FILE__, array( '\\TurTakvimi\\Activator', 'deactivate' ) );
 
 /**
- * Boot the plugin once all plugins are loaded.
+ * Load translations on init (before post-type labels are registered) so the
+ * admin UI and front-end follow the WordPress Site Language setting. Loading
+ * earlier than `init` triggers a notice in WordPress 6.7+.
+ */
+add_action(
+	'init',
+	static function () {
+		load_plugin_textdomain( 'tur-takvimi', false, dirname( TURTAKVIMI_BASENAME ) . '/languages' );
+	},
+	1
+);
+
+/**
+ * Boot the plugin once all plugins are loaded. Components only register hooks
+ * here; label/string translation happens later on the `init` hook.
  */
 add_action(
 	'plugins_loaded',
 	static function () {
-		load_plugin_textdomain( 'tur-takvimi', false, dirname( TURTAKVIMI_BASENAME ) . '/languages' );
 		\TurTakvimi\Plugin::instance()->run();
 	}
 );

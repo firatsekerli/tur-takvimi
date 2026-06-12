@@ -1,0 +1,203 @@
+# Turkish translation for Tur Takvimi.
+# Copyright (C) 2026 Tur Takvimi
+# This file is distributed under the GPL-2.0-or-later license.
+msgid ""
+msgstr ""
+"Project-Id-Version: Tur Takvimi 0.1.0\n"
+"Report-Msgid-Bugs-To: https://example.com/tur-takvimi\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: tur-takvimi\n"
+
+msgid "Tur Takvimi"
+msgstr "Tur Takvimi"
+
+msgid "Tur Takvimi — Settings"
+msgstr "Tur Takvimi — Ayarlar"
+
+#. Post type & taxonomy labels
+msgid "Locations"
+msgstr "Konumlar"
+
+msgid "Location"
+msgstr "Konum"
+
+msgid "Add Location"
+msgstr "Konum Ekle"
+
+msgid "Edit Location"
+msgstr "Konumu Düzenle"
+
+msgid "Search Locations"
+msgstr "Konumlarda Ara"
+
+msgid "Routes"
+msgstr "Rotalar"
+
+msgid "Route"
+msgstr "Rota"
+
+msgid "Add Route"
+msgstr "Rota Ekle"
+
+msgid "Edit Route"
+msgstr "Rotayı Düzenle"
+
+msgid "Regions"
+msgstr "Bölgeler"
+
+msgid "Region"
+msgstr "Bölge"
+
+#. Settings page
+msgid "Brand name"
+msgstr "Marka adı"
+
+msgid "Calendar heading"
+msgstr "Takvim başlığı"
+
+msgid "Primary color"
+msgstr "Ana renk"
+
+msgid "Location URL base"
+msgstr "Konum URL tabanı"
+
+msgid "Resave Permalinks after changing this."
+msgstr "Bunu değiştirdikten sonra Kalıcı Bağlantıları yeniden kaydedin."
+
+msgid "Country / currency"
+msgstr "Ülke / para birimi"
+
+msgid "Calendar weeks shown"
+msgstr "Gösterilen takvim haftası"
+
+msgid "Upfront discount (%)"
+msgstr "Peşin ödeme indirimi (%)"
+
+msgid "Used by the WooCommerce commerce layer."
+msgstr "WooCommerce ticaret katmanı tarafından kullanılır."
+
+msgid "Order cutoff (days before visit)"
+msgstr "Sipariş son tarihi (ziyaretten kaç gün önce)"
+
+#. Location meta box
+msgid "Location details"
+msgstr "Konum bilgileri"
+
+msgid "Postcodes covered"
+msgstr "Kapsanan posta kodları"
+
+msgid "Space- or comma-separated. Used to match a customer's postcode exactly."
+msgstr "Boşluk veya virgülle ayrılır. Müşterinin posta koduyla tam eşleşme için kullanılır."
+
+msgid "Latitude"
+msgstr "Enlem"
+
+msgid "Longitude"
+msgstr "Boylam"
+
+msgid "Coordinates power the \"nearest stop\" search. A map-pick helper comes in a later phase."
+msgstr "Koordinatlar \"en yakın durak\" aramasını çalıştırır. Haritadan seçme yardımcısı ileriki bir aşamada gelecek."
+
+msgid "Street addresses (one per line)"
+msgstr "Sokak adresleri (her satıra bir tane)"
+
+msgid "Format: street ; postcode (postcode optional). One stop per line."
+msgstr "Biçim: sokak ; posta kodu (posta kodu isteğe bağlı). Her satıra bir durak."
+
+#. Route meta box
+msgid "Route settings"
+msgstr "Rota ayarları"
+
+msgid "Vehicle"
+msgstr "Araç"
+
+msgid "e.g. Vehicle 1"
+msgstr "örn. Araç 1"
+
+msgid "First visit date (anchor)"
+msgstr "İlk ziyaret tarihi (başlangıç)"
+
+msgid "The recurrence repeats from this date."
+msgstr "Tekrarlama bu tarihten itibaren yinelenir."
+
+msgid "Repeat every (weeks)"
+msgstr "Tekrarlama (hafta)"
+
+msgid "Postcode range (display)"
+msgstr "Posta kodu aralığı (gösterim)"
+
+msgid "Locations served (in visit order)"
+msgstr "Hizmet verilen konumlar (ziyaret sırasına göre)"
+
+msgid "No locations yet. Create or import locations first."
+msgstr "Henüz konum yok. Önce konum oluşturun veya içe aktarın."
+
+msgid "Order follows the location list; reorder support comes in a later phase."
+msgstr "Sıra, konum listesini izler; yeniden sıralama desteği ileriki bir aşamada gelecek."
+
+#. Importer
+msgid "Import Locations"
+msgstr "Konumları İçe Aktar"
+
+msgid "Import"
+msgstr "İçe Aktar"
+
+msgid "Upload a CSV with header: city, postcodes, lat, lng, region, address. Rows with the same city are merged (addresses appended)."
+msgstr "Şu başlığa sahip bir CSV yükleyin: city, postcodes, lat, lng, region, address. Aynı şehre ait satırlar birleştirilir (adresler eklenir)."
+
+msgid "No file uploaded."
+msgstr "Dosya yüklenmedi."
+
+msgid "Could not read the file."
+msgstr "Dosya okunamadı."
+
+msgid "Insufficient permissions."
+msgstr "Yetersiz izin."
+
+msgid "Import complete: %1$d created, %2$d updated."
+msgstr "İçe aktarma tamamlandı: %1$d eklendi, %2$d güncellendi."
+
+#. Front-end: calendar
+msgid "Weekly Delivery Tours"
+msgstr "Haftalık Teslimat Turları"
+
+msgid "No tours scheduled for this period yet."
+msgstr "Bu dönem için henüz planlanmış tur yok."
+
+msgid "TODAY"
+msgstr "BUGÜN"
+
+#. Front-end: postcode search
+msgid "Enter your postcode to find the nearest stop and date"
+msgstr "En yakın durağı ve tarihi bulmak için posta kodunuzu girin"
+
+msgid "Your postcode"
+msgstr "Posta kodunuz"
+
+msgid "Search"
+msgstr "Ara"
+
+msgid "Searching…"
+msgstr "Aranıyor…"
+
+msgid "Your nearest stop"
+msgstr "En yakın durağınız"
+
+msgid "Next visit"
+msgstr "Sonraki ziyaret"
+
+msgid "See delivery details"
+msgstr "Teslimat bilgilerini gör"
+
+msgid "No upcoming date scheduled yet."
+msgstr "Henüz yaklaşan bir tarih planlanmadı."
+
+msgid "No stop found for this postcode."
+msgstr "Bu posta kodu için durak bulunamadı."
+
+msgid "No stop found for this postcode. Please check and try again."
+msgstr "Bu posta kodu için durak bulunamadı. Lütfen kontrol edip tekrar deneyin."
