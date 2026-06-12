@@ -169,8 +169,24 @@
 		results.style.display = 'block';
 	}
 
+	// Read the city name from the live title field, falling back to the saved
+	// title, so address results are biased to the city being edited.
+	function cityHint() {
+		var node = document.querySelector( '.editor-post-title__input, #title' );
+		var live = node ? ( node.value || node.textContent || '' ).trim() : '';
+		return live || cfg.city || '';
+	}
+
+	function biasedQuery( q ) {
+		var city = cityHint();
+		if ( city && q.toLowerCase().indexOf( city.toLowerCase() ) === -1 ) {
+			return q + ' ' + city;
+		}
+		return q;
+	}
+
 	function lookup( q ) {
-		fetch( cfg.rest + '/geocode?q=' + encodeURIComponent( q ), {
+		fetch( cfg.rest + '/geocode?q=' + encodeURIComponent( biasedQuery( q ) ), {
 			headers: { 'X-WP-Nonce': cfg.nonce }
 		} )
 			.then( function ( r ) {

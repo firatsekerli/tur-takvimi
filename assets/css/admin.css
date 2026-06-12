@@ -5,11 +5,14 @@
 	margin: 0 0 1rem;
 	border: 1px solid #c3c4c7;
 	border-radius: 6px;
+	/* Own stacking context so Leaflet's panes stay below the search dropdown. */
+	position: relative;
 	z-index: 0;
 }
 
 .tt-geocode {
 	position: relative;
+	z-index: 30;
 	margin: 0 0 1rem;
 }
 
@@ -32,7 +35,7 @@
 	max-height: 240px;
 	overflow: auto;
 	display: none;
-	z-index: 10;
+	z-index: 1000;
 }
 
 .tt-geocode__item {

@@ -52,6 +52,10 @@ class Location_Meta {
 
 		$post_id = get_the_ID();
 		$stored  = json_decode( (string) get_post_meta( $post_id, '_tt_addresses', true ), true );
+		$title   = get_the_title( $post_id );
+		if ( 'Auto Draft' === $title ) {
+			$title = '';
+		}
 
 		wp_localize_script(
 			'tur-takvimi-admin-location',
@@ -60,6 +64,7 @@ class Location_Meta {
 				'rest'      => esc_url_raw( rest_url( Rest_Api::NS ) ),
 				'nonce'     => wp_create_nonce( 'wp_rest' ),
 				'center'    => array( 'lat' => 51.1657, 'lng' => 10.4515 ), // Germany centroid.
+				'city'      => $title,
 				'addresses' => is_array( $stored ) ? array_values( $stored ) : array(),
 				'i18n'      => array(
 					'street'   => __( 'Street address', 'tur-takvimi' ),

@@ -92,7 +92,7 @@ class Rest_Api {
 	public function geocode( \WP_REST_Request $req ): \WP_REST_Response {
 		$query   = (string) $req->get_param( 'q' );
 		$country = (string) Settings::get( 'country', 'DE' );
-		$results = Geocoder::search( $query, 6, $country );
+		$results = Geocoder::search( $query, 8, $country );
 		return new \WP_REST_Response( array( 'results' => $results ) );
 	}
 
