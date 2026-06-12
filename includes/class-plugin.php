@@ -53,6 +53,7 @@ final class Plugin {
 
 		if ( is_admin() ) {
 			( new Importer() )->register();
+			( new Location_Meta() )->register();
 			( new Route_Meta() )->register();
 		}
 
