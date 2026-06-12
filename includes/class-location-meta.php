@@ -45,10 +45,10 @@ class Location_Meta {
 		$leaflet_js  = apply_filters( 'tur_takvimi_leaflet_js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js' );
 
 		wp_enqueue_style( 'leaflet', $leaflet_css, array(), '1.9.4' );
-		wp_enqueue_style( 'tur-takvimi-admin', TURTAKVIMI_URL . 'assets/css/admin.css', array( 'leaflet' ), TURTAKVIMI_VERSION );
+		wp_enqueue_style( 'tur-takvimi-admin', TURTAKVIMI_URL . 'assets/css/admin.css', array( 'leaflet' ), Plugin::asset_ver( 'assets/css/admin.css' ) );
 
 		wp_enqueue_script( 'leaflet', $leaflet_js, array(), '1.9.4', true );
-		wp_enqueue_script( 'tur-takvimi-admin-location', TURTAKVIMI_URL . 'assets/js/admin-location.js', array( 'leaflet' ), TURTAKVIMI_VERSION, true );
+		wp_enqueue_script( 'tur-takvimi-admin-location', TURTAKVIMI_URL . 'assets/js/admin-location.js', array( 'leaflet' ), Plugin::asset_ver( 'assets/js/admin-location.js' ), true );
 
 		$post_id = get_the_ID();
 		$stored  = json_decode( (string) get_post_meta( $post_id, '_tt_addresses', true ), true );

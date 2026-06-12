@@ -74,4 +74,16 @@ final class Plugin {
 	public function has_commerce(): bool {
 		return $this->has_woocommerce;
 	}
+
+	/**
+	 * Cache-busting version for a bundled asset: its modified time, so updates
+	 * are picked up immediately, falling back to the plugin version.
+	 *
+	 * @param string $relative Path relative to the plugin root.
+	 * @return string
+	 */
+	public static function asset_ver( string $relative ): string {
+		$mtime = @filemtime( TURTAKVIMI_DIR . ltrim( $relative, '/' ) );
+		return $mtime ? (string) $mtime : TURTAKVIMI_VERSION;
+	}
 }

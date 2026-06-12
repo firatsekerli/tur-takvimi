@@ -30,8 +30,8 @@ class Shortcodes {
 	 * Register (but do not force-enqueue) front-end assets.
 	 */
 	public function register_assets(): void {
-		wp_register_style( 'tur-takvimi', TURTAKVIMI_URL . 'assets/css/frontend.css', array(), TURTAKVIMI_VERSION );
-		wp_register_script( 'tur-takvimi', TURTAKVIMI_URL . 'assets/js/frontend.js', array(), TURTAKVIMI_VERSION, true );
+		wp_register_style( 'tur-takvimi', TURTAKVIMI_URL . 'assets/css/frontend.css', array(), Plugin::asset_ver( 'assets/css/frontend.css' ) );
+		wp_register_script( 'tur-takvimi', TURTAKVIMI_URL . 'assets/js/frontend.js', array(), Plugin::asset_ver( 'assets/js/frontend.js' ), true );
 
 		wp_localize_script(
 			'tur-takvimi',
