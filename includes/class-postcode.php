@@ -56,7 +56,7 @@ class Postcode {
 		if ( '' !== $norm ) {
 			$exact = self::exact_coverage( $norm, $country );
 			if ( $exact ) {
-				return self::decorate( $exact, 0.0 );
+				return self::decorate( $exact['id'], 0.0, $exact['address'] );
 			}
 		}
 
@@ -68,33 +68,50 @@ class Postcode {
 
 		$best      = null;
 		$best_dist = PHP_FLOAT_MAX;
+		$best_addr = '';
 		foreach ( self::located_stops() as $stop ) {
 			$dist = self::haversine( $center['lat'], $center['lng'], $stop['lat'], $stop['lng'] );
 			if ( $dist < $best_dist ) {
 				$best_dist = $dist;
 				$best      = $stop['location_id'];
+				$best_addr = $stop['address'];
 			}
 		}
 
-		return null === $best ? null : self::decorate( $best, $best_dist );
+		return null === $best ? null : self::decorate( $best, $best_dist, $best_addr );
 	}
 
 	/**
-	 * Find a location whose addresses cover the normalized postcode.
+	 * Find a location whose addresses cover the normalized postcode, returning
+	 * the matched street where available.
 	 *
 	 * @param string $norm    Normalized postcode.
 	 * @param string $country ISO-2 country code.
-	 * @return int|null Location ID.
+	 * @return array{id:int,address:string}|null
 	 */
-	private static function exact_coverage( string $norm, string $country ): ?int {
+	private static function exact_coverage( string $norm, string $country ): ?array {
 		foreach ( self::locations() as $id ) {
-			$raw = (string) get_post_meta( $id, '_tt_postcodes', true );
-			if ( '' === $raw ) {
-				continue;
+			$id        = (int) $id;
+			$addresses = json_decode( (string) get_post_meta( $id, '_tt_addresses', true ), true );
+			if ( is_array( $addresses ) ) {
+				foreach ( $addresses as $a ) {
+					if ( self::normalize( (string) ( $a['postcode'] ?? '' ), $country ) === $norm ) {
+						return array(
+							'id'      => $id,
+							'address' => (string) ( $a['address'] ?? '' ),
+						);
+					}
+				}
 			}
+
+			// Fall back to the covered-postcodes summary (no specific street).
+			$raw = (string) get_post_meta( $id, '_tt_postcodes', true );
 			foreach ( preg_split( '/[\s,]+/', $raw, -1, PREG_SPLIT_NO_EMPTY ) as $token ) {
 				if ( self::normalize( $token, $country ) === $norm ) {
-					return (int) $id;
+					return array(
+						'id'      => $id,
+						'address' => '',
+					);
 				}
 			}
 		}
@@ -120,6 +137,7 @@ class Postcode {
 							'location_id' => $id,
 							'lat'         => (float) $a['lat'],
 							'lng'         => (float) $a['lng'],
+							'address'     => (string) ( $a['address'] ?? '' ),
 						);
 						$has_addr = true;
 					}
@@ -133,6 +151,7 @@ class Postcode {
 						'location_id' => $id,
 						'lat'         => (float) $lat,
 						'lng'         => (float) $lng,
+						'address'     => '',
 					);
 				}
 			}
@@ -159,15 +178,17 @@ class Postcode {
 	/**
 	 * Build the response payload for a resolved location.
 	 *
-	 * @param int   $location_id Location ID.
-	 * @param float $distance_km Distance in km.
+	 * @param int    $location_id Location ID.
+	 * @param float  $distance_km Distance in km.
+	 * @param string $address     Nearest stop street, when known.
 	 * @return array
 	 */
-	private static function decorate( int $location_id, float $distance_km ): array {
+	private static function decorate( int $location_id, float $distance_km, string $address = '' ): array {
 		$schedule = new Schedule();
 		return array(
 			'location_id' => $location_id,
 			'title'       => get_the_title( $location_id ),
+			'address'     => $address,
 			'url'         => (string) get_permalink( $location_id ),
 			'distance_km' => round( $distance_km, 1 ),
 			'next_date'   => $schedule->next_tour_for_location( $location_id ),

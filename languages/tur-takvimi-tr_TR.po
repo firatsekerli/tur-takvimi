@@ -350,7 +350,22 @@ msgid "Next visit"
 msgstr "Sonraki ziyaret"
 
 msgid "See delivery details"
-msgstr "Teslimat bilgilerini gör"
+msgstr "Teslimat detayları"
+
+msgid "Postcode (e.g. %s)"
+msgstr "Posta kodu (örn. %s)"
+
+msgid "Distance"
+msgstr "Mesafe"
+
+msgid "km away"
+msgstr "km uzakta"
+
+msgid "In your area"
+msgstr "Bölgenizde"
+
+msgid "Not scheduled yet"
+msgstr "Henüz planlanmadı"
 
 msgid "No upcoming date scheduled yet."
 msgstr "Henüz yaklaşan bir tarih planlanmadı."

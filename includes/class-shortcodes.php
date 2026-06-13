@@ -44,9 +44,12 @@ class Shortcodes {
 					'searching' => __( 'Searching…', 'tur-takvimi' ),
 					'nearest'   => __( 'Your nearest stop', 'tur-takvimi' ),
 					'next'      => __( 'Next visit', 'tur-takvimi' ),
+					'distance'  => __( 'Distance', 'tur-takvimi' ),
+					'kmAway'    => __( 'km away', 'tur-takvimi' ),
+					'inArea'    => __( 'In your area', 'tur-takvimi' ),
 					'noResult'  => __( 'No stop found for this postcode.', 'tur-takvimi' ),
 					'details'   => __( 'See delivery details', 'tur-takvimi' ),
-					'noDate'    => __( 'No upcoming date scheduled yet.', 'tur-takvimi' ),
+					'noDate'    => __( 'Not scheduled yet', 'tur-takvimi' ),
 				),
 			)
 		);
@@ -147,17 +150,25 @@ class Shortcodes {
 		wp_enqueue_style( 'tur-takvimi' );
 		wp_enqueue_script( 'tur-takvimi' );
 
-		$placeholder = 'NL' === Settings::get( 'country', 'NL' )
-			? '1234 AB'
-			: __( 'Your postcode', 'tur-takvimi' );
+		$example     = 'NL' === Settings::get( 'country', 'DE' ) ? '1234 AB' : '45134';
+		$placeholder = sprintf(
+			/* translators: %s: example postcode. */
+			__( 'Postcode (e.g. %s)', 'tur-takvimi' ),
+			$example
+		);
 
 		ob_start();
 		?>
 		<div class="tt-search" data-tt-search>
 			<form class="tt-search__form" role="search">
-				<label class="tt-search__label" for="tt-postcode"><?php esc_html_e( 'Enter your postcode to find the nearest stop and date', 'tur-takvimi' ); ?></label>
+				<label class="tt-search__sr" for="tt-postcode"><?php esc_html_e( 'Enter your postcode to find the nearest stop and date', 'tur-takvimi' ); ?></label>
 				<div class="tt-search__row">
-					<input id="tt-postcode" class="tt-search__input" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="<?php echo esc_attr( $placeholder ); ?>" data-tt-input>
+					<div class="tt-search__field">
+						<span class="tt-search__icon" aria-hidden="true">
+							<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+						</span>
+						<input id="tt-postcode" class="tt-search__input" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="<?php echo esc_attr( $placeholder ); ?>" data-tt-input>
+					</div>
 					<button type="submit" class="tt-search__button"><?php esc_html_e( 'Search', 'tur-takvimi' ); ?></button>
 				</div>
 			</form>

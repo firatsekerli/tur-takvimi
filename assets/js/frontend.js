@@ -24,6 +24,15 @@
 		return node;
 	}
 
+	var PIN_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+	function cell( labelText, valueText, accent ) {
+		var c = el( 'div', 'tt-search__cell' );
+		c.appendChild( el( 'span', 'tt-search__cell-label', labelText ) );
+		c.appendChild( el( 'strong', 'tt-search__cell-value' + ( accent ? ' tt-search__cell-value--accent' : '' ), valueText ) );
+		return c;
+	}
+
 	function renderResult( box, data ) {
 		box.innerHTML = '';
 
@@ -34,22 +43,29 @@
 
 		var card = el( 'div', 'tt-search__card' );
 
-		var label = el( 'span', 'tt-search__nearest', cfg.i18n.nearest );
-		card.appendChild( label );
+		// Header: green badge + city + nearest address.
+		var head = el( 'div', 'tt-search__head' );
+		var badge = el( 'span', 'tt-search__badge' );
+		badge.innerHTML = PIN_SVG;
+		head.appendChild( badge );
 
-		var name = el( 'strong', 'tt-search__city', data.title );
-		card.appendChild( name );
-
-		if ( typeof data.distance_km === 'number' && data.distance_km > 0 ) {
-			card.appendChild( el( 'span', 'tt-search__dist', '~' + data.distance_km + ' km' ) );
+		var headText = el( 'div', 'tt-search__headtext' );
+		headText.appendChild( el( 'strong', 'tt-search__city', data.title ) );
+		if ( data.address ) {
+			headText.appendChild( el( 'span', 'tt-search__addr', data.address ) );
 		}
+		head.appendChild( headText );
+		card.appendChild( head );
 
-		var date = el(
-			'p',
-			'tt-search__next',
-			cfg.i18n.next + ': ' + ( data.next_date_label || cfg.i18n.noDate )
-		);
-		card.appendChild( date );
+		// Body: distance + next visit.
+		var distText = ( typeof data.distance_km === 'number' && data.distance_km > 0 )
+			? ( String( data.distance_km ).replace( '.', ',' ) + ' ' + cfg.i18n.kmAway )
+			: cfg.i18n.inArea;
+
+		var grid = el( 'div', 'tt-search__grid' );
+		grid.appendChild( cell( cfg.i18n.distance, distText, false ) );
+		grid.appendChild( cell( cfg.i18n.next, data.next_date_label || cfg.i18n.noDate, true ) );
+		card.appendChild( grid );
 
 		if ( data.url ) {
 			var link = el( 'a', 'tt-search__link', cfg.i18n.details );
