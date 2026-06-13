@@ -169,6 +169,15 @@ msgstr "Rota ID"
 msgid "e.g. R07"
 msgstr "örn. R07"
 
+msgid "Route group"
+msgstr "Rota Grubu"
+
+msgid "e.g. Köln-Bonn-Aachen / Rheinland"
+msgstr "örn. Köln-Bonn-Aachen / Rheinland"
+
+msgid "On first save, the title is set to \"Route ID - Route group\"."
+msgstr "İlk kayıtta başlık \"Rota ID - Rota Grubu\" olarak ayarlanır."
+
 msgid "e.g. Vehicle 1"
 msgstr "örn. Araç 1"
 

@@ -37,6 +37,10 @@ class Route_Meta {
 			'normal',
 			'high'
 		);
+
+		// The route group is edited via our own field below, so hide the
+		// default region taxonomy box on the route screen.
+		remove_meta_box( Post_Types::REGION . 'div', Post_Types::ROUTE, 'side' );
 	}
 
 	/**
@@ -50,6 +54,18 @@ class Route_Meta {
 		$code      = (string) get_post_meta( $post->ID, '_tt_route_code', true );
 		$vehicle   = (string) get_post_meta( $post->ID, '_tt_vehicle', true );
 		$anchor    = (string) get_post_meta( $post->ID, '_tt_anchor_date', true );
+
+		$group     = '';
+		$assigned  = get_the_terms( $post->ID, Post_Types::REGION );
+		if ( $assigned && ! is_wp_error( $assigned ) ) {
+			$group = $assigned[0]->name;
+		}
+		$region_terms = get_terms(
+			array(
+				'taxonomy'   => Post_Types::REGION,
+				'hide_empty' => false,
+			)
+		);
 		$plz       = (string) get_post_meta( $post->ID, '_tt_plz_range', true );
 		$selected  = json_decode( (string) get_post_meta( $post->ID, '_tt_location_ids', true ), true );
 		$selected  = is_array( $selected ) ? array_map( 'intval', $selected ) : array();
@@ -73,6 +89,20 @@ class Route_Meta {
 		<div class="tt-field">
 			<label for="tt_route_code"><?php esc_html_e( 'Route ID', 'tur-takvimi' ); ?></label>
 			<input type="text" id="tt_route_code" name="tt_route_code" value="<?php echo esc_attr( $code ); ?>" placeholder="<?php esc_attr_e( 'e.g. R07', 'tur-takvimi' ); ?>">
+		</div>
+		<div class="tt-field">
+			<label for="tt_rota_grubu"><?php esc_html_e( 'Route group', 'tur-takvimi' ); ?></label>
+			<input type="text" id="tt_rota_grubu" name="tt_rota_grubu" class="regular-text" list="tt_region_options" value="<?php echo esc_attr( $group ); ?>" placeholder="<?php esc_attr_e( 'e.g. Köln-Bonn-Aachen / Rheinland', 'tur-takvimi' ); ?>">
+			<datalist id="tt_region_options">
+				<?php
+				if ( $region_terms && ! is_wp_error( $region_terms ) ) {
+					foreach ( $region_terms as $term ) {
+						echo '<option value="' . esc_attr( $term->name ) . '"></option>';
+					}
+				}
+				?>
+			</datalist>
+			<p class="description"><?php esc_html_e( 'On first save, the title is set to "Route ID - Route group".', 'tur-takvimi' ); ?></p>
 		</div>
 		<div class="tt-field">
 			<label for="tt_vehicle"><?php esc_html_e( 'Vehicle', 'tur-takvimi' ); ?></label>
@@ -128,8 +158,30 @@ class Route_Meta {
 			return;
 		}
 
-		update_post_meta( $post_id, '_tt_route_code', sanitize_text_field( wp_unslash( $_POST['tt_route_code'] ?? '' ) ) );
+		$code = sanitize_text_field( wp_unslash( $_POST['tt_route_code'] ?? '' ) );
+		update_post_meta( $post_id, '_tt_route_code', $code );
 		update_post_meta( $post_id, '_tt_vehicle', sanitize_text_field( wp_unslash( $_POST['tt_vehicle'] ?? '' ) ) );
+
+		// Route group maps to the shared region taxonomy (created if new).
+		$group = sanitize_text_field( wp_unslash( $_POST['tt_rota_grubu'] ?? '' ) );
+		wp_set_object_terms( $post_id, '' !== $group ? $group : array(), Post_Types::REGION, false );
+
+		// On first save (no manual title yet), build the title from ID + group.
+		$post  = get_post( $post_id );
+		$title = $post ? trim( (string) $post->post_title ) : '';
+		if ( '' === $title || 'Auto Draft' === $title ) {
+			$parts = array_filter( array( $code, $group ) );
+			if ( $parts ) {
+				remove_action( 'save_post_' . Post_Types::ROUTE, array( $this, 'save' ), 10 );
+				wp_update_post(
+					array(
+						'ID'         => $post_id,
+						'post_title' => implode( ' - ', $parts ),
+					)
+				);
+				add_action( 'save_post_' . Post_Types::ROUTE, array( $this, 'save' ), 10, 1 );
+			}
+		}
 		update_post_meta( $post_id, '_tt_anchor_date', sanitize_text_field( wp_unslash( $_POST['tt_anchor'] ?? '' ) ) );
 
 		$ids = isset( $_POST['tt_location_ids'] ) && is_array( $_POST['tt_location_ids'] )
