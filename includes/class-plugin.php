@@ -53,6 +53,7 @@ final class Plugin {
 		( new Schedule() )->register();
 		( new Rest_Api() )->register();
 		( new Shortcodes() )->register();
+		( new City_Page() )->register();
 
 		if ( is_admin() ) {
 			( new Importer() )->register();

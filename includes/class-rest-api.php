@@ -63,7 +63,7 @@ class Rest_Api {
 			)
 		);
 
-		// Admin-only geocoding proxy (Dutch PDOK Locatieserver).
+		// Admin-only geocoding proxy (server-side keeps any API key off the client).
 		register_rest_route(
 			self::NS,
 			'/geocode',

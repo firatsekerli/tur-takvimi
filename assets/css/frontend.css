@@ -215,3 +215,90 @@
 		padding: 0.75rem;
 	}
 }
+
+/* ------------------------------------------------------------------ *
+ * City (location) SEO page — P2
+ * ------------------------------------------------------------------ */
+
+.tt-city {
+	display: grid;
+	gap: 1.25rem;
+}
+
+.tt-city-page__article {
+	max-width: 960px;
+	margin: 0 auto;
+	padding: 1.5rem 1rem;
+}
+
+.tt-city-page__title {
+	margin: 0 0 1rem;
+}
+
+/* Map */
+.tt-citymap {
+	height: 380px;
+	width: 100%;
+	border-radius: 10px;
+	border: 1px solid #e2e4e7;
+	overflow: hidden;
+	z-index: 0;
+}
+
+/* Schedule */
+.tt-citysched {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	padding: 1rem 1.25rem;
+	background: #f6f7f9;
+	border-radius: 10px;
+}
+
+.tt-citysched__label {
+	display: block;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: #646970;
+}
+
+.tt-citysched__date {
+	font-size: 1.15rem;
+	color: var( --tt-primary, #e3242b );
+}
+
+/* Stops list */
+.tt-stops__heading {
+	margin: 0 0 0.5rem;
+	font-size: 1.15rem;
+}
+
+.tt-stops__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 0.4rem;
+}
+
+.tt-stops__item {
+	display: flex;
+	align-items: baseline;
+	gap: 0.6rem;
+	padding: 0.55rem 0.75rem;
+	background: #fff;
+	border: 1px solid #e2e4e7;
+	border-radius: 8px;
+}
+
+.tt-stops__pc {
+	flex: 0 0 auto;
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+	color: #646970;
+}
+
+.tt-stops__addr {
+	flex: 1 1 auto;
+}

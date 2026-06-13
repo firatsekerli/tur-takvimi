@@ -79,8 +79,12 @@ WooCommerce) is simply not installed.
   branding settings, route meta box, CSV importer, bundled NL postcode data.
 - **P1 — Front page (Core):** ✅ recurrence engine, calendar shortcode,
   postcode search (REST + JS widget).
-- **P2 — Location SEO pages (Core):** single-city template, schema.org,
-  sitemap, meta.
+- **P2 — Location SEO pages (Core):** ✅ city-page shortcodes
+  (`[tur_takvimi_city_map]`, `_city_stops`, `_city_schedule`, `_city`),
+  auto-injected schema.org JSON-LD + SEO meta (skipped when an SEO plugin is
+  active), WP-core XML sitemap (public CPT), and a PHP fallback single template
+  for non-Breakdance setups. Breakdance users build the template visually with
+  the shortcodes; post meta is REST-exposed for Dynamic Data binding.
 - **P3 — Commerce: products:** Woo detection, product↔route linking,
   "products on this tour" display.
 - **P4 — Commerce: pre-pay:** checkout, 10% discount, order-locked-to-date,
@@ -90,9 +94,11 @@ WooCommerce) is simply not installed.
 ## Key technical notes
 - Recurrence is **materialized** into `wp_tt_schedule` so calendar/search are
   fast lookups, not per-request computation.
-- Postcode search bundles an **open postcode dataset per country** (Netherlands
-  first) — no external API. Dutch postcodes are `1234 AB`; search normalizes to
-  the 4-digit (PC4) area for nearest-stop matching.
+- Postcode search resolves a typed postcode two ways: (1) **exact coverage** —
+  the postcode is listed on a city's addresses (`_tt_postcodes`); (2) fallback —
+  the postcode is **geocoded on demand** (cached) and the nearest geocoded stop
+  is returned by distance. `normalize()` is per-country (DE 5-digit, NL 4-digit).
+  No bundled dataset is required (the active demo dataset is Germany).
 - Maps via **Leaflet + OpenStreetMap tiles** — no API key, no per-call cost.
 - Core never references WooCommerce classes directly; the Commerce layer hooks
   in only when Woo is active (graceful degradation).
