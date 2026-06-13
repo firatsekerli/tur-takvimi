@@ -47,6 +47,7 @@ class Route_Meta {
 	public function render( $post ): void {
 		wp_nonce_field( 'tt_route_save', 'tt_route_nonce' );
 
+		$code      = (string) get_post_meta( $post->ID, '_tt_route_code', true );
 		$vehicle   = (string) get_post_meta( $post->ID, '_tt_vehicle', true );
 		$frequency = (int) get_post_meta( $post->ID, '_tt_frequency_weeks', true );
 		$anchor    = (string) get_post_meta( $post->ID, '_tt_anchor_date', true );
@@ -70,6 +71,10 @@ class Route_Meta {
 			.tt-locations { max-height: 240px; overflow:auto; border:1px solid #ddd; padding:.5rem; border-radius:6px; }
 			.tt-locations label { font-weight:400; display:block; }
 		</style>
+		<div class="tt-field">
+			<label for="tt_route_code"><?php esc_html_e( 'Route ID', 'tur-takvimi' ); ?></label>
+			<input type="text" id="tt_route_code" name="tt_route_code" value="<?php echo esc_attr( $code ); ?>" placeholder="<?php esc_attr_e( 'e.g. R07', 'tur-takvimi' ); ?>">
+		</div>
 		<div class="tt-field">
 			<label for="tt_vehicle"><?php esc_html_e( 'Vehicle', 'tur-takvimi' ); ?></label>
 			<input type="text" id="tt_vehicle" name="tt_vehicle" class="regular-text" value="<?php echo esc_attr( $vehicle ); ?>" placeholder="<?php esc_attr_e( 'e.g. Vehicle 1', 'tur-takvimi' ); ?>">
@@ -128,6 +133,7 @@ class Route_Meta {
 			return;
 		}
 
+		update_post_meta( $post_id, '_tt_route_code', sanitize_text_field( wp_unslash( $_POST['tt_route_code'] ?? '' ) ) );
 		update_post_meta( $post_id, '_tt_vehicle', sanitize_text_field( wp_unslash( $_POST['tt_vehicle'] ?? '' ) ) );
 		update_post_meta( $post_id, '_tt_anchor_date', sanitize_text_field( wp_unslash( $_POST['tt_anchor'] ?? '' ) ) );
 		update_post_meta( $post_id, '_tt_frequency_weeks', max( 1, absint( $_POST['tt_frequency'] ?? 4 ) ) );

@@ -148,6 +148,12 @@ msgstr "Rota ayarları"
 msgid "Vehicle"
 msgstr "Araç"
 
+msgid "Route ID"
+msgstr "Rota ID"
+
+msgid "e.g. R07"
+msgstr "örn. R07"
+
 msgid "e.g. Vehicle 1"
 msgstr "örn. Araç 1"
 

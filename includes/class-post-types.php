@@ -121,6 +121,7 @@ class Post_Types {
 		}
 
 		$route_meta = array(
+			'_tt_route_code'      => 'string',
 			'_tt_vehicle'         => 'string',
 			'_tt_frequency_weeks' => 'integer',
 			'_tt_anchor_date'     => 'string', // First occurrence, Y-m-d.
