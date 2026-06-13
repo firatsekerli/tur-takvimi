@@ -59,6 +59,7 @@ class Importer {
 				<div class="notice notice-success"><p><?php echo esc_html( $notice ); ?></p></div>
 			<?php endif; ?>
 			<p><?php esc_html_e( 'Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address; it is geocoded and pinned on the map automatically. Re-importing the same file fills any missing pins without creating duplicates.', 'tur-takvimi' ); ?></p>
+			<p><?php esc_html_e( 'Optional: add a "routes" column (e.g. R07;R08) to assign each city to its routes. Import routes first so the codes resolve.', 'tur-takvimi' ); ?></p>
 			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="tur_takvimi_import">
 				<?php wp_nonce_field( 'tur_takvimi_import' ); ?>
@@ -134,6 +135,7 @@ class Importer {
 			}
 
 			$this->apply_meta( (int) $location_id, $get );
+			$this->assign_routes( (int) $location_id, $get );
 
 			if ( $is_new ) {
 				++$created;
@@ -381,6 +383,31 @@ class Importer {
 		} elseif ( '' !== $lat && '' !== $lng ) {
 			update_post_meta( $location_id, '_tt_lat', (float) str_replace( ',', '.', $lat ) );
 			update_post_meta( $location_id, '_tt_lng', (float) str_replace( ',', '.', $lng ) );
+		}
+	}
+
+	/**
+	 * Assign a location to the routes named in the CSV "routes" column
+	 * (e.g. "R07;R08"). Codes are matched to existing routes by route code;
+	 * import routes first so the codes resolve. Assignment is additive, so a
+	 * re-import or manual ticks are preserved.
+	 *
+	 * @param int      $location_id Location ID.
+	 * @param callable $get         Column accessor.
+	 */
+	private function assign_routes( int $location_id, callable $get ): void {
+		$raw = $get( 'routes' );
+		if ( '' === $raw ) {
+			return; // No column / empty: leave existing assignments untouched.
+		}
+
+		$existing = array_map( 'intval', (array) get_post_meta( $location_id, '_tt_route_id', false ) );
+		foreach ( preg_split( '/[;,|]+/', $raw, -1, PREG_SPLIT_NO_EMPTY ) as $code ) {
+			$route_id = $this->find_route( trim( $code ) );
+			if ( $route_id && ! in_array( $route_id, $existing, true ) ) {
+				add_post_meta( $location_id, '_tt_route_id', $route_id );
+				$existing[] = $route_id;
+			}
 		}
 	}
 

@@ -236,6 +236,9 @@ msgstr "İçe Aktar"
 msgid "Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address; it is geocoded and pinned on the map automatically. Re-importing the same file fills any missing pins without creating duplicates."
 msgstr "Şu başlığa sahip bir CSV yükleyin: city, region, address, postcode, frequency. Her satır bir teslimat adresidir; otomatik olarak coğrafi konumlanır ve haritaya iğnelenir. Aynı dosyayı yeniden içe aktarmak, eksik iğneleri kopya oluşturmadan tamamlar."
 
+msgid "Optional: add a \"routes\" column (e.g. R07;R08) to assign each city to its routes. Import routes first so the codes resolve."
+msgstr "İsteğe bağlı: her şehri rotalarına atamak için bir \"routes\" sütunu ekleyin (örn. R07;R08). Kodların çözülmesi için önce rotaları içe aktarın."
+
 msgid "No file uploaded."
 msgstr "Dosya yüklenmedi."
 
