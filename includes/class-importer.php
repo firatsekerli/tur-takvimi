@@ -95,6 +95,33 @@ class Importer {
 					</p>
 				</div>
 			<?php endif; ?>
+			<?php
+			$unpinned = $this->unpinned_addresses();
+			$unpinned_total = array_sum( array_map( static fn( $u ) => count( $u['addresses'] ), $unpinned ) );
+			if ( $unpinned_total > 0 ) :
+				$retry_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run&retry=1' ), 'tt_geocode' );
+				?>
+				<div class="notice notice-error">
+					<p>
+						<strong>
+							<?php
+							/* translators: %d: number of addresses that could not be geocoded. */
+							echo esc_html( sprintf( __( '%d addresses could not be pinned automatically.', 'tur-takvimi' ), $unpinned_total ) );
+							?>
+						</strong>
+						<a class="button" href="<?php echo esc_url( $retry_url ); ?>"><?php esc_html_e( 'Retry failed pins', 'tur-takvimi' ); ?></a>
+					</p>
+					<p class="description"><?php esc_html_e( 'Open a city below and search the address to place its pin manually, or retry the lookups.', 'tur-takvimi' ); ?></p>
+					<ul style="margin:.25rem 0 .5rem 1rem;list-style:disc;max-height:260px;overflow:auto;">
+						<?php foreach ( $unpinned as $u ) : ?>
+							<li>
+								<a href="<?php echo esc_url( (string) get_edit_post_link( $u['id'] ) ); ?>"><strong><?php echo esc_html( $u['title'] ); ?></strong></a>:
+								<?php echo esc_html( implode( ' · ', $u['addresses'] ) ); ?>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			<?php endif; ?>
 			<p><?php esc_html_e( 'Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address. Importing is fast; map pins are geocoded afterwards on a progress screen (and can be resumed any time).', 'tur-takvimi' ); ?></p>
 			<p><?php esc_html_e( 'Optional: add a "routes" column (e.g. R07;R08) to assign each city to its routes. Import routes first so the codes resolve.', 'tur-takvimi' ); ?></p>
 			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -128,6 +155,11 @@ class Importer {
 		}
 		if ( function_exists( 'set_time_limit' ) ) {
 			set_time_limit( 0 );
+		}
+
+		// "Retry" clears the could-not-geocode flags once, then geocodes again.
+		if ( ! empty( $_GET['retry'] ) ) {
+			$this->clear_nogeo_flags();
 		}
 
 		$this->geocode_batch( self::GEOCODE_BATCH );
@@ -619,6 +651,58 @@ class Importer {
 			}
 		}
 		return $processed;
+	}
+
+	/**
+	 * Addresses that were tried but could not be geocoded, grouped by city.
+	 *
+	 * @return array<int,array{id:int,title:string,addresses:string[]}>
+	 */
+	private function unpinned_addresses(): array {
+		$out = array();
+		foreach ( $this->all_location_ids() as $lid ) {
+			$addresses = json_decode( (string) get_post_meta( $lid, '_tt_addresses', true ), true );
+			if ( ! is_array( $addresses ) ) {
+				continue;
+			}
+			$fails = array();
+			foreach ( $addresses as $a ) {
+				if ( ! empty( $a['nogeo'] ) && ! isset( $a['lat'], $a['lng'] ) ) {
+					$fails[] = trim( (string) ( $a['address'] ?? '' ) . ' ' . (string) ( $a['postcode'] ?? '' ) );
+				}
+			}
+			if ( $fails ) {
+				$out[] = array(
+					'id'        => $lid,
+					'title'     => get_the_title( $lid ),
+					'addresses' => $fails,
+				);
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Clear the "could not geocode" flag so those addresses are tried again.
+	 */
+	private function clear_nogeo_flags(): void {
+		foreach ( $this->all_location_ids() as $lid ) {
+			$addresses = json_decode( (string) get_post_meta( $lid, '_tt_addresses', true ), true );
+			if ( ! is_array( $addresses ) ) {
+				continue;
+			}
+			$changed = false;
+			foreach ( $addresses as &$a ) {
+				if ( ! empty( $a['nogeo'] ) ) {
+					unset( $a['nogeo'] );
+					$changed = true;
+				}
+			}
+			unset( $a );
+			if ( $changed ) {
+				update_post_meta( $lid, '_tt_addresses', wp_json_encode( $addresses, JSON_UNESCAPED_UNICODE ) );
+			}
+		}
 	}
 
 	/**

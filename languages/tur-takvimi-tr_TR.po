@@ -248,6 +248,15 @@ msgstr "%d adresin hâlâ harita iğnesi gerekiyor."
 msgid "Geocode pins now"
 msgstr "İğneleri şimdi konumla"
 
+msgid "%d addresses could not be pinned automatically."
+msgstr "%d adres otomatik olarak iğnelenemedi."
+
+msgid "Retry failed pins"
+msgstr "Başarısız iğneleri yeniden dene"
+
+msgid "Open a city below and search the address to place its pin manually, or retry the lookups."
+msgstr "Aşağıdan bir şehri açıp adresi arayarak iğnesini elle yerleştirin ya da aramaları yeniden deneyin."
+
 msgid "Geocoding map pins…"
 msgstr "Harita iğneleri konumlanıyor…"
 
