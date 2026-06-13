@@ -233,8 +233,8 @@ msgstr "Şehirleri İçe Aktar"
 msgid "Import"
 msgstr "İçe Aktar"
 
-msgid "Upload a CSV with header: city, postcodes, lat, lng, region, address. Rows with the same city are merged (addresses appended)."
-msgstr "Şu başlığa sahip bir CSV yükleyin: city, postcodes, lat, lng, region, address. Aynı şehre ait satırlar birleştirilir (adresler eklenir)."
+msgid "Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address; it is geocoded and pinned on the map automatically. Re-importing the same file fills any missing pins without creating duplicates."
+msgstr "Şu başlığa sahip bir CSV yükleyin: city, region, address, postcode, frequency. Her satır bir teslimat adresidir; otomatik olarak coğrafi konumlanır ve haritaya iğnelenir. Aynı dosyayı yeniden içe aktarmak, eksik iğneleri kopya oluşturmadan tamamlar."
 
 msgid "No file uploaded."
 msgstr "Dosya yüklenmedi."

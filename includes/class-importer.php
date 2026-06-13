@@ -58,7 +58,7 @@ class Importer {
 			<?php if ( $notice ) : ?>
 				<div class="notice notice-success"><p><?php echo esc_html( $notice ); ?></p></div>
 			<?php endif; ?>
-			<p><?php esc_html_e( 'Upload a CSV with header: city, postcodes, lat, lng, region, address. Rows with the same city are merged (addresses appended).', 'tur-takvimi' ); ?></p>
+			<p><?php esc_html_e( 'Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address; it is geocoded and pinned on the map automatically. Re-importing the same file fills any missing pins without creating duplicates.', 'tur-takvimi' ); ?></p>
 			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="tur_takvimi_import">
 				<?php wp_nonce_field( 'tur_takvimi_import' ); ?>
@@ -88,6 +88,12 @@ class Importer {
 			wp_die( esc_html__( 'Insufficient permissions.', 'tur-takvimi' ) );
 		}
 		check_admin_referer( 'tur_takvimi_import' );
+
+		// Geocoding each address can take a while for large files.
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 0 );
+		}
+		ignore_user_abort( true );
 
 		if ( empty( $_FILES['csv']['tmp_name'] ) || ! is_uploaded_file( $_FILES['csv']['tmp_name'] ) ) {
 			$this->redirect( __( 'No file uploaded.', 'tur-takvimi' ) );
@@ -270,41 +276,147 @@ class Importer {
 	}
 
 	/**
-	 * Apply postcode/geo/region/address meta to a location.
+	 * Apply region + address (with coordinates and frequency) to a location.
+	 *
+	 * One CSV row = one delivery address. Coordinates are taken from the CSV
+	 * (lat/lng) when present, otherwise geocoded server-side so the address is
+	 * pinned on the map. Re-importing the same file fills missing pins without
+	 * creating duplicates (addresses are matched by street + postcode).
 	 *
 	 * @param int      $location_id Location ID.
 	 * @param callable $get         Column accessor.
 	 */
 	private function apply_meta( int $location_id, callable $get ): void {
-		$postcodes = $get( 'postcodes' );
-		$lat       = $get( 'lat' );
-		$lng       = $get( 'lng' );
-		$region    = $get( 'region' );
-		$address   = $get( 'address' );
-
-		if ( '' !== $postcodes ) {
-			$existing = (string) get_post_meta( $location_id, '_tt_postcodes', true );
-			$merged   = trim( $existing . ' ' . $postcodes );
-			update_post_meta( $location_id, '_tt_postcodes', $merged );
-		}
-		if ( '' !== $lat ) {
-			update_post_meta( $location_id, '_tt_lat', (float) str_replace( ',', '.', $lat ) );
-		}
-		if ( '' !== $lng ) {
-			update_post_meta( $location_id, '_tt_lng', (float) str_replace( ',', '.', $lng ) );
-		}
+		$region  = $get( 'region' );
 		if ( '' !== $region ) {
 			wp_set_object_terms( $location_id, $region, Post_Types::REGION );
 		}
+
+		$address  = $get( 'address' );
+		$postcode = $get( 'postcode' );
+		if ( '' === $postcode ) {
+			$postcode = $get( 'postcodes' ); // Back-compat header name.
+		}
+		$lat  = $get( 'lat' );
+		$lng  = $get( 'lng' );
+		$freq = $get( 'frequency' );
+
+		$addresses = json_decode( (string) get_post_meta( $location_id, '_tt_addresses', true ), true );
+		$addresses = is_array( $addresses ) ? $addresses : array();
+
 		if ( '' !== $address ) {
-			$addresses   = json_decode( (string) get_post_meta( $location_id, '_tt_addresses', true ), true );
-			$addresses   = is_array( $addresses ) ? $addresses : array();
-			$addresses[] = array(
+			// Geocode for the map pin when coordinates were not supplied.
+			if ( '' === $lat || '' === $lng ) {
+				$point = $this->geocode_address( $address, $postcode, get_the_title( $location_id ) );
+				if ( $point ) {
+					$lat = (string) $point['lat'];
+					$lng = (string) $point['lng'];
+				}
+			}
+
+			$entry = array(
 				'address'  => $address,
-				'postcode' => $postcodes,
+				'postcode' => $postcode,
 			);
+			if ( '' !== $lat && '' !== $lng ) {
+				$entry['lat'] = (float) str_replace( ',', '.', $lat );
+				$entry['lng'] = (float) str_replace( ',', '.', $lng );
+			}
+			if ( '' !== $freq ) {
+				$entry['frequency'] = max( 0, (int) $freq );
+			}
+
+			// Dedupe by street + postcode so re-imports update instead of append.
+			$matched = false;
+			foreach ( $addresses as &$existing ) {
+				if ( strcasecmp( (string) ( $existing['address'] ?? '' ), $address ) === 0
+					&& (string) ( $existing['postcode'] ?? '' ) === $postcode ) {
+					if ( isset( $entry['lat'], $entry['lng'] ) ) {
+						$existing['lat'] = $entry['lat'];
+						$existing['lng'] = $entry['lng'];
+					}
+					if ( isset( $entry['frequency'] ) ) {
+						$existing['frequency'] = $entry['frequency'];
+					}
+					$matched = true;
+					break;
+				}
+			}
+			unset( $existing );
+			if ( ! $matched ) {
+				$addresses[] = $entry;
+			}
 			update_post_meta( $location_id, '_tt_addresses', wp_json_encode( $addresses ) );
 		}
+
+		// Covered postcodes = unique set across the address list (+ a bare row).
+		$postcodes = array();
+		foreach ( $addresses as $a ) {
+			if ( '' !== (string) ( $a['postcode'] ?? '' ) ) {
+				$postcodes[] = (string) $a['postcode'];
+			}
+		}
+		if ( '' !== $postcode && '' === $address ) {
+			$postcodes[] = $postcode;
+		}
+		$postcodes = array_values( array_unique( $postcodes ) );
+		if ( $postcodes ) {
+			update_post_meta( $location_id, '_tt_postcodes', implode( ' ', $postcodes ) );
+		}
+
+		// City centroid = average of address pins (fallback: a row-level lat/lng).
+		$sum_lat = 0.0;
+		$sum_lng = 0.0;
+		$count   = 0;
+		foreach ( $addresses as $a ) {
+			if ( isset( $a['lat'], $a['lng'] ) ) {
+				$sum_lat += (float) $a['lat'];
+				$sum_lng += (float) $a['lng'];
+				++$count;
+			}
+		}
+		if ( $count > 0 ) {
+			update_post_meta( $location_id, '_tt_lat', round( $sum_lat / $count, 6 ) );
+			update_post_meta( $location_id, '_tt_lng', round( $sum_lng / $count, 6 ) );
+		} elseif ( '' !== $lat && '' !== $lng ) {
+			update_post_meta( $location_id, '_tt_lat', (float) str_replace( ',', '.', $lat ) );
+			update_post_meta( $location_id, '_tt_lng', (float) str_replace( ',', '.', $lng ) );
+		}
+	}
+
+	/**
+	 * Geocode a single address (cached) so it can be pinned on the map.
+	 *
+	 * @param string $street   Street + house number.
+	 * @param string $postcode Postcode.
+	 * @param string $city     City name.
+	 * @return array{lat:float,lng:float}|null
+	 */
+	private function geocode_address( string $street, string $postcode, string $city ): ?array {
+		$query = trim( $street . ', ' . trim( $postcode . ' ' . $city ) );
+		if ( strlen( $query ) < 5 ) {
+			return null;
+		}
+		$key    = 'tt_geoaddr_' . md5( strtolower( $query ) );
+		$cached = get_transient( $key );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+		if ( 'miss' === $cached ) {
+			return null;
+		}
+
+		$results = Geocoder::search( $query, 1 );
+		if ( empty( $results ) ) {
+			set_transient( $key, 'miss', WEEK_IN_SECONDS );
+			return null;
+		}
+		$point = array(
+			'lat' => (float) $results[0]['lat'],
+			'lng' => (float) $results[0]['lng'],
+		);
+		set_transient( $key, $point, MONTH_IN_SECONDS );
+		return $point;
 	}
 
 	/**

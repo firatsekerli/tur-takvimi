@@ -1,0 +1,510 @@
+city,region,address,postcode,frequency
+Düsseldorf,NRW Batı / Niederrhein,Mergelgasse 1,40591,4
+Meerbusch-Büderich,NRW Batı / Niederrhein,Badener Weg 5,40667,0
+Hilden,NRW Batı / Niederrhein,Furtwängler Straße 11,40724,0
+Monheim am Rhein,NRW Batı / Niederrhein,Weddinger Str.,40789,0
+Mönchengladbach,NRW Batı / Niederrhein,Lürriper Str. 36,41065,0
+Mönchengladbach,NRW Batı / Niederrhein,Schulstraße 11,41065,0
+Neuss,NRW Batı / Niederrhein,Sternstraße 2,41460,5
+Neuss,NRW Batı / Niederrhein,Annostraße 57,41462,5
+Neuss-Furth,NRW Batı / Niederrhein,Weißenberger Weg 82,41462,5
+Grevenbroich-Gustorf,NRW Batı / Niederrhein,Franz-Liszt-Straße 3,41517,0
+Dormagen,NRW Batı / Niederrhein,Roseller Str. 21,41539,0
+Viersen,NRW Batı / Niederrhein,"Vorster Str. 48A,",41748,0
+Hückelhoven,NRW Batı / Niederrhein,Heerstraße 13,41836,0
+Wülfrath,NRW Batı / Niederrhein,"Lindenstraße 6,",42489,0
+Velbert,NRW Batı / Niederrhein,Schwanen str 21,42551,0
+Solingen,NRW Batı / Niederrhein,Ellerstraße 29,42697,0
+Haan,NRW Batı / Niederrhein,Flemingstraße 17,42781,0
+Remscheid,NRW Batı / Niederrhein,Honsberger Str. 45,42857,0
+Remscheid,NRW Batı / Niederrhein,Kippdorfstraße 72,42857,0
+Remscheid,NRW Batı / Niederrhein,Lüttringhauser Str. 49,42897,0
+Duisburg,NRW Batı / Niederrhein,Brückelstraße 91,47137,4
+Duisburg-Meiderich,NRW Batı / Niederrhein,Wasgaustraße 15,47137,4
+Duisburg-Bruckhausen,NRW Batı / Niederrhein,Bayreuther Str. 42,47166,4
+Duisburg,NRW Batı / Niederrhein,Steigerstraße 20,47166,4
+Duisburg-Homberg,NRW Batı / Niederrhein,"Breite Str. 13M,",47198,4
+Duisburg-Rheinhausen,NRW Batı / Niederrhein,Clara-Schumann-Straße 17,47226,4
+Duisburg,NRW Batı / Niederrhein,Hochfelder Str. 50,47226,4
+Duisburg-Rheinhausen,NRW Batı / Niederrhein,Kruppstraße 12,47229,4
+Krefeld,NRW Batı / Niederrhein,Saumstraße 14,47805,5
+Krefeld,NRW Batı / Niederrhein,Thyssenstraße 10,47807,5
+Essen,NRW Ruhr Batı,Frankenstr. 290,45134,4
+Essen,NRW Ruhr Batı,Kaisershofstraße 17,45139,4
+Essen,NRW Ruhr Batı,Jenckestraße 15,45145,4
+Essen,NRW Ruhr Batı,Mülheimerstr.30,45145,4
+Essen,NRW Ruhr Batı,Lohmühlental 44,45276,4
+Essen,NRW Ruhr Batı,Am Zehnthof 55,45307,4
+Essen,NRW Ruhr Batı,Zur Beckhove 4,45307,4
+Essen Kray-Nord,NRW Ruhr Batı,Auf'm Berg 20,45309,4
+Mülheim an der Ruhr,NRW Ruhr Batı,Eppinghofer Straße 103,45468,5
+Mülheim An Der Ruhr,NRW Ruhr Batı,Moritzstr. 108,45476,5
+Recklinghausen,NRW Ruhr Batı,Cheruskerstr.27,45665,0
+Datteln,NRW Ruhr Batı,Südring 155,45711,0
+Marl,NRW Ruhr Batı,Kinderheimstraße 1,45770,0
+Gelsenkirchen,NRW Ruhr Batı,Wiehagen 26,45879,4
+Gelsenkirchen,NRW Ruhr Batı,Hafenbahnstraße 5,45881,4
+Gelsenkirchen,NRW Ruhr Batı,Franz-Hitze-Straße 18,45883,4
+Gelsenkirchen,NRW Ruhr Batı,Steelerstraße 83-85,45884,4
+Gelsenkirchen,NRW Ruhr Batı,"Metterkampstraße 10,",45896,4
+Gladbeck,NRW Ruhr Batı,Horster Str. 66,45964,0
+Gladbeck,NRW Ruhr Batı,Brinskamp 9,45966,0
+Gladbeck,NRW Ruhr Batı,Tauschlagstraße 15a,45966,0
+Oberhausen,NRW Ruhr Batı,Alte Heid 6,46047,5
+Oberhausen,NRW Ruhr Batı,Knappenstraße 152,46047,5
+Bottrop,NRW Ruhr Batı,Nordring 137,46238,5
+Bottrop,NRW Ruhr Batı,Scharnhölz Straße 183,46238,5
+Dinslaken,NRW Ruhr Batı,Lohbergstr 64,46537,0
+Dinslaken,NRW Ruhr Batı,Schlepperstraße 50,46537,0
+Voerde,NRW Ruhr Batı,Schlesierstraße 37,46562,0
+Bergheim-Quadrath,Köln-Bonn-Aachen / Rheinland,Fischbachstraße 14-22,50127,0
+Kerpen-Sindorf,Köln-Bonn-Aachen / Rheinland,Bodelschwinghstraße 31,50170,0
+Kerpen,Köln-Bonn-Aachen / Rheinland,Maastrichter Str. 9,50171,0
+Kerpen,Köln-Bonn-Aachen / Rheinland,Sindorfer Str. 23,50171,0
+Bedburg,Köln-Bonn-Aachen / Rheinland,Adolf-Silverberg-Straße 17,50181,0
+Elsdorf,Köln-Bonn-Aachen / Rheinland,Gerhart-Hauptmann-Straße 3,50189,0
+Frechen,Köln-Bonn-Aachen / Rheinland,Elisabethstr. 16,50226,0
+Pulheim,Köln-Bonn-Aachen / Rheinland,Pater-Delp-Straße 5,50259,0
+Hürth,Köln-Bonn-Aachen / Rheinland,Nesselrodeweg 2,50354,0
+Wesseling,Köln-Bonn-Aachen / Rheinland,Hubertusstraße 125,50389,0
+Köln-Nippes,Köln-Bonn-Aachen / Rheinland,Mönchsgasse 35,50737,4
+Köln,Köln-Bonn-Aachen / Rheinland,Marienberger Weg 46,50767,4
+Köln-Ehrenfeld,Köln-Bonn-Aachen / Rheinland,Mathias-Brüggen-Straße 20,50827,4
+Bergisch Gladbach-Bensberg,Köln-Bonn-Aachen / Rheinland,Elisabethstraße 11,51429,0
+Bergneustadt,Köln-Bonn-Aachen / Rheinland,Turnerstraße 4,51702,0
+Aachen,Köln-Bonn-Aachen / Rheinland,Elsassstraße 23,52068,6
+Aachen,Köln-Bonn-Aachen / Rheinland,Stolberger Str. 209,52068,6
+Düren,Köln-Bonn-Aachen / Rheinland,Schüllsmühle 4,52353,0
+Aldenhoven,Köln-Bonn-Aachen / Rheinland,Martin-Luther-Straße 18,52457,0
+Alsdorf,Köln-Bonn-Aachen / Rheinland,Saarstraße 97,52477,0
+Übach-Palenberg,Köln-Bonn-Aachen / Rheinland,Stadionstraße,52531,0
+Bonn,Köln-Bonn-Aachen / Rheinland,Grootestraße 88,53121,6
+Bonn,Köln-Bonn-Aachen / Rheinland,Lenaustraße 6,53121,6
+Bonn,Köln-Bonn-Aachen / Rheinland,Siemensstraße 14,53121,6
+Bonn,Köln-Bonn-Aachen / Rheinland,Briandstraße 31,53123,6
+Bonn,Köln-Bonn-Aachen / Rheinland,Ferdinand-Porsche-Straße 54,53123,6
+Siegburg,Köln-Bonn-Aachen / Rheinland,Mozartstraße 33,53721,0
+Hennef-Bröl,Köln-Bonn-Aachen / Rheinland,In der Fuchskaule 58,53773,0
+Troisdorf,Köln-Bonn-Aachen / Rheinland,Am Wasserwerk 2,53840,0
+Troisdorf,Köln-Bonn-Aachen / Rheinland,Sieglarer Str. 23,53842,0
+Troisdorf-Sieglar,Köln-Bonn-Aachen / Rheinland,Alemannenstraße 27A,53844,0
+Troisdorf,Köln-Bonn-Aachen / Rheinland,Kettelerstrasse 8,53844,0
+Niederkassel-Lülsdorf,Köln-Bonn-Aachen / Rheinland,Nordstraße 13,53859,0
+Euskirchen,Köln-Bonn-Aachen / Rheinland,Kommerner Str. 42,53879,0
+Dortmund,NRW Ruhr Doğu,Heinrich-Wenke-Straße 34,44137,4
+Dortmund,NRW Ruhr Doğu,Paulinenstr 37,44137,4
+Dortmund-Innenstadt,NRW Ruhr Doğu,Thusneldastr. 6,44149,4
+Dortmund,NRW Ruhr Doğu,Karlsbank 15-C,44229,4
+Dortmund-Hörde,NRW Ruhr Doğu,Am Remberg 27,44263,4
+Dortmund-Scharnhorst,NRW Ruhr Doğu,Schmollerweg 9,44328,4
+Dortmund-Eving,NRW Ruhr Doğu,Hessische Str.1,44339,4
+Dortmund,NRW Ruhr Doğu,Castroper Straße 85,44357,4
+Lünen,NRW Ruhr Doğu,Augustastraße 1,44534,0
+Castrop-Rauxel-Habinghorst,NRW Ruhr Doğu,Rheinstraße 8,44579,0
+Herne,NRW Ruhr Doğu,Karlsplatz 1,44629,5
+Herne-Wanne,NRW Ruhr Doğu,Hermannstraße 42,44649,5
+Herne,NRW Ruhr Doğu,Rathausstraße 124B,44649,5
+Herne-Wanne,NRW Ruhr Doğu,Marktstraße 8,44651,5
+Herne-Wanne,NRW Ruhr Doğu,Am Solbad 13,44652,5
+Bochum,NRW Ruhr Doğu,Am Neggenborn 86a,44892,5
+Werl,NRW Ruhr Doğu,Lindenallee 9,49457,0
+Hagen,NRW Ruhr Doğu,Freiherr-vom-Stein-Straße 42,58089,6
+Hagen,NRW Ruhr Doğu,Märkischer Ring 11A,58097,6
+Hagen-Hohenlimburg,NRW Ruhr Doğu,Berliner Allee 34,58119,6
+Hagen-Hohenlimburg,NRW Ruhr Doğu,Kronenburgstraße 14,58119,6
+Schwerte,NRW Ruhr Doğu,Kleine Liethstraße 6,58239,0
+Wetter,NRW Ruhr Doğu,"Schöntaler Straße 28,",58300,0
+Schwelm,NRW Ruhr Doğu,Oelkinghauser Str. 15A,58332,0
+Witten,NRW Ruhr Doğu,Ardeystraße 182A,58453,0
+Lüdenscheid,NRW Ruhr Doğu,Obertinsberger Str. 33,58507,0
+Halver,NRW Ruhr Doğu,Schützenstraße 1-3,58553,0
+Iserlohn,NRW Ruhr Doğu,Bergwerkstraße 1,58636,0
+Iserlohn,NRW Ruhr Doğu,Karl-Arnold straße 109,58644,0
+Nachrodt,NRW Ruhr Doğu,Altenaer Str. 43,58769,0
+Werdohl,NRW Ruhr Doğu,Brüderstraße 9,58791,0
+Hamm,NRW Ruhr Doğu,Viktoriapl. 2,59067,6
+Hamm-Herringen,NRW Ruhr Doğu,Albert Funk Str. 4,59077,6
+Kamen,NRW Ruhr Doğu,Fritz-Erler-Straße 15,59174,0
+Bergkamen,NRW Ruhr Doğu,Alisostraße 29,59192,0
+Bergkamen,NRW Ruhr Doğu,Wolfgang-Fräger-Straße 22,59192,0
+Bönen,NRW Ruhr Doğu,Tulpenstraße 40,59199,0
+Ahlen,NRW Ruhr Doğu,Bremsberg 47,59229,0
+Ahlen,NRW Ruhr Doğu,Glückaufplatz 1,59229,0
+Beckum-Neubeckum,NRW Ruhr Doğu,Mark I 14,59269,0
+Beckum,NRW Ruhr Doğu,Zementstraße 82,59269,0
+Oelde,NRW Ruhr Doğu,Wibbeltstraße 70,59302,0
+Soest,NRW Ruhr Doğu,Brunowall 32A,59494,0
+Soest,NRW Ruhr Doğu,Hartweg 15,59494,0
+Geseke,NRW Ruhr Doğu,Störmeder Str. 54,59590,0
+Espelkamp,Ostwestfalen / Münsterland,Neißer Str. 47,32339,0
+Löhne-Mennighüffen,Ostwestfalen / Münsterland,Werster Str. 62,32584,0
+Lemgo,Ostwestfalen / Münsterland,Laubker Weg 4,32657,0
+Lage,Ostwestfalen / Münsterland,Ob. Str. 3,32791,0
+Steinheim,Ostwestfalen / Münsterland,Auf d. Frankenburg 21,32839,0
+Rheda-Wiedenbrück-Rheda,Ostwestfalen / Münsterland,Holzstraße 10,33378,0
+Rietberg,Ostwestfalen / Münsterland,Danziger Straße 41,33397,0
+Rietberg,Ostwestfalen / Münsterland,Lange Str. 7,33397,0
+Harsewinkel,Ostwestfalen / Münsterland,Rudolf-Diesel-Straße 31,33428,0
+Bielefeld,Ostwestfalen / Münsterland,Alfred-Bozi-Straße,33602,6
+Bielefeld,Ostwestfalen / Münsterland,Herforderstr 95,33602,6
+Bielefeld,Ostwestfalen / Münsterland,Ernst-Rein-Straße 32,33613,6
+Bielefeld,Ostwestfalen / Münsterland,Windelsbleicher Str. 50,33647,6
+Schloß Holte-Stukenbrock,Ostwestfalen / Münsterland,Helleforthstraße 132,33758,0
+Münster,Ostwestfalen / Münsterland,Bremer Platz 42,48155,8
+Warendorf,Ostwestfalen / Münsterland,Waterstroate 28,48231,0
+Spelle,Ostwestfalen / Münsterland,Venhauser Str. 19,48480,0
+Vechta,Ostwestfalen / Münsterland,Hagener Str. 75D,49377,0
+Lengerich,Ostwestfalen / Münsterland,Lienener Str. 5b,49525,0
+Grünberg,Hessen / Rhein-Main / RLP,Bahnhofstraße 14,35305,0
+Laubach,Hessen / Rhein-Main / RLP,Lessingstrasse 6,35321,0
+Lollar,Hessen / Rhein-Main / RLP,Marburger Str. 115,35457,0
+Wetzlar,Hessen / Rhein-Main / RLP,Altenberger Str. 113A,35576,0
+Aßlar,Hessen / Rhein-Main / RLP,Kölschhäuser Straße 1,35614,0
+Driedorf,Hessen / Rhein-Main / RLP,Marktstraße 20,35759,0
+Fulda,Hessen / Rhein-Main / RLP,Ronsbachstraße 17,36043,0
+Sinzig,Hessen / Rhein-Main / RLP,Lindenstraße 45,53489,0
+Unkel,Hessen / Rhein-Main / RLP,Siebengebirgstr. 3/1,53572,0
+Mainz,Hessen / Rhein-Main / RLP,Westriing 273,55120,6
+Mainz,Hessen / Rhein-Main / RLP,Hans-Böckler-Straße 2,55128,6
+Alzey,Hessen / Rhein-Main / RLP,Am Flutgraben,55232,0
+Wiesbaden,Hessen / Rhein-Main / RLP,Passauer Str. 74,55246,6
+Wiesbaden,Hessen / Rhein-Main / RLP,Castellumstraße 90,55252,6
+Budenheim,Hessen / Rhein-Main / RLP,Römer Str. 51,55257,0
+Rheinböllen,Hessen / Rhein-Main / RLP,Lindenstr. 21,55494,0
+Kreuznach,Hessen / Rhein-Main / RLP,Muhlenstrasse 78,55543,0
+Bad Kreuznach,Hessen / Rhein-Main / RLP,Mühlenstr. 78,55543,0
+Koblenz,Hessen / Rhein-Main / RLP,Theo-Mackeben-Straße 2,56070,0
+Mühlheim-Kaerlich,Hessen / Rhein-Main / RLP,Bahnhofstr. 24,56218,0
+Ransbach-Baumbach,Hessen / Rhein-Main / RLP,Bahnhofstraße 17,56235,0
+Engers-Neuwied,Hessen / Rhein-Main / RLP,Clemensstraße 40,56566,0
+Weißenthurm,Hessen / Rhein-Main / RLP,Ob. Fährstraße 9 a,56575,0
+Siegen,Hessen / Rhein-Main / RLP,Im Wiesental 78,57078,0
+Siegen-Geisweid,Hessen / Rhein-Main / RLP,Königstraße 1A,57078,0
+Siegen,Hessen / Rhein-Main / RLP,Siegtal Str. 30,57080,0
+Woippy,Hessen / Rhein-Main / RLP,"27 Rue Corneille Agrippa,",57140,0
+Kreuztal,Hessen / Rhein-Main / RLP,Dreslers Park,57223,0
+Kreuztal,Hessen / Rhein-Main / RLP,Hochstraße 36,57223,0
+Neunkirchen,Hessen / Rhein-Main / RLP,Pfarrau 19,57290,0
+Forbach,Hessen / Rhein-Main / RLP,14 Rue des Moulins,57600,0
+Cocheren,Hessen / Rhein-Main / RLP,17 Impasse du Chemin de Fer,57800,0
+Frankfurt am Main,Hessen / Rhein-Main / RLP,Carl-Sonnenshein-strasse 59,60314,5
+Frankfurt am Main,Hessen / Rhein-Main / RLP,Howaldtstraße 3,60314,5
+Karben,Hessen / Rhein-Main / RLP,Auf der Warte 1,61184,0
+Rosbach Vor Der Höhe,Hessen / Rhein-Main / RLP,Preulgasse 10,61191,0
+Reichelsheim,Hessen / Rhein-Main / RLP,Römerberg 2,61203,0
+Wöllstadt,Hessen / Rhein-Main / RLP,Feldbergstraße 14,61206,0
+Steinbach,Hessen / Rhein-Main / RLP,Berliner str. 16,61449,0
+Neu-Isenburg,Hessen / Rhein-Main / RLP,Richard-Wagner-Straße 2,63263,0
+Dreieich,Hessen / Rhein-Main / RLP,Gravenbruch Str. 63,63303,0
+Rödermark,Hessen / Rhein-Main / RLP,Lessingstraße 8A,63322,0
+Hanau,Hessen / Rhein-Main / RLP,Alfred-Delp-Straße 10,63450,6
+Hanau,Hessen / Rhein-Main / RLP,Schwarzenbergstraße 12,63452,6
+Hainburg,Hessen / Rhein-Main / RLP,Erzbergerstraße 37,63512,0
+Aschaffenburg,Hessen / Rhein-Main / RLP,Am Gemeindegraben 6,63741,0
+Laufach,Hessen / Rhein-Main / RLP,Hauptstr. 59,63846,0
+Amorbach,Hessen / Rhein-Main / RLP,Von-Ostein-Allee 7,63916,0
+Wörth am Main,Hessen / Rhein-Main / RLP,Landstraße 63939,63939,0
+Darmstadt,Hessen / Rhein-Main / RLP,Mainzer Strasse 164,64293,6
+Pfungstadt,Hessen / Rhein-Main / RLP,Mühlstraße 73,64319,0
+Gross-Gerau,Hessen / Rhein-Main / RLP,Frankfurter strasse 30,64521,0
+Mörfelden-Walldorf,Hessen / Rhein-Main / RLP,Waldenserstrasse 25,64546,0
+Biebesheim am Rhein,Hessen / Rhein-Main / RLP,Stockstadter strasse 5,64584,0
+Grasellenbach,Hessen / Rhein-Main / RLP,Im Michelsgrund 9,64689,0
+Dieburg,Hessen / Rhein-Main / RLP,Güterstraße 10,64807,0
+Wiesbaden,Hessen / Rhein-Main / RLP,Karntner strasse 15,65187,6
+Wiesbaden,Hessen / Rhein-Main / RLP,Kärntner Straße 3,65187,6
+Wiesbaden,Hessen / Rhein-Main / RLP,Breslauer Str.65,65203,6
+Taunusstein,Hessen / Rhein-Main / RLP,Hebbelstraße 1,65232,0
+Bad Schwalbach,Hessen / Rhein-Main / RLP,Bahnhofstraße 6,65307,0
+Rüdesheim am Rhein,Hessen / Rhein-Main / RLP,Geisenheimer Straße 24,65385,0
+Rüsselsheim am Main,Hessen / Rhein-Main / RLP,Liebigstraße 20,65428,6
+Kelsterbach,Hessen / Rhein-Main / RLP,Auf der Mainhöhe 3,65451,0
+Hattersheim Am Main,Hessen / Rhein-Main / RLP,"Im Gotthelf 15,",65795,0
+Frankfurt-Höchst,Hessen / Rhein-Main / RLP,Aralienstr. 25,65929,5
+Worms,Hessen / Rhein-Main / RLP,Bensheimer Str. 1,67547,0
+Lampertheim,Hessen / Rhein-Main / RLP,Otto-Hahn-Straße 10A,68623,0
+Saarbrücken,Saarland,Jakobstraße 47,66115,6
+STUTTGART-Süd,Stuttgart ve çevresi,Hauptstätter Str. 95,70178,5
+STUTTGART-Gablenberg,Stuttgart ve çevresi,Klingenstraße 92,70186,5
+Stuttgart,Stuttgart ve çevresi,Neckarstraße 160,70190,5
+STUTTGART-Stöckach,Stuttgart ve çevresi,Rieckestr. 19,70190,5
+Stuttgart - Hallschlag,Stuttgart ve çevresi,Bottroper Straße 49,70376,5
+Stuttgart - Hallschlag,Stuttgart ve çevresi,Sparrhärmlingweg 71B,70376,5
+STUTTGART-Zuffenhausen,Stuttgart ve çevresi,Hans-vaut-str. 15,70435,5
+STUTTGART-Freiberg,Stuttgart ve çevresi,Suttner Str. 16,70437,5
+STUTTGART-Stammheim,Stuttgart ve çevresi,Sieben Morgen 5,70439,5
+Stuttgart - Giebel,Stuttgart ve çevresi,Mittenfeldstraße 125,70499,5
+Stuttgart - Dürrlewang,Stuttgart ve çevresi,Eulerstraße 11B,70565,5
+Stuttgart,Stuttgart ve çevresi,Herschelstraße 1,70565,5
+Stuttgart - Fasanenhof,Stuttgart ve çevresi,Kurt-Schumacher-Straße 222,70565,5
+Stuttgart - Vaihingen,Stuttgart ve çevresi,Im Lauchhau 31,70569,5
+STUTTGART-Heumaden,Stuttgart ve çevresi,Bernsteinstraße 29,70619,5
+Fellbach,Stuttgart ve çevresi,Schorndorfer Str. 33,70736,0
+Leinfelden-Echterdingen,Stuttgart ve çevresi,Randweg 10,70771,0
+Filderstadt,Stuttgart ve çevresi,Scharnhäuser Straße 4,70794,0
+Kornwestheim,Stuttgart ve çevresi,Bolzstraße 59,70806,0
+Korntal-Münchingen,Stuttgart ve çevresi,Schöckinger Straße 4,70825,0
+Gerlingen,Stuttgart ve çevresi,Weilimdorfer Straße 93,70839,0
+Böblingen,Stuttgart ve çevresi,Königsberger Straße 42,71034,0
+Böblingen,Stuttgart ve çevresi,Pontoiser Straße 36,71034,0
+Sindelfingen,Stuttgart ve çevresi,Bachstraße 19,71063,0
+Herrenberg,Stuttgart ve çevresi,Goldregenstraße 20,71083,0
+Herrenberg,Stuttgart ve çevresi,Raistinger strasse 1,71083,0
+Magstadt,Stuttgart ve çevresi,Maichinger Straße 2,71106,0
+Gäufelden,Stuttgart ve çevresi,Buchenstraße 5,71126,0
+Gaufelden-Oschelbronn,Stuttgart ve çevresi,Joseph-Haydn-Weg 1,71126,0
+Leonberg,Stuttgart ve çevresi,Riedstraße 4,71229,0
+Weil der Stadt,Stuttgart ve çevresi,Mittlere Straße 29,71263,0
+Renningen,Stuttgart ve çevresi,Humboldtstr. 10,71272,0
+Hemmingen,Stuttgart ve çevresi,Saarstraße 37/1,71282,0
+Waiblingen,Stuttgart ve çevresi,Beinsteiner Straße 160,71334,0
+Winnenden,Stuttgart ve çevresi,Ziegeleistraße 24,71364,0
+Leutenbach,Stuttgart ve çevresi,Ziegeleistraße 14,71397,0
+Schwaikheim,Stuttgart ve çevresi,Robert-Bosch-Straße 2,71409,0
+Backnang,Stuttgart ve çevresi,Jahnstraße 10,71522,0
+Murrhardt,Stuttgart ve çevresi,Kaiser-Ludwig-Strasse 45,71540,0
+Ludwigsburg,Stuttgart ve çevresi,Eduard-Spranger-Straße 7,71634,0
+Vaihingen an der Enz,Stuttgart ve çevresi,Hauffstraße 14,71665,0
+Remseck-Pattonville,Stuttgart ve çevresi,John-F-Kennedy-Allee 55/4,71686,0
+Markgröningen,Stuttgart ve çevresi,Ostergasse 24,71706,0
+Großbottwar,Stuttgart ve çevresi,Oberstenfelder Straße 52,71723,0
+Erdmannhausen,Stuttgart ve çevresi,Schrayweg 1,71729,0
+Eberdingen,Stuttgart ve çevresi,Stuttgarter Straße 6,71735,0
+Nagold,Stuttgart ve çevresi,Max-eyth-Strasse 23,72202,0
+Freudenstadt,Stuttgart ve çevresi,Turnhallestr. 39,72250,0
+Sigmaringen,Stuttgart ve çevresi,Wildensteinweg 8,72488,0
+Krauchenwies,Stuttgart ve çevresi,Bahnhofstraße 25,72505,0
+Münsingen,Stuttgart ve çevresi,Wiesentalstraße 6,72525,0
+Metzingen,Stuttgart ve çevresi,Schloßstraße 9,72555,0
+Dettingen an der Erms,Stuttgart ve çevresi,G-M-Eisenlohr-Straße 6,72581,0
+Nürtingen,Stuttgart ve çevresi,Raidwanger Straße 2,72622,0
+Reutlingen,Stuttgart ve çevresi,Schweitnitzerstr. 9,72760,6
+Eningen Unter Achalm,Stuttgart ve çevresi,Hauptstraße 21,72800,0
+Trochtelfingen,Stuttgart ve çevresi,In der Braike 10,72818,0
+Göppingen,Stuttgart ve çevresi,Davidstraße 26,73033,0
+Lenningen,Stuttgart ve çevresi,Untere Straße 16,73252,0
+Köngen,Stuttgart ve çevresi,Christian-Eisele-Straße 9,73257,0
+Bissingen an der Teck,Stuttgart ve çevresi,Hintere Straße 29,73266,0
+Geislingen an der Steige,Stuttgart ve çevresi,Auerstr. 5,73312,0
+Deggingen,Stuttgart ve çevresi,Bahnhofstr. 10,73326,0
+Kuchen,Stuttgart ve çevresi,Am Lippenrain 11,73329,0
+Aalen,Stuttgart ve çevresi,Charlottenstraße 22,73431,0
+Ellwangen,Stuttgart ve çevresi,Stauffenbergring 6,73479,0
+Schwäbisch Gmünd,Stuttgart ve çevresi,Pfitzerstraße 28,73527,0
+Heubach,Stuttgart ve çevresi,Beiswanger Str. 7,73540,0
+Heubach,Stuttgart ve çevresi,Beiswanger Straße 7,73540,0
+Schorndorf,Stuttgart ve çevresi,Lange Straße 24,73614,0
+Rudersberg,Stuttgart ve çevresi,Dr-Hockertz-Straße 18,73635,0
+Welzheim,Stuttgart ve çevresi,Bahnhofstraße 30,73642,0
+Welzheim,Stuttgart ve çevresi,Schorndorfer Straße 25,73642,0
+Urbach,Stuttgart ve çevresi,Konrad-Hornschuch-Straße 72,73660,0
+Esslingen am Neckar,Stuttgart ve çevresi,Rennstraße 9,73728,0
+Esslingen am Neckar,Stuttgart ve çevresi,Palmstraße 25,73732,0
+Esslingen-Brüh,Stuttgart ve çevresi,Heinrich Gyr str. 13,73733,0
+Ostfildern,Stuttgart ve çevresi,Körschtalstraße 32,73760,0
+Denkendorf,Stuttgart ve çevresi,Goethestraße 58,73770,0
+Ludwigshafen am Rhein,BW Kuzey/Batı,Wilhelm-Busch-Straße 111,67071,6
+Mannheim,BW Kuzey/Batı,G7 3,68159,6
+Mannheim,BW Kuzey/Batı,Käfertaler Str. 201,68167,6
+Mannheim,BW Kuzey/Batı,Gartenfeldstraße 22,68169,6
+Mannheim,BW Kuzey/Batı,Neckarauer Waldweg 91,68199,6
+Mulhouse,BW Kuzey/Batı,110 rue de soultz,68200,0
+Mannheim,BW Kuzey/Batı,Karlsruher Str. 44,68219,6
+Mannheim,BW Kuzey/Batı,Main-Neckar-Bahn-Straße 21,68229,6
+Mannheim,BW Kuzey/Batı,Rüsselsheimer Str. 46,68305,6
+Schwetzingen,BW Kuzey/Batı,Liselotte str 12,68723,0
+Sankt Leon Rot,BW Kuzey/Batı,Wieslocherstr. 10,68789,0
+Reilingen,BW Kuzey/Batı,Parkstr. 5a,68799,0
+Reilingen,BW Kuzey/Batı,Parkstraße 5A,68799,0
+Heidelberg,BW Kuzey/Batı,Philipp-Reis-Straße 16,69115,0
+Wiesloch,BW Kuzey/Batı,Carl-Benz-Straße 13,69168,0
+Wiesloch,BW Kuzey/Batı,Carl-Benz-Straße 13,69168,0
+Weinheim,BW Kuzey/Batı,Bergstrasse 149,69469,0
+Heilbronn,BW Kuzey/Batı,Frankfurter Str. 22,74072,6
+Neckarsulm,BW Kuzey/Batı,Odenwaldstrasse 10,74172,0
+Bad Friedrichshall,BW Kuzey/Batı,Hagenbacher Str. 103,74177,0
+Massenbachhausen,BW Kuzey/Batı,Heilbronner Straße 54,74252,0
+Ilsfeld,BW Kuzey/Batı,Benzstraße 4,74360,0
+Ingersheim,BW Kuzey/Batı,Pleidelsheimer str. 13,74379,0
+Pleidelsheim,BW Kuzey/Batı,Am Kanal 20,74385,0
+Gaildorf,BW Kuzey/Batı,Wirkerstr. 22,74405,0
+Schwäbisch Hall,BW Kuzey/Batı,Gaildorfer Str. 4,74523,0
+Crailsheim,BW Kuzey/Batı,Gaildorfer Straße 47,74564,0
+Sinsheim,BW Kuzey/Batı,Gutenbergstraße 4,74889,0
+Waibstadt,BW Kuzey/Batı,Pfarrstraße 14,74915,0
+Oberderdingen,BW Kuzey/Batı,Silcherstr. 8,75038,0
+Sulzfeld,BW Kuzey/Batı,Hintere Straße 35,75056,0
+Pforzheim,BW Kuzey/Batı,Eutinger Straße 105,75175,6
+Calw,BW Kuzey/Batı,Am Tälesbach 8,75365,0
+Unterreichenbach,BW Kuzey/Batı,Kapfenhardterstr. 14,75399,0
+Mühlacker,BW Kuzey/Batı,Eibenweg 4,75417,0
+Muhlacker,BW Kuzey/Batı,Kibilingsweg 52,75417,0
+Mühlacker,BW Kuzey/Batı,Poststraße 11,75417,0
+Maulbronn,BW Kuzey/Batı,Talweg 4,75433,0
+Karlsruhe,BW Kuzey/Batı,Emil-Gött-Straße 21,76131,6
+Karlsruhe,BW Kuzey/Batı,"Emil-Gött-Straße 21,",76131,6
+Karlsruhe,BW Kuzey/Batı,Gerwigstraße 69,76131,6
+Karlsruhe,BW Kuzey/Batı,Herrmann-Leichtlin-Straße 20,76185,6
+Karlsruhe,BW Kuzey/Batı,Saarlandstraße 96,76187,6
+Rastatt,BW Kuzey/Batı,Rauentaler Straße 14,76437,0
+Rastatt - Ötigheim,BW Kuzey/Batı,Schwarzwaldstraße 2,76470,0
+Philippsburg,BW Kuzey/Batı,Söternstraße 15,76661,0
+Germersheim,BW Kuzey/Batı,Hans-Sachs-Str. 4,76726,0
+Germersheim,BW Kuzey/Batı,Hans-Sachs-Straße 4,76726,0
+Wörth am Rhein,BW Kuzey/Batı,Bahnhofstraße 11,76744,0
+Landau in der Pfalz,BW Kuzey/Batı,Queichheimer Hauptstraße 8,76829,0
+Rheinmünster,BW Kuzey/Batı,Ringstraße 19,77836,0
+Achern,BW Kuzey/Batı,Fautenbacher Straße 32,77855,0
+Radolfzell,BW Güney / Ulm-Freiburg,Bismarckstraße 21,78315,0
+Emmingen-Liptingen,BW Güney / Ulm-Freiburg,Liptinger Straße 1,78576,0
+Rottweil,BW Güney / Ulm-Freiburg,Stadionstrasse 60,78628,0
+Freiburg im Breisgau,BW Güney / Ulm-Freiburg,Mooswaldallee 6,79108,6
+Freiburg im Breisgau,BW Güney / Ulm-Freiburg,Rufacher Straße 11,79110,6
+Lörrach,BW Güney / Ulm-Freiburg,Spitalstraße 51,79539,0
+Weil am Rhein,BW Güney / Ulm-Freiburg,Tullastrasse 48,79576,0
+Rheinfelden,BW Güney / Ulm-Freiburg,Ernst-Reuter-Straße 5,79618,0
+Lauchringen,BW Güney / Ulm-Freiburg,Dr.-Konrad-Adenauer-Ring 17,79787,0
+Ravensburg,BW Güney / Ulm-Freiburg,Holbeinstraße 25,88212,0
+Ravensburg,BW Güney / Ulm-Freiburg,"Ravensburger Straße 17,",88214,0
+Biberach An Der Riss,BW Güney / Ulm-Freiburg,Zeppelingring 45,88400,0
+Laupheim,BW Güney / Ulm-Freiburg,Rabenstraße 66,88471,0
+Ulm,BW Güney / Ulm-Freiburg,Weinbergweg 42,89075,6
+Langenau,BW Güney / Ulm-Freiburg,Richthofenstraße 12,89129,0
+Langenau-Albeck,BW Güney / Ulm-Freiburg,Robert-Bosch str 44,89129,0
+Laichingen,BW Güney / Ulm-Freiburg,Henzenbuch 4,89150,0
+Neu-Ulm,BW Güney / Ulm-Freiburg,Finninger Str. 16,89231,0
+Vöhringen,BW Güney / Ulm-Freiburg,Ulmer Str. 50,89269,0
+Nersingen,BW Güney / Ulm-Freiburg,Römerstr. 40,89278,0
+München,Bayern,Landwehrstrasse 50,80336,8
+München,Bayern,Landwehrstraße 50,80336,8
+München,Bayern,Moosacher Straße 22,80809,8
+München,Bayern,Moosacher strasse 22,80809,8
+München,Bayern,Hieronymusstraße 26,81241,8
+Olching,Bayern,Georgen strasse 2,82140,0
+Fürstenfeldbruck,Bayern,Hubertus strasse 10 c,82256,0
+Mainburg,Bayern,Guggenmoosgasse 4,84048,0
+Ingolstadt,Bayern,Manisa Str. 1,85057,6
+Eichstätt,Bayern,Weißenburger Straße 28,85072,0
+Pfaffenhofen an der Ilm,Bayern,Hohenwarter Straße 104,85276,0
+Freising,Bayern,Katharina-Mair-Straße 3,85356,0
+Ismaning,Bayern,Wasserturm strasse 46,85737,0
+Ismaning,Bayern,Wasserturm strasse 46,85737,0
+Garching,Bayern,Eulerweg 3,85748,0
+Garching bei munchen,Bayern,Eulerweg 3,85748,0
+Augsburg Eschenhorf,Bayern,Eschenhofstrasse 56,86154,6
+Augsburg,Bayern,Eschenhofstraße 56,86154,6
+Augsburg,Bayern,Grenzstraße 21,86156,6
+Augsburg Eschenhorf,Bayern,Linke Brandstrasse 25,86167,6
+Augsburg,Bayern,Linke Brandstraße 25,86167,6
+Gersthofen,Bayern,Augsburger Straße 100,86368,0
+Bobingen,Bayern,Jahnstrasse 13,86399,0
+Bobingen,Bayern,John strasse 13,86399,0
+Bobingen,Bayern,Max-Fischer-Strasse 20c,86399,0
+Donauwörth,Bayern,Dillingen strasse 45,86609,0
+Ettringen,Bayern,Troppauer Straße 1,86833,0
+Mindelheim,Bayern,Allgäuer Straße 14,87719,0
+Nürnberg,Bayern,Rednitz str.28,90449,8
+Röthenbach,Bayern,Bahnhofplatz 6,90552,0
+Allersberg,Bayern,Badstraße 4,90584,0
+Nürnberg - Fürth,Bayern,Steubenstraße 13,90763,8
+Erlangen,Bayern,Spinnereistraße 12,91052,6
+Forchheim,Bayern,Haidfeldstraße 1,91301,0
+Amberg,Bayern,Rubensstraße 2,92224,0
+Parsberg,Bayern,Singerstraße 16,92331,0
+Beilngries,Bayern,Ingolstädter str. 3,92339,0
+Regensburg,Bayern,Siemens Straße 2,93055,6
+Kelheim,Bayern,Schlesier Straße 16,93309,0
+Selb,Bayern,Längenauer Straße 71A,95100,0
+Rehau,Bayern,Bahnhofstraße 5,95111,0
+Marktredwitz,Bayern,Kraußoldstraße 19,95615,0
+Schweinfurt,Bayern,Luitpoldstraße 62,97421,0
+Lauda,Bayern,Bahnhofstr. 27,97922,0
+Berlin,Berlin,Stendaler Str. 2,10559,6
+Berlin-Charlottenburg,Berlin,Helmholtz str.34,10587,6
+Berlin-Kreuzberg,Berlin,Pohlstraße 21,10785,6
+Berlin-Mitte,Berlin,Kochstraße 1,10969,6
+Berlin-Kreuzberg,Berlin,"Falckensteinstraße 12,",10997,6
+Berlin-Kreuzberg,Berlin,Mariannenpl. 8,10997,6
+Berlin-Kreuzberg,Berlin,Waldemarstr.83,10997,6
+Berlin-Kreuzberg,Berlin,Kohlfurter Straße 11,10999,6
+Berlin-Kreuzberg,Berlin,Naunynstraße 34,10999,6
+Berlin-Neukölln,Berlin,Fritzi massary str 21,12057,6
+Berlin-Tempelhof-Schöneberg,Berlin,"Pöppelmannstraße 1,",12157,6
+Berlin-Rudow,Berlin,Wutzkyallee 90,12353,6
+Berlin-Wedding,Berlin,Koloniestraße 128,13358,6
+Berlin-Spandau,Berlin,Schäferstraße 23,13585,6
+Berlin-Spandau,Berlin,Pillnitzer Weg 10,13593,6
+Hamburg,Hamburg / Lübeck / Kuzey,Borstelmannsweg 68,20537,6
+Hamburg,Hamburg / Lübeck / Kuzey,Wendenstraße 470,20537,6
+Hamburg,Hamburg / Lübeck / Kuzey,Cornelia-Harte-Straße 36,20539,6
+Hamburg,Hamburg / Lübeck / Kuzey,Buddestraße 24,21109,6
+Hamburg,Hamburg / Lübeck / Kuzey,Neuenfelder Fährdeich 19,21129,6
+Stade-Bützfleth,Hamburg / Lübeck / Kuzey,Obstmarschenweg 358,21683,0
+Hamburg-Nord,Hamburg / Lübeck / Kuzey,Alter Teichweg 220,22049,6
+Hamburg,Hamburg / Lübeck / Kuzey,Kandinskyallee 27,22115,6
+Hamburg,Hamburg / Lübeck / Kuzey,Setzergasse 2A,22117,6
+Hamburg,Hamburg / Lübeck / Kuzey,Spliedtring 19a,22119,6
+Hamburg-Wandsbek,Hamburg / Lübeck / Kuzey,Traberweg 9B,22159,6
+Hamburg,Hamburg / Lübeck / Kuzey,Bramfelder Str. 64,22305,6
+Hamburg,Hamburg / Lübeck / Kuzey,Fritz-Flinte-Ring 22C,22309,6
+Eimsbüttel,Hamburg / Lübeck / Kuzey,Randstraße 48A,22525,6
+Hamburg,Hamburg / Lübeck / Kuzey,Am Brunnenhof 14,22767,6
+Hamburg-Altona,Hamburg / Lübeck / Kuzey,Mörkenstraße 9,22767,6
+Hamburg-Altona,Hamburg / Lübeck / Kuzey,Langenfelder Str. 121,22769,6
+Schenefeld-Altona,Hamburg / Lübeck / Kuzey,Klaus-Groth-Straße 18,22869,0
+Lübeck,Hamburg / Lübeck / Kuzey,Katharinenstraße 35-37,23554,6
+Lübeck,Hamburg / Lübeck / Kuzey,Schwartauer Landstraße 4,23554,6
+Lübeck,Hamburg / Lübeck / Kuzey,Silberstraße 15,23569,6
+Bad Bramstedt,Hamburg / Lübeck / Kuzey,Butendoor 12A,24576,0
+Uetersen,Hamburg / Lübeck / Kuzey,Katharinenstraße 22,25436,0
+Sulingen,Bremen-Hannover-Braunschweig,Dr.Golm-Str. 24,27232,0
+Rethem,Bremen-Hannover-Braunschweig,Lange Str. 39,27336,0
+Delmenhorst-Bremen,Bremen-Hannover-Braunschweig,Düsternortstraße 80,27755,0
+Neustadt-Bremen,Bremen-Hannover-Braunschweig,Gottfried-Menken Strasse 20,28201,6
+Bremen,Bremen-Hannover-Braunschweig,Fischerhuder Str,28237,6
+Bremen-Gröpelingen,Bremen-Hannover-Braunschweig,Morgenlandstraße 46,28237,6
+Hemelingen-Bremen,Bremen-Hannover-Braunschweig,"Marschstraße 10,",28309,6
+Bremen-Vegesack,Bremen-Hannover-Braunschweig,Bydolekstraße 2,28759,6
+Hannover,Bremen-Hannover-Braunschweig,Stiftstraße 10,30159,6
+Hannover,Bremen-Hannover-Braunschweig,Alter Flughafen 11,30179,6
+Hannover,Bremen-Hannover-Braunschweig,Behnsenstraße 30,30449,6
+HANNOVER,Bremen-Hannover-Braunschweig,Weddinger Str.,30449,6
+Hannover,Bremen-Hannover-Braunschweig,Fössestraße 43,30451,6
+Hannover,Bremen-Hannover-Braunschweig,Mercedesstraße 6,30453,6
+Hannover,Bremen-Hannover-Braunschweig,Albrecht-Schaeffer-Weg 28,30455,6
+Hannover,Bremen-Hannover-Braunschweig,Fränkische Straße 11,30455,6
+Hannover,Bremen-Hannover-Braunschweig,Hagenbleckstraße 52,30455,6
+Hannover,Bremen-Hannover-Braunschweig,Anderter Str. 38,30629,6
+Garbsen,Bremen-Hannover-Braunschweig,Bachstraße 19,30823,0
+Laatzen,Bremen-Hannover-Braunschweig,Mannheimer Straße 7,30880,0
+Ronnenberg,Bremen-Hannover-Braunschweig,Chemnitzer Str. 10,30952,0
+Nienburg Weser,Bremen-Hannover-Braunschweig,Verdener Str. 1A,31582,0
+Stolzenau,Bremen-Hannover-Braunschweig,Bürgermeister-Heuvemann-Str. 15,31592,0
+Stadthagen,Bremen-Hannover-Braunschweig,Enzer Straße 96,31655,0
+Stadthagen,Bremen-Hannover-Braunschweig,Hüttenstr 18,31655,0
+Hameln,Bremen-Hannover-Braunschweig,Thiewall 7,31785,0
+Braunschweig,Bremen-Hannover-Braunschweig,Lincolnstraße 65,38112,6
+Braunschweig,Bremen-Hannover-Braunschweig,Sophienstraße 27B,38118,6
+Salzgitter,Bremen-Hannover-Braunschweig,Berliner Str. 74,38226,0
+Salzgitter,Bremen-Hannover-Braunschweig,Gesellensteig 18,38229,0
+Salzgitter-Thiede,Bremen-Hannover-Braunschweig,Brotweg 14,38239,0
+Wuppertal-Elberfeld,Diğer / Kontrol,Platz d. Republik 48,42107,5
+Wuppertal-Elberfeld-Wes,Diğer / Kontrol,Düsseldorfstr. 5,42115,5
+Wuppertal,Diğer / Kontrol,Friedrich-Ebert-Straße 165A,42117,5
+Wuppertal-Oberbarmen,Diğer / Kontrol,Schöneberger Ufer 46,42277,5
+Neukirchen Vluyn,Diğer / Kontrol,Bonhoefferstr. 4,47506,0
+Leverkusen-Manfort,Diğer / Kontrol,Apenrader Str. 19,51377,0
+Leverkusen-Opladen,Diğer / Kontrol,An der Luisenburg 13,51379,0
+Bonn-Hardtberg,Diğer / Kontrol,Gaußstraße 1,53125,0
+Bonn-Bad Godesberg,Diğer / Kontrol,Koblenzer Str. 107,53177,0
+Eitorf,Diğer / Kontrol,Blumenweg 2,53783,0
+Dannstadt-Schauernheim,Diğer / Kontrol,Hauptstraße 174,67125,0
+Grünstadt,Diğer / Kontrol,Bitzenstraße 4,67269,0
+Kirchheimbolanden,Diğer / Kontrol,Mühlstraße 1,67292,0
+Eisenberg,Diğer / Kontrol,Am Gielbrunnen 2,67304,0
+Lustadt,Diğer / Kontrol,Untere Hauptstraße 40,67363,0
+Neustadt an der Weinstraße,Diğer / Kontrol,Europastraße 20,67433,0
+Edenkoben,Diğer / Kontrol,Mozartstr.52,67480,0
+Babenhausen,Diğer / Kontrol,Mörikestraße 6,87727,0
+Neustadt Bei Coburg,Diğer / Kontrol,Mühlenstr. 28,96465,0
+Reichshoffen,Fransa / Sınır dışı kontrol,7 cité de leusse,67110,0
