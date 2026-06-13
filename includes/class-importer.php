@@ -26,6 +26,7 @@ class Importer {
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_menu' ), 20 );
 		add_action( 'admin_post_tur_takvimi_import', array( $this, 'handle' ) );
+		add_action( 'admin_post_tur_takvimi_import_routes', array( $this, 'handle_routes' ) );
 	}
 
 	/**
@@ -63,6 +64,17 @@ class Importer {
 				<?php wp_nonce_field( 'tur_takvimi_import' ); ?>
 				<input type="file" name="csv" accept=".csv" required>
 				<?php submit_button( __( 'Import', 'tur-takvimi' ) ); ?>
+			</form>
+
+			<hr style="margin:2rem 0;">
+
+			<h2><?php esc_html_e( 'Import Routes', 'tur-takvimi' ); ?></h2>
+			<p><?php esc_html_e( 'Upload a CSV with header: route_id, route_group, vehicle, first_visit_date. Routes are matched by route_id (created or updated). Vehicle and date may be left empty.', 'tur-takvimi' ); ?></p>
+			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="tur_takvimi_import_routes">
+				<?php wp_nonce_field( 'tur_takvimi_import_routes' ); ?>
+				<input type="file" name="csv" accept=".csv" required>
+				<?php submit_button( __( 'Import Routes', 'tur-takvimi' ) ); ?>
 			</form>
 		</div>
 		<?php
@@ -136,6 +148,125 @@ class Importer {
 				$updated
 			)
 		);
+	}
+
+	/**
+	 * Handle the uploaded route CSV (route_id, route_group, vehicle,
+	 * first_visit_date). Routes are matched by route_id.
+	 */
+	public function handle_routes(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'tur-takvimi' ) );
+		}
+		check_admin_referer( 'tur_takvimi_import_routes' );
+
+		if ( empty( $_FILES['csv']['tmp_name'] ) || ! is_uploaded_file( $_FILES['csv']['tmp_name'] ) ) {
+			$this->redirect( __( 'No file uploaded.', 'tur-takvimi' ) );
+		}
+
+		$handle = fopen( $_FILES['csv']['tmp_name'], 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		if ( ! $handle ) {
+			$this->redirect( __( 'Could not read the file.', 'tur-takvimi' ) );
+		}
+
+		// Map header aliases (English + Turkish) to canonical keys.
+		$aliases = array(
+			'code'    => array( 'route_id', 'route id', 'rota id', 'rota_id', 'paket id', 'code', 'id' ),
+			'group'   => array( 'route_group', 'route group', 'rota grubu', 'rota_grubu', 'group', 'grup' ),
+			'vehicle' => array( 'vehicle', 'araç', 'arac', 'araba' ),
+			'date'    => array( 'first_visit_date', 'first visit date', 'ilk ziyaret tarihi', 'i̇lk ziyaret tarihi', 'anchor', 'anchor_date', 'date', 'tarih' ),
+		);
+		$raw_header = array_map(
+			static fn( $h ) => function_exists( 'mb_strtolower' ) ? mb_strtolower( trim( (string) $h ) ) : strtolower( trim( (string) $h ) ),
+			(array) fgetcsv( $handle )
+		);
+		$index = array();
+		foreach ( $aliases as $key => $names ) {
+			foreach ( $raw_header as $pos => $name ) {
+				if ( in_array( $name, $names, true ) ) {
+					$index[ $key ] = $pos;
+					break;
+				}
+			}
+		}
+
+		$created = 0;
+		$updated = 0;
+		while ( ( $row = fgetcsv( $handle ) ) !== false ) {
+			$get  = static fn( $key ) => isset( $index[ $key ] ) ? trim( (string) ( $row[ $index[ $key ] ] ?? '' ) ) : '';
+			$code = $get( 'code' );
+			if ( '' === $code ) {
+				continue;
+			}
+
+			$group   = $get( 'group' );
+			$existing = $this->find_route( $code );
+			$is_new   = ! $existing;
+
+			$route_id = $existing ?: wp_insert_post(
+				array(
+					'post_type'   => Post_Types::ROUTE,
+					'post_status' => 'publish',
+					'post_title'  => trim( implode( ' - ', array_filter( array( $code, $group ) ) ) ),
+				)
+			);
+			if ( is_wp_error( $route_id ) || ! $route_id ) {
+				continue;
+			}
+
+			update_post_meta( (int) $route_id, '_tt_route_code', $code );
+			if ( '' !== $get( 'vehicle' ) ) {
+				update_post_meta( (int) $route_id, '_tt_vehicle', $get( 'vehicle' ) );
+			}
+			if ( '' !== $get( 'date' ) ) {
+				update_post_meta( (int) $route_id, '_tt_anchor_date', $get( 'date' ) );
+			}
+			if ( '' !== $group ) {
+				wp_set_object_terms( (int) $route_id, $group, Post_Types::REGION, false );
+			}
+
+			if ( $is_new ) {
+				++$created;
+			} else {
+				++$updated;
+			}
+		}
+		fclose( $handle );
+
+		( new Schedule() )->regenerate_all();
+
+		$this->redirect(
+			sprintf(
+				/* translators: 1: created count, 2: updated count */
+				__( 'Route import complete: %1$d created, %2$d updated.', 'tur-takvimi' ),
+				$created,
+				$updated
+			)
+		);
+	}
+
+	/**
+	 * Find an existing route by its route code.
+	 *
+	 * @param string $code Route code (e.g. R07).
+	 * @return int|null
+	 */
+	private function find_route( string $code ): ?int {
+		$found = get_posts(
+			array(
+				'post_type'      => Post_Types::ROUTE,
+				'post_status'    => 'any',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
+					array(
+						'key'   => '_tt_route_code',
+						'value' => $code,
+					),
+				),
+			)
+		);
+		return $found ? (int) $found[0] : null;
 	}
 
 	/**

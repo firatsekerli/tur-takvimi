@@ -140,6 +140,9 @@ class Post_Types {
 			'_tt_anchor_date'     => 'string', // First occurrence, Y-m-d.
 			'_tt_plz_range'       => 'string', // Derived covered-postcodes summary.
 			'_tt_location_order'  => 'string', // JSON manual override of stop order.
+			'_tt_start_city'      => 'string', // Derived: first stop in visit order.
+			'_tt_end_city'        => 'string', // Derived: last stop in visit order.
+			'_tt_city_count'      => 'integer', // Derived: number of cities served.
 		);
 		foreach ( $route_meta as $key => $type ) {
 			register_post_meta(

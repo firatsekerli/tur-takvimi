@@ -132,9 +132,9 @@ class Schedule {
 	public function regenerate_route( int $route_id ): void {
 		global $wpdb;
 
-		// Keep the route's covered-postcodes summary in sync with its current
-		// members (membership can change from either the route or a location).
-		$this->refresh_postcode_summary( $route_id );
+		// Keep the route's derived summary (postcodes, start/end city, count) in
+		// sync with its members (membership can change from a route or location).
+		$this->refresh_route_summary( $route_id );
 
 		$anchor  = (string) get_post_meta( $route_id, '_tt_anchor_date', true );
 		$vehicle = (string) get_post_meta( $route_id, '_tt_vehicle', true );
@@ -421,19 +421,30 @@ class Schedule {
 	}
 
 	/**
-	 * Recompute the route's covered-postcodes summary (display only) from the
-	 * unique postcodes of its member locations.
+	 * Recompute a route's derived summary fields (display only): covered
+	 * postcodes, start/end city (first/last stop in visit order) and the
+	 * number of cities served.
 	 *
 	 * @param int $route_id Route post ID.
 	 */
-	private function refresh_postcode_summary( int $route_id ): void {
+	private function refresh_route_summary( int $route_id ): void {
+		$ordered = $this->ordered_location_ids( $route_id );
+
+		// Covered postcodes (unique, sorted).
 		$postcodes = array();
-		foreach ( $this->member_location_ids( $route_id ) as $loc_id ) {
+		foreach ( $ordered as $loc_id ) {
 			$list      = preg_split( '/[\s,]+/', (string) get_post_meta( $loc_id, '_tt_postcodes', true ), -1, PREG_SPLIT_NO_EMPTY );
 			$postcodes = array_merge( $postcodes, (array) $list );
 		}
 		$postcodes = array_values( array_unique( $postcodes ) );
 		sort( $postcodes );
 		update_post_meta( $route_id, '_tt_plz_range', implode( ', ', $postcodes ) );
+
+		// Start city = first stop, end city = last stop, count = city total.
+		$start = $ordered ? get_the_title( (int) $ordered[0] ) : '';
+		$end   = $ordered ? get_the_title( (int) end( $ordered ) ) : '';
+		update_post_meta( $route_id, '_tt_start_city', $start );
+		update_post_meta( $route_id, '_tt_end_city', $end );
+		update_post_meta( $route_id, '_tt_city_count', count( $ordered ) );
 	}
 }

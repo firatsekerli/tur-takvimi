@@ -128,6 +128,26 @@ class Route_Meta {
 			</p>
 		</div>
 		<div class="tt-field">
+			<label><?php esc_html_e( 'Route summary', 'tur-takvimi' ); ?></label>
+			<table class="tt-route-summary">
+				<tbody>
+					<tr>
+						<th><?php esc_html_e( 'Start city', 'tur-takvimi' ); ?></th>
+						<td><?php echo $ordered ? esc_html( get_the_title( (int) $ordered[0] ) ) : '—'; ?></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'End city', 'tur-takvimi' ); ?></th>
+						<td><?php echo $ordered ? esc_html( get_the_title( (int) end( $ordered ) ) ) : '—'; ?></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Number of cities', 'tur-takvimi' ); ?></th>
+						<td><?php echo (int) count( $ordered ); ?></td>
+					</tr>
+				</tbody>
+			</table>
+			<p class="description"><?php esc_html_e( 'Derived from the assigned cities in visit order (first = start, last = end).', 'tur-takvimi' ); ?></p>
+		</div>
+		<div class="tt-field">
 			<label><?php esc_html_e( 'Locations served (in visit order)', 'tur-takvimi' ); ?></label>
 			<?php if ( empty( $ordered ) ) : ?>
 				<p class="description">

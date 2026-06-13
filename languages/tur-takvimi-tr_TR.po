@@ -20,19 +20,19 @@ msgstr "Tur Takvimi — Ayarlar"
 
 #. Post type & taxonomy labels
 msgid "Locations"
-msgstr "Konumlar"
+msgstr "Şehirler"
 
 msgid "Location"
-msgstr "Konum"
+msgstr "Şehir"
 
 msgid "Add Location"
-msgstr "Konum Ekle"
+msgstr "Şehir Ekle"
 
 msgid "Edit Location"
-msgstr "Konumu Düzenle"
+msgstr "Şehri Düzenle"
 
 msgid "Search Locations"
-msgstr "Konumlarda Ara"
+msgstr "Şehirlerde Ara"
 
 msgid "Routes"
 msgstr "Rotalar"
@@ -63,7 +63,7 @@ msgid "Primary color"
 msgstr "Ana renk"
 
 msgid "Location URL base"
-msgstr "Konum URL tabanı"
+msgstr "Şehir URL tabanı"
 
 msgid "Resave Permalinks after changing this."
 msgstr "Bunu değiştirdikten sonra Kalıcı Bağlantıları yeniden kaydedin."
@@ -85,7 +85,7 @@ msgstr "Sipariş son tarihi (ziyaretten kaç gün önce)"
 
 #. Location meta box
 msgid "Location details"
-msgstr "Konum bilgileri"
+msgstr "Şehir bilgileri"
 
 msgid "Postcodes covered"
 msgstr "Kapsanan posta kodları"
@@ -118,7 +118,7 @@ msgid "e.g. Frankenstr. 290 Essen"
 msgstr "örn. Frankenstr. 290 Essen"
 
 msgid "Delivery stops"
-msgstr "Teslimat durakları"
+msgstr "Teslimat adresleri"
 
 msgid "Street address"
 msgstr "Sokak adresi"
@@ -139,7 +139,7 @@ msgid "Used for stops that have no frequency set."
 msgstr "Sıklığı belirlenmemiş duraklar için kullanılır."
 
 msgid "Each stop recurs from this date at its own frequency (set per stop inside the location)."
-msgstr "Her durak bu tarihten itibaren kendi sıklığında tekrarlanır (sıklık, konum içinde durak bazında ayarlanır)."
+msgstr "Her durak bu tarihten itibaren kendi sıklığında tekrarlanır (sıklık, şehir içinde durak bazında ayarlanır)."
 
 msgid "Remove"
 msgstr "Kaldır"
@@ -197,19 +197,19 @@ msgid "Covered postcodes"
 msgstr "Kapsanan posta kodları"
 
 msgid "Computed automatically from the assigned locations' addresses when you save."
-msgstr "Kaydettiğinizde, atanan konumların adreslerinden otomatik olarak hesaplanır."
+msgstr "Kaydettiğinizde, atanan şehirlerin adreslerinden otomatik olarak hesaplanır."
 
 msgid "Routes this location belongs to"
-msgstr "Bu konumun ait olduğu rotalar"
+msgstr "Bu şehrin ait olduğu rotalar"
 
 msgid "No routes yet. Create a route first, then assign this location to it."
-msgstr "Henüz rota yok. Önce bir rota oluşturun, ardından bu konumu ona atayın."
+msgstr "Henüz rota yok. Önce bir rota oluşturun, ardından bu şehri ona atayın."
 
 msgid "Pick one or more routes. A location can be served by several routes."
-msgstr "Bir veya daha fazla rota seçin. Bir konum birden fazla rotayla hizmet alabilir."
+msgstr "Bir veya daha fazla rota seçin. Bir şehir birden fazla rotayla hizmet alabilir."
 
 msgid "No locations assigned yet. Open a location and tick this route under \"Routes this location belongs to\"."
-msgstr "Henüz atanmış konum yok. Bir konumu açıp \"Bu konumun ait olduğu rotalar\" altında bu rotayı işaretleyin."
+msgstr "Henüz atanmış şehir yok. Bir şehri açıp \"Bu şehrin ait olduğu rotalar\" altında bu rotayı işaretleyin."
 
 msgid "Drag to set the visit order. By default stops are sorted by postcode; dragging overrides that for this route."
 msgstr "Ziyaret sırasını belirlemek için sürükleyin. Duraklar varsayılan olarak posta koduna göre sıralanır; sürüklemek bu rota için sıralamayı geçersiz kılar."
@@ -218,17 +218,17 @@ msgid "Optional. Postcodes from the addresses below are added automatically; add
 msgstr "İsteğe bağlı. Aşağıdaki adreslerin posta kodları otomatik eklenir; yalnızca sokak adresi olmayan bir durak için buraya ek posta kodu girin."
 
 msgid "Locations served (in visit order)"
-msgstr "Hizmet verilen konumlar (ziyaret sırasına göre)"
+msgstr "Hizmet verilen şehirler (ziyaret sırasına göre)"
 
 msgid "No locations yet. Create or import locations first."
-msgstr "Henüz konum yok. Önce konum oluşturun veya içe aktarın."
+msgstr "Henüz şehir yok. Önce şehir oluşturun veya içe aktarın."
 
 msgid "Order follows the location list; reorder support comes in a later phase."
-msgstr "Sıra, konum listesini izler; yeniden sıralama desteği ileriki bir aşamada gelecek."
+msgstr "Sıra, şehir listesini izler; yeniden sıralama desteği ileriki bir aşamada gelecek."
 
 #. Importer
 msgid "Import Locations"
-msgstr "Konumları İçe Aktar"
+msgstr "Şehirleri İçe Aktar"
 
 msgid "Import"
 msgstr "İçe Aktar"
@@ -288,3 +288,27 @@ msgstr "Bu posta kodu için durak bulunamadı."
 
 msgid "No stop found for this postcode. Please check and try again."
 msgstr "Bu posta kodu için durak bulunamadı. Lütfen kontrol edip tekrar deneyin."
+
+msgid "Import Routes"
+msgstr "Rotaları İçe Aktar"
+
+msgid "Upload a CSV with header: route_id, route_group, vehicle, first_visit_date. Routes are matched by route_id (created or updated). Vehicle and date may be left empty."
+msgstr "route_id, route_group, vehicle, first_visit_date başlıklarına sahip bir CSV yükleyin. Rotalar route_id ile eşleştirilir (oluşturulur veya güncellenir). Araç ve tarih boş bırakılabilir."
+
+msgid "Route import complete: %1$d created, %2$d updated."
+msgstr "Rota içe aktarımı tamamlandı: %1$d oluşturuldu, %2$d güncellendi."
+
+msgid "Route summary"
+msgstr "Rota özeti"
+
+msgid "Start city"
+msgstr "Başlangıç şehri"
+
+msgid "End city"
+msgstr "Bitiş şehri"
+
+msgid "Number of cities"
+msgstr "Şehir sayısı"
+
+msgid "Derived from the assigned cities in visit order (first = start, last = end)."
+msgstr "Atanan şehirlerden ziyaret sırasına göre türetilir (ilk = başlangıç, son = bitiş)."

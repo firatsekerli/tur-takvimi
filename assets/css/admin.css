@@ -177,3 +177,23 @@
 	margin: 0 0 0.35rem;
 	height: 2.4rem;
 }
+
+/* Route editor: derived summary table. */
+.tt-route-summary {
+	border-collapse: collapse;
+	margin: 0.25rem 0 0;
+}
+
+.tt-route-summary th,
+.tt-route-summary td {
+	text-align: left;
+	padding: 0.25rem 1rem 0.25rem 0;
+	font-weight: 400;
+	vertical-align: top;
+}
+
+.tt-route-summary th {
+	color: #646970;
+	font-weight: 600;
+	white-space: nowrap;
+}
