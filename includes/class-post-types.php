@@ -120,13 +120,26 @@ class Post_Types {
 			);
 		}
 
+		// A location may belong to several routes (stored as repeated meta).
+		register_post_meta(
+			self::LOCATION,
+			'_tt_route_id',
+			array(
+				'type'          => 'integer',
+				'single'        => false,
+				'show_in_rest'  => true,
+				'auth_callback' => static function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
 		$route_meta = array(
-			'_tt_route_code'  => 'string',
-			'_tt_vehicle'     => 'string',
-			'_tt_anchor_date' => 'string', // First occurrence, Y-m-d.
-			'_tt_weekday'         => 'integer', // 0 (Sun) .. 6 (Sat).
-			'_tt_plz_range'       => 'string',
-			'_tt_location_ids'    => 'string',  // JSON ordered array of location post IDs.
+			'_tt_route_code'      => 'string',
+			'_tt_vehicle'         => 'string',
+			'_tt_anchor_date'     => 'string', // First occurrence, Y-m-d.
+			'_tt_plz_range'       => 'string', // Derived covered-postcodes summary.
+			'_tt_location_order'  => 'string', // JSON manual override of stop order.
 		);
 		foreach ( $route_meta as $key => $type ) {
 			register_post_meta(

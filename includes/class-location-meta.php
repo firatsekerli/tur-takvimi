@@ -123,6 +123,55 @@ class Location_Meta {
 			<button type="button" class="button" id="tt-add-address"><?php esc_html_e( 'Add a stop manually', 'tur-takvimi' ); ?></button>
 			<input type="hidden" id="tt_addresses_json" name="tt_addresses_json" value="<?php echo esc_attr( wp_json_encode( array_values( $addresses ) ) ); ?>">
 		</div>
+
+		<?php $this->render_routes_field( $post ); ?>
+		<?php
+	}
+
+	/**
+	 * Route assignment checkboxes (a location may belong to several routes).
+	 *
+	 * @param \WP_Post $post Current location post.
+	 */
+	private function render_routes_field( $post ): void {
+		$routes = get_posts(
+			array(
+				'post_type'      => Post_Types::ROUTE,
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+
+		$assigned = array_map( 'intval', (array) get_post_meta( $post->ID, '_tt_route_id', false ) );
+		?>
+		<div class="tt-field tt-routes">
+			<label><?php esc_html_e( 'Routes this location belongs to', 'tur-takvimi' ); ?></label>
+			<?php if ( empty( $routes ) ) : ?>
+				<p class="description">
+					<?php esc_html_e( 'No routes yet. Create a route first, then assign this location to it.', 'tur-takvimi' ); ?>
+				</p>
+			<?php else : ?>
+				<p class="description">
+					<?php esc_html_e( 'Pick one or more routes. A location can be served by several routes.', 'tur-takvimi' ); ?>
+				</p>
+				<ul class="tt-routes__list">
+					<?php foreach ( $routes as $route ) : ?>
+						<?php
+						$code  = (string) get_post_meta( $route->ID, '_tt_route_code', true );
+						$label = '' !== $code ? $code . ' — ' . $route->post_title : $route->post_title;
+						?>
+						<li>
+							<label>
+								<input type="checkbox" name="tt_route_ids[]" value="<?php echo esc_attr( $route->ID ); ?>" <?php checked( in_array( (int) $route->ID, $assigned, true ) ); ?>>
+								<?php echo esc_html( $label ); ?>
+							</label>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
 		<?php
 	}
 
@@ -193,6 +242,25 @@ class Location_Meta {
 		if ( $geo_count > 0 ) {
 			update_post_meta( $post_id, '_tt_lat', round( $lat_sum / $geo_count, 6 ) );
 			update_post_meta( $post_id, '_tt_lng', round( $lng_sum / $geo_count, 6 ) );
+		}
+
+		$this->save_routes( $post_id );
+	}
+
+	/**
+	 * Replace the location's route assignments (stored as repeated meta so each
+	 * route is independently queryable). The Schedule listener (priority 20)
+	 * rebuilds the affected routes after this runs.
+	 *
+	 * @param int $post_id Location post ID.
+	 */
+	private function save_routes( $post_id ): void {
+		$selected = isset( $_POST['tt_route_ids'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['tt_route_ids'] ) ) : array();
+		$selected = array_values( array_unique( array_filter( $selected ) ) );
+
+		delete_post_meta( $post_id, '_tt_route_id' );
+		foreach ( $selected as $route_id ) {
+			add_post_meta( $post_id, '_tt_route_id', $route_id );
 		}
 	}
 }

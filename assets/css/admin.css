@@ -105,3 +105,75 @@
 .tt-address-row__remove:hover {
 	color: #8a1f1f;
 }
+
+/* Shared field layout (route + location editors). */
+.tt-field {
+	margin: 0 0 1rem;
+}
+
+.tt-field > label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.25rem;
+}
+
+/* Location editor: route assignment checkboxes. */
+.tt-routes__list {
+	margin: 0.25rem 0 0;
+	max-height: 200px;
+	overflow: auto;
+	border: 1px solid #ddd;
+	padding: 0.5rem 0.75rem;
+	border-radius: 6px;
+}
+
+.tt-routes__list li {
+	margin: 0 0 0.25rem;
+}
+
+.tt-routes__list label {
+	font-weight: 400;
+	display: block;
+}
+
+/* Route editor: drag-to-reorder visit order list. */
+.tt-route-order {
+	margin: 0.25rem 0 0.5rem;
+	padding: 0;
+	list-style: none;
+	counter-reset: tt-stop;
+}
+
+.tt-route-order__item {
+	counter-increment: tt-stop;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.4rem 0.6rem;
+	margin: 0 0 0.35rem;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+}
+
+.tt-route-order__item::before {
+	content: counter(tt-stop);
+	flex: 0 0 1.5rem;
+	text-align: center;
+	font-weight: 600;
+	color: #646970;
+}
+
+.tt-route-order__handle {
+	cursor: grab;
+	color: #8c8f94;
+	user-select: none;
+}
+
+.tt-route-order__placeholder {
+	border: 1px dashed #2271b1;
+	border-radius: 6px;
+	background: #f0f6fc;
+	margin: 0 0 0.35rem;
+	height: 2.4rem;
+}

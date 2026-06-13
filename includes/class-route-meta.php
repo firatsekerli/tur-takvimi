@@ -23,6 +23,24 @@ class Route_Meta {
 	public function register(): void {
 		add_action( 'add_meta_boxes', array( $this, 'add_box' ) );
 		add_action( 'save_post_' . Post_Types::ROUTE, array( $this, 'save' ), 10, 1 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+	}
+
+	/**
+	 * Load the drag-to-reorder script on the route editor only.
+	 *
+	 * @param string $hook Current admin page.
+	 */
+	public function enqueue( $hook ): void {
+		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+			return;
+		}
+		$screen = get_current_screen();
+		if ( ! $screen || Post_Types::ROUTE !== $screen->post_type ) {
+			return;
+		}
+		wp_enqueue_style( 'tur-takvimi-admin', TURTAKVIMI_URL . 'assets/css/admin.css', array(), Plugin::asset_ver( 'assets/css/admin.css' ) );
+		wp_enqueue_script( 'tur-takvimi-admin-route', TURTAKVIMI_URL . 'assets/js/admin-route.js', array( 'jquery', 'jquery-ui-sortable' ), Plugin::asset_ver( 'assets/js/admin-route.js' ), true );
 	}
 
 	/**
@@ -67,25 +85,11 @@ class Route_Meta {
 			)
 		);
 		$plz       = (string) get_post_meta( $post->ID, '_tt_plz_range', true );
-		$selected  = json_decode( (string) get_post_meta( $post->ID, '_tt_location_ids', true ), true );
-		$selected  = is_array( $selected ) ? array_map( 'intval', $selected ) : array();
 
-		$locations = get_posts(
-			array(
-				'post_type'      => Post_Types::LOCATION,
-				'post_status'    => 'publish',
-				'posts_per_page' => -1,
-				'orderby'        => 'title',
-				'order'          => 'ASC',
-			)
-		);
+		// Membership lives on the locations (many-to-many); here we only show
+		// the resulting stops in visit order, which the admin can drag.
+		$ordered = ( new Schedule() )->ordered_location_ids( $post->ID );
 		?>
-		<style>
-			.tt-field { margin: 0 0 1rem; }
-			.tt-field label { display:block; font-weight:600; margin-bottom:.25rem; }
-			.tt-locations { max-height: 240px; overflow:auto; border:1px solid #ddd; padding:.5rem; border-radius:6px; }
-			.tt-locations label { font-weight:400; display:block; }
-		</style>
 		<div class="tt-field">
 			<label for="tt_route_code"><?php esc_html_e( 'Route ID', 'tur-takvimi' ); ?></label>
 			<input type="text" id="tt_route_code" name="tt_route_code" value="<?php echo esc_attr( $code ); ?>" placeholder="<?php esc_attr_e( 'e.g. R07', 'tur-takvimi' ); ?>">
@@ -119,25 +123,28 @@ class Route_Meta {
 				<?php
 				echo $plz
 					? esc_html( $plz )
-					: esc_html__( 'Computed automatically from the selected locations\' addresses when you save.', 'tur-takvimi' );
+					: esc_html__( 'Computed automatically from the assigned locations\' addresses when you save.', 'tur-takvimi' );
 				?>
 			</p>
 		</div>
 		<div class="tt-field">
 			<label><?php esc_html_e( 'Locations served (in visit order)', 'tur-takvimi' ); ?></label>
-			<div class="tt-locations">
-				<?php if ( empty( $locations ) ) : ?>
-					<em><?php esc_html_e( 'No locations yet. Create or import locations first.', 'tur-takvimi' ); ?></em>
-				<?php else : ?>
-					<?php foreach ( $locations as $loc ) : ?>
-						<label>
-							<input type="checkbox" name="tt_location_ids[]" value="<?php echo esc_attr( $loc->ID ); ?>" <?php checked( in_array( $loc->ID, $selected, true ) ); ?>>
-							<?php echo esc_html( $loc->post_title ); ?>
-						</label>
+			<?php if ( empty( $ordered ) ) : ?>
+				<p class="description">
+					<?php esc_html_e( 'No locations assigned yet. Open a location and tick this route under "Routes this location belongs to".', 'tur-takvimi' ); ?>
+				</p>
+			<?php else : ?>
+				<ol id="tt-route-order" class="tt-route-order">
+					<?php foreach ( $ordered as $loc_id ) : ?>
+						<li class="tt-route-order__item" data-id="<?php echo esc_attr( $loc_id ); ?>">
+							<span class="tt-route-order__handle" aria-hidden="true">⠿</span>
+							<span class="tt-route-order__title"><?php echo esc_html( get_the_title( $loc_id ) ); ?></span>
+						</li>
 					<?php endforeach; ?>
-				<?php endif; ?>
-			</div>
-			<p class="description"><?php esc_html_e( 'Order follows the location list; reorder support comes in a later phase.', 'tur-takvimi' ); ?></p>
+				</ol>
+				<input type="hidden" id="tt_location_order" name="tt_location_order" value="<?php echo esc_attr( wp_json_encode( $ordered ) ); ?>">
+				<p class="description"><?php esc_html_e( 'Drag to set the visit order. By default stops are sorted by postcode; dragging overrides that for this route.', 'tur-takvimi' ); ?></p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -184,22 +191,12 @@ class Route_Meta {
 		}
 		update_post_meta( $post_id, '_tt_anchor_date', sanitize_text_field( wp_unslash( $_POST['tt_anchor'] ?? '' ) ) );
 
-		$ids = isset( $_POST['tt_location_ids'] ) && is_array( $_POST['tt_location_ids'] )
-			? array_values( array_map( 'absint', wp_unslash( $_POST['tt_location_ids'] ) ) )
-			: array();
-		update_post_meta( $post_id, '_tt_location_ids', wp_json_encode( $ids ) );
+		// Manual visit-order override (membership itself lives on the locations).
+		$order = json_decode( (string) wp_unslash( $_POST['tt_location_order'] ?? '[]' ), true );
+		$order = is_array( $order ) ? array_values( array_map( 'absint', $order ) ) : array();
+		update_post_meta( $post_id, '_tt_location_order', wp_json_encode( $order ) );
 
-		// Derive the covered-postcodes summary from the member locations'
-		// actual postcodes (display only — matching uses the per-location list).
-		$postcodes = array();
-		foreach ( $ids as $loc_id ) {
-			$list      = preg_split( '/[\s,]+/', (string) get_post_meta( $loc_id, '_tt_postcodes', true ), -1, PREG_SPLIT_NO_EMPTY );
-			$postcodes = array_merge( $postcodes, (array) $list );
-		}
-		$postcodes = array_values( array_unique( $postcodes ) );
-		sort( $postcodes );
-		update_post_meta( $post_id, '_tt_plz_range', implode( ', ', $postcodes ) );
-
-		// Recurrence is re-materialized by Schedule on the save_post hook.
+		// Recurrence and the covered-postcodes summary are refreshed by Schedule
+		// on the save_post hook (priority 20).
 	}
 }

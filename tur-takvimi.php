@@ -16,7 +16,7 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'TURTAKVIMI_VERSION', '0.1.0' );
-define( 'TURTAKVIMI_DB_VERSION', '2' );
+define( 'TURTAKVIMI_DB_VERSION', '3' );
 define( 'TURTAKVIMI_FILE', __FILE__ );
 define( 'TURTAKVIMI_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TURTAKVIMI_URL', plugin_dir_url( __FILE__ ) );

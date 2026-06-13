@@ -77,6 +77,18 @@ class Schedule {
 		if ( wp_is_post_revision( $location_id ) || wp_is_post_autosave( $location_id ) ) {
 			return;
 		}
+
+		// Drop this location's future rows everywhere first, so routes it was
+		// just removed from don't keep stale occurrences, then rebuild current.
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$this->table()} WHERE location_id = %d AND tour_date >= %s", // phpcs:ignore WordPress.DB.PreparedSQL
+				(int) $location_id,
+				current_time( 'Y-m-d' )
+			)
+		);
+
 		foreach ( $this->routes_for_location( (int) $location_id ) as $route_id ) {
 			$this->regenerate_route( $route_id );
 		}
@@ -119,6 +131,10 @@ class Schedule {
 	 */
 	public function regenerate_route( int $route_id ): void {
 		global $wpdb;
+
+		// Keep the route's covered-postcodes summary in sync with its current
+		// members (membership can change from either the route or a location).
+		$this->refresh_postcode_summary( $route_id );
 
 		$anchor  = (string) get_post_meta( $route_id, '_tt_anchor_date', true );
 		$vehicle = (string) get_post_meta( $route_id, '_tt_vehicle', true );
@@ -297,38 +313,127 @@ class Schedule {
 	}
 
 	/**
-	 * Route IDs that include a given location.
+	 * Route IDs a location belongs to (many-to-many; stored on the location).
 	 *
 	 * @param int $location_id Location post ID.
 	 * @return int[]
 	 */
 	public function routes_for_location( int $location_id ): array {
-		$routes = get_posts(
-			array(
-				'post_type'      => Post_Types::ROUTE,
-				'post_status'    => 'publish',
-				'posts_per_page' => -1,
-				'fields'         => 'ids',
-			)
-		);
-
-		$matches = array();
-		foreach ( $routes as $route_id ) {
-			if ( in_array( $location_id, $this->location_ids( (int) $route_id ), true ) ) {
-				$matches[] = (int) $route_id;
-			}
-		}
-		return $matches;
+		$ids = get_post_meta( $location_id, '_tt_route_id', false );
+		return array_values( array_map( 'intval', (array) $ids ) );
 	}
 
 	/**
-	 * Ordered location IDs for a route.
+	 * Published locations assigned to a route (unordered).
+	 *
+	 * @param int $route_id Route post ID.
+	 * @return int[]
+	 */
+	public function member_location_ids( int $route_id ): array {
+		$ids = get_posts(
+			array(
+				'post_type'      => Post_Types::LOCATION,
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
+					array(
+						'key'   => '_tt_route_id',
+						'value' => $route_id,
+					),
+				),
+			)
+		);
+		return array_map( 'intval', $ids );
+	}
+
+	/**
+	 * Member locations of a route in visit order: manual override first
+	 * (where set), then any remaining sorted by ascending postcode.
+	 *
+	 * @param int $route_id Route post ID.
+	 * @return int[]
+	 */
+	public function ordered_location_ids( int $route_id ): array {
+		$members = $this->member_location_ids( $route_id );
+		if ( empty( $members ) ) {
+			return array();
+		}
+
+		$order   = json_decode( (string) get_post_meta( $route_id, '_tt_location_order', true ), true );
+		$order   = is_array( $order ) ? array_map( 'intval', $order ) : array();
+		$ordered = array_values( array_intersect( $order, $members ) );
+
+		$remaining = array_values( array_diff( $members, $ordered ) );
+		$remaining = $this->sort_by_postcode( $remaining );
+
+		return array_merge( $ordered, $remaining );
+	}
+
+	/**
+	 * Sort location IDs by their lowest postcode (ascending).
+	 *
+	 * @param int[] $ids Location IDs.
+	 * @return int[]
+	 */
+	private function sort_by_postcode( array $ids ): array {
+		$pairs = array();
+		foreach ( $ids as $id ) {
+			$pairs[] = array(
+				'id' => (int) $id,
+				'pc' => $this->min_postcode( (int) $id ),
+			);
+		}
+		usort(
+			$pairs,
+			static function ( $a, $b ) {
+				return $a['pc'] <=> $b['pc'];
+			}
+		);
+		return array_map( static fn( $p ) => $p['id'], $pairs );
+	}
+
+	/**
+	 * Lowest numeric postcode among a location's covered postcodes.
+	 *
+	 * @param int $location_id Location ID.
+	 * @return int PHP_INT_MAX when none.
+	 */
+	private function min_postcode( int $location_id ): int {
+		$raw = (string) get_post_meta( $location_id, '_tt_postcodes', true );
+		$min = PHP_INT_MAX;
+		foreach ( preg_split( '/[\s,]+/', $raw, -1, PREG_SPLIT_NO_EMPTY ) as $token ) {
+			if ( preg_match( '/\d+/', $token, $m ) ) {
+				$min = min( $min, (int) $m[0] );
+			}
+		}
+		return $min;
+	}
+
+	/**
+	 * Ordered location IDs for a route (alias used during regeneration).
 	 *
 	 * @param int $route_id Route post ID.
 	 * @return int[]
 	 */
 	private function location_ids( int $route_id ): array {
-		$ids = json_decode( (string) get_post_meta( $route_id, '_tt_location_ids', true ), true );
-		return is_array( $ids ) ? array_map( 'intval', $ids ) : array();
+		return $this->ordered_location_ids( $route_id );
+	}
+
+	/**
+	 * Recompute the route's covered-postcodes summary (display only) from the
+	 * unique postcodes of its member locations.
+	 *
+	 * @param int $route_id Route post ID.
+	 */
+	private function refresh_postcode_summary( int $route_id ): void {
+		$postcodes = array();
+		foreach ( $this->member_location_ids( $route_id ) as $loc_id ) {
+			$list      = preg_split( '/[\s,]+/', (string) get_post_meta( $loc_id, '_tt_postcodes', true ), -1, PREG_SPLIT_NO_EMPTY );
+			$postcodes = array_merge( $postcodes, (array) $list );
+		}
+		$postcodes = array_values( array_unique( $postcodes ) );
+		sort( $postcodes );
+		update_post_meta( $route_id, '_tt_plz_range', implode( ', ', $postcodes ) );
 	}
 }
