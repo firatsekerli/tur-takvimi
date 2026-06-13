@@ -49,20 +49,25 @@ class Geocoder {
 			return array();
 		}
 
-		$url = add_query_arg(
-			array(
-				'q'     => rawurlencode( $query ),
-				'limit' => max( 1, min( 10, $limit ) ),
-				'lang'  => 'de',
-			),
-			self::endpoint()
-		);
-
 		self::$last_debug = array(
 			'status' => 0,
 			'error'  => '',
 		);
 
+		if ( 'locationiq' === (string) Settings::get( 'geocoder_provider', 'photon' ) ) {
+			return self::search_locationiq( $query, $limit, $country );
+		}
+		return self::search_photon( $query, $limit, $country );
+	}
+
+	/**
+	 * GET a URL, recording the upstream status/error and retrying once on 429.
+	 *
+	 * @param string $url        Request URL.
+	 * @param bool   $allow_retry Retry once after a short pause on HTTP 429.
+	 * @return string|null Response body on success, null on error.
+	 */
+	private static function remote_get( string $url, bool $allow_retry = true ): ?string {
 		$response = wp_remote_get(
 			$url,
 			array(
@@ -73,18 +78,47 @@ class Geocoder {
 		);
 		if ( is_wp_error( $response ) ) {
 			self::$last_debug['error'] = $response->get_error_message();
-			return array();
+			return null;
 		}
 
 		$status                     = (int) wp_remote_retrieve_response_code( $response );
 		self::$last_debug['status'] = $status;
+		if ( 429 === $status && $allow_retry ) {
+			sleep( 1 );
+			return self::remote_get( $url, false );
+		}
 		if ( $status < 200 || $status >= 300 ) {
 			self::$last_debug['error'] = 'HTTP ' . $status . ': ' . substr( (string) wp_remote_retrieve_body( $response ), 0, 200 );
+			return null;
+		}
+		return (string) wp_remote_retrieve_body( $response );
+	}
+
+	/**
+	 * Photon (Komoot) search — GeoJSON FeatureCollection.
+	 *
+	 * @param string $query   Free-text address.
+	 * @param int    $limit   Max results.
+	 * @param string $country ISO-2 filter.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private static function search_photon( string $query, int $limit, string $country ): array {
+		$url = add_query_arg(
+			array(
+				'q'     => rawurlencode( $query ),
+				'limit' => max( 1, min( 10, $limit ) ),
+				'lang'  => 'de',
+			),
+			self::endpoint()
+		);
+
+		$body = self::remote_get( $url );
+		if ( null === $body ) {
 			return array();
 		}
 
-		$body     = json_decode( wp_remote_retrieve_body( $response ), true );
-		$features = $body['features'] ?? array();
+		$data     = json_decode( $body, true );
+		$features = $data['features'] ?? array();
 		$country  = strtoupper( $country );
 
 		$out = array();
@@ -99,17 +133,106 @@ class Geocoder {
 			}
 
 			$street = trim( ( $p['street'] ?? $p['name'] ?? '' ) . ' ' . ( $p['housenumber'] ?? '' ) );
-			$city   = (string) ( $p['city'] ?? $p['town'] ?? $p['village'] ?? $p['name'] ?? '' );
 			$out[]  = array(
 				'label'    => self::label( $p ),
 				'street'   => $street,
-				'city'     => $city,
+				'city'     => (string) ( $p['city'] ?? $p['town'] ?? $p['village'] ?? $p['name'] ?? '' ),
 				'postcode' => (string) ( $p['postcode'] ?? '' ),
 				'lat'      => (float) $coords[1],
 				'lng'      => (float) $coords[0],
 			);
 		}
 		return $out;
+	}
+
+	/**
+	 * LocationIQ search (OSM/Nominatim data) — keyed, bulk-friendly.
+	 *
+	 * @param string $query   Free-text address.
+	 * @param int    $limit   Max results.
+	 * @param string $country ISO-2 filter.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private static function search_locationiq( string $query, int $limit, string $country ): array {
+		$key = trim( (string) Settings::get( 'geocoder_api_key', '' ) );
+		if ( '' === $key ) {
+			self::$last_debug['error'] = 'LocationIQ API key is not set (Tur Takvimi → Settings).';
+			return array();
+		}
+
+		$region = (string) Settings::get( 'geocoder_region', 'us1' );
+		$base   = apply_filters( 'tur_takvimi_locationiq_url', 'https://' . $region . '.locationiq.com/v1/search' );
+		$args   = array(
+			'key'             => $key,
+			'q'               => $query,
+			'format'          => 'json',
+			'addressdetails'  => 1,
+			'normalizecity'   => 1,
+			'limit'           => max( 1, min( 10, $limit ) ),
+			'accept-language' => 'de',
+		);
+		$country = strtoupper( $country );
+		if ( '' !== $country ) {
+			$args['countrycodes'] = strtolower( $country );
+		}
+		$url = add_query_arg( array_map( 'rawurlencode', $args ), $base );
+
+		$body = self::remote_get( $url );
+		if ( null === $body ) {
+			return array();
+		}
+
+		$rows = json_decode( $body, true );
+		if ( ! is_array( $rows ) ) {
+			return array();
+		}
+
+		$out = array();
+		foreach ( $rows as $r ) {
+			if ( ! isset( $r['lat'], $r['lon'] ) ) {
+				continue;
+			}
+			$addr = isset( $r['address'] ) && is_array( $r['address'] ) ? $r['address'] : array();
+			if ( '' !== $country && strtoupper( (string) ( $addr['country_code'] ?? '' ) ) !== $country ) {
+				continue;
+			}
+
+			$street = trim( (string) ( $addr['road'] ?? '' ) . ' ' . (string) ( $addr['house_number'] ?? '' ) );
+			if ( '' === $street ) {
+				$parts  = explode( ',', (string) ( $r['display_name'] ?? '' ) );
+				$street = trim( (string) ( $parts[0] ?? '' ) );
+			}
+			$out[] = array(
+				'label'    => (string) ( $r['display_name'] ?? $street ),
+				'street'   => $street,
+				'city'     => (string) ( $addr['city'] ?? $addr['town'] ?? $addr['village'] ?? $addr['municipality'] ?? '' ),
+				'postcode' => (string) ( $addr['postcode'] ?? '' ),
+				'lat'      => (float) $r['lat'],
+				'lng'      => (float) $r['lon'],
+			);
+		}
+		return $out;
+	}
+
+	/**
+	 * Minimum pause (microseconds) between bulk lookups for the active provider
+	 * — LocationIQ's free tier allows ~2 requests/second.
+	 *
+	 * @return int
+	 */
+	public static function min_interval_us(): int {
+		return 'locationiq' === (string) Settings::get( 'geocoder_provider', 'photon' ) ? 600000 : 150000;
+	}
+
+	/**
+	 * True when the last lookup failed for a transient reason (connection
+	 * refused, rate limit, server error) rather than a genuine no-match.
+	 *
+	 * @return bool
+	 */
+	public static function last_was_transient_error(): bool {
+		$status = (int) self::$last_debug['status'];
+		return 0 === $status || 429 === $status || $status >= 500;
 	}
 
 	/**

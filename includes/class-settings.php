@@ -34,6 +34,9 @@ class Settings {
 			'default_frequency_weeks' => 4,
 			'discount_percent'       => 10,
 			'order_cutoff_days'      => 2,
+			'geocoder_provider'      => 'photon', // 'photon' (free) or 'locationiq' (keyed).
+			'geocoder_api_key'       => '',
+			'geocoder_region'        => 'us1',    // LocationIQ region: us1 or eu1.
 		);
 	}
 
@@ -97,6 +100,12 @@ class Settings {
 		$out['default_frequency_weeks'] = max( 1, min( 52, absint( $in['default_frequency_weeks'] ?? 4 ) ) );
 		$out['discount_percent']   = max( 0, min( 100, absint( $in['discount_percent'] ?? 10 ) ) );
 		$out['order_cutoff_days']  = max( 0, absint( $in['order_cutoff_days'] ?? 2 ) );
+
+		$provider                  = sanitize_key( $in['geocoder_provider'] ?? 'photon' );
+		$out['geocoder_provider']  = in_array( $provider, array( 'photon', 'locationiq' ), true ) ? $provider : 'photon';
+		$out['geocoder_api_key']   = sanitize_text_field( $in['geocoder_api_key'] ?? '' );
+		$region                    = sanitize_key( $in['geocoder_region'] ?? 'us1' );
+		$out['geocoder_region']    = in_array( $region, array( 'us1', 'eu1' ), true ) ? $region : 'us1';
 
 		$days = isset( $in['working_days'] ) && is_array( $in['working_days'] )
 			? array_map( 'absint', $in['working_days'] )
@@ -171,6 +180,27 @@ class Settings {
 					<tr>
 						<th><label for="tt_cutoff"><?php esc_html_e( 'Order cutoff (days before visit)', 'tur-takvimi' ); ?></label></th>
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[order_cutoff_days]" id="tt_cutoff" type="number" min="0" value="<?php echo esc_attr( $s['order_cutoff_days'] ); ?>"></td>
+					</tr>
+					<tr>
+						<th><label for="tt_geocoder"><?php esc_html_e( 'Geocoder', 'tur-takvimi' ); ?></label></th>
+						<td>
+							<select name="<?php echo esc_attr( self::OPTION ); ?>[geocoder_provider]" id="tt_geocoder">
+								<option value="photon" <?php selected( $s['geocoder_provider'], 'photon' ); ?>><?php esc_html_e( 'Photon (free, no key)', 'tur-takvimi' ); ?></option>
+								<option value="locationiq" <?php selected( $s['geocoder_provider'], 'locationiq' ); ?>><?php esc_html_e( 'LocationIQ (API key)', 'tur-takvimi' ); ?></option>
+							</select>
+							<select name="<?php echo esc_attr( self::OPTION ); ?>[geocoder_region]" aria-label="<?php esc_attr_e( 'LocationIQ region', 'tur-takvimi' ); ?>">
+								<option value="us1" <?php selected( $s['geocoder_region'], 'us1' ); ?>>us1</option>
+								<option value="eu1" <?php selected( $s['geocoder_region'], 'eu1' ); ?>>eu1</option>
+							</select>
+							<p class="description"><?php esc_html_e( 'LocationIQ uses OpenStreetMap data and allows bulk imports. Pick the region closest to you (eu1 for Europe).', 'tur-takvimi' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="tt_geocoder_key"><?php esc_html_e( 'LocationIQ API key', 'tur-takvimi' ); ?></label></th>
+						<td>
+							<input name="<?php echo esc_attr( self::OPTION ); ?>[geocoder_api_key]" id="tt_geocoder_key" type="password" autocomplete="off" class="regular-text" value="<?php echo esc_attr( $s['geocoder_api_key'] ); ?>">
+							<p class="description"><?php esc_html_e( 'From your LocationIQ dashboard → Access Tokens. Only used when the geocoder is set to LocationIQ.', 'tur-takvimi' ); ?></p>
+						</td>
 					</tr>
 				</table>
 				<?php submit_button(); ?>

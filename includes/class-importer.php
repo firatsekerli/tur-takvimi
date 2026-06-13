@@ -36,6 +36,13 @@ class Importer {
 	private $reset_addresses = array();
 
 	/**
+	 * Message from the last geocode batch that stopped on a provider error.
+	 *
+	 * @var string
+	 */
+	private $last_geo_error = '';
+
+	/**
 	 * Hook registration.
 	 */
 	public function register(): void {
@@ -162,16 +169,27 @@ class Importer {
 			$this->clear_nogeo_flags();
 		}
 
-		$this->geocode_batch( self::GEOCODE_BATCH );
+		$processed = $this->geocode_batch( self::GEOCODE_BATCH );
 		list( $total, $done ) = $this->geocode_stats();
 		$pending      = $total - $done;
 		$pct          = $total > 0 ? (int) round( $done * 100 / $total ) : 100;
+		$stalled      = $pending > 0 && 0 === $processed && '' !== $this->last_geo_error;
 		$continue_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run' ), 'tt_geocode' );
 		$back_url     = admin_url( 'admin.php?page=tur-takvimi-import' );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Geocoding map pins…', 'tur-takvimi' ); ?></h1>
-			<?php if ( $pending > 0 ) : ?>
+			<?php if ( $stalled ) : ?>
+				<div class="notice notice-error">
+					<p><strong><?php esc_html_e( 'The geocoder is not responding, so it was paused.', 'tur-takvimi' ); ?></strong></p>
+					<p><code><?php echo esc_html( $this->last_geo_error ); ?></code></p>
+					<p class="description"><?php esc_html_e( 'Check Tur Takvimi → Settings (geocoder provider / API key), then continue.', 'tur-takvimi' ); ?></p>
+				</div>
+				<p>
+					<a class="button button-primary" href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a>
+					<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Back to import', 'tur-takvimi' ); ?></a>
+				</p>
+			<?php elseif ( $pending > 0 ) : ?>
 				<meta http-equiv="refresh" content="1;url=<?php echo esc_url( $continue_url ); ?>">
 				<p>
 					<?php
@@ -524,17 +542,18 @@ class Importer {
 	}
 
 	/**
-	 * Geocode a single address (cached) so it can be pinned on the map.
+	 * Geocode a single address (cached).
 	 *
 	 * @param string $street   Street + house number.
 	 * @param string $postcode Postcode.
 	 * @param string $city     City name.
-	 * @return array{lat:float,lng:float}|null
+	 * @return array{lat:float,lng:float}|false|null Point on success, false on a
+	 *         genuine no-match (flag it), null on a transient error (retry).
 	 */
-	private function geocode_address( string $street, string $postcode, string $city ): ?array {
+	private function geocode_address( string $street, string $postcode, string $city ) {
 		$query = trim( $street . ', ' . trim( $postcode . ' ' . $city ) );
 		if ( strlen( $query ) < 5 ) {
-			return null;
+			return false;
 		}
 		$key    = 'tt_geoaddr_' . md5( strtolower( $query ) );
 		$cached = get_transient( $key );
@@ -542,20 +561,25 @@ class Importer {
 			return $cached;
 		}
 		if ( 'miss' === $cached ) {
-			return null;
+			return false;
 		}
 
-		$results = Geocoder::search( $query, 1 );
-		if ( empty( $results ) ) {
-			set_transient( $key, 'miss', WEEK_IN_SECONDS );
+		$results = Geocoder::search( $query, 1, (string) Settings::get( 'country', 'DE' ) );
+		if ( ! empty( $results ) ) {
+			$point = array(
+				'lat' => (float) $results[0]['lat'],
+				'lng' => (float) $results[0]['lng'],
+			);
+			set_transient( $key, $point, MONTH_IN_SECONDS );
+			return $point;
+		}
+
+		// Don't cache or flag a transient failure — let it retry next pass.
+		if ( Geocoder::last_was_transient_error() ) {
 			return null;
 		}
-		$point = array(
-			'lat' => (float) $results[0]['lat'],
-			'lng' => (float) $results[0]['lng'],
-		);
-		set_transient( $key, $point, MONTH_IN_SECONDS );
-		return $point;
+		set_transient( $key, 'miss', WEEK_IN_SECONDS );
+		return false;
 	}
 
 	/**
@@ -612,9 +636,12 @@ class Importer {
 	 * @return int Number processed.
 	 */
 	private function geocode_batch( int $limit ): int {
-		$processed = 0;
+		$this->last_geo_error = '';
+		$interval             = Geocoder::min_interval_us();
+		$processed            = 0;
+		$stop                 = false;
 		foreach ( $this->all_location_ids() as $lid ) {
-			if ( $processed >= $limit ) {
+			if ( $processed >= $limit || $stop ) {
 				break;
 			}
 			$addresses = json_decode( (string) get_post_meta( $lid, '_tt_addresses', true ), true );
@@ -633,16 +660,21 @@ class Importer {
 					continue;
 				}
 				$point = $this->geocode_address( (string) $a['address'], (string) ( $a['postcode'] ?? '' ), get_the_title( $lid ) );
-				if ( $point ) {
+				if ( is_array( $point ) ) {
 					$a['lat'] = $point['lat'];
 					$a['lng'] = $point['lng'];
 					unset( $a['nogeo'] );
-				} else {
+				} elseif ( false === $point ) {
 					$a['nogeo'] = true;
+				} else {
+					// Transient provider error: stop and surface it; retry later.
+					$this->last_geo_error = Geocoder::$last_debug['error'] ? (string) Geocoder::$last_debug['error'] : __( 'Geocoder unavailable.', 'tur-takvimi' );
+					$stop                 = true;
+					break;
 				}
 				++$processed;
 				$changed = true;
-				usleep( 120000 ); // ~0.12s: be polite to the geocoder.
+				usleep( $interval );
 			}
 			unset( $a );
 			if ( $changed ) {

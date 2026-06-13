@@ -248,6 +248,36 @@ msgstr "%d adresin hâlâ harita iğnesi gerekiyor."
 msgid "Geocode pins now"
 msgstr "İğneleri şimdi konumla"
 
+msgid "Geocoder"
+msgstr "Coğrafi konumlama"
+
+msgid "Photon (free, no key)"
+msgstr "Photon (ücretsiz, anahtarsız)"
+
+msgid "LocationIQ (API key)"
+msgstr "LocationIQ (API anahtarı)"
+
+msgid "LocationIQ region"
+msgstr "LocationIQ bölgesi"
+
+msgid "LocationIQ uses OpenStreetMap data and allows bulk imports. Pick the region closest to you (eu1 for Europe)."
+msgstr "LocationIQ, OpenStreetMap verilerini kullanır ve toplu içe aktarmaya izin verir. Size en yakın bölgeyi seçin (Avrupa için eu1)."
+
+msgid "LocationIQ API key"
+msgstr "LocationIQ API anahtarı"
+
+msgid "From your LocationIQ dashboard → Access Tokens. Only used when the geocoder is set to LocationIQ."
+msgstr "LocationIQ panonuzdan → Access Tokens. Yalnızca coğrafi konumlama LocationIQ olarak ayarlandığında kullanılır."
+
+msgid "Geocoder unavailable."
+msgstr "Coğrafi konumlama hizmeti kullanılamıyor."
+
+msgid "The geocoder is not responding, so it was paused."
+msgstr "Coğrafi konumlama hizmeti yanıt vermediği için duraklatıldı."
+
+msgid "Check Tur Takvimi → Settings (geocoder provider / API key), then continue."
+msgstr "Tur Takvimi → Ayarlar bölümünü kontrol edin (coğrafi konumlama sağlayıcısı / API anahtarı), ardından devam edin."
+
 msgid "%d addresses could not be pinned automatically."
 msgstr "%d adres otomatik olarak iğnelenemedi."
 
