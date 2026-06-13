@@ -159,8 +159,11 @@ class Location_Meta {
 				<ul class="tt-routes__list">
 					<?php foreach ( $routes as $route ) : ?>
 						<?php
+						// The title is usually "CODE - Group" already; only prefix
+						// the code when the title does not start with it.
 						$code  = (string) get_post_meta( $route->ID, '_tt_route_code', true );
-						$label = '' !== $code ? $code . ' — ' . $route->post_title : $route->post_title;
+						$title = (string) $route->post_title;
+						$label = ( '' !== $code && 0 !== strpos( $title, $code ) ) ? $code . ' — ' . $title : $title;
 						?>
 						<li>
 							<label>
@@ -232,7 +235,7 @@ class Location_Meta {
 			}
 		}
 
-		update_post_meta( $post_id, '_tt_addresses', wp_json_encode( $addresses ) );
+		update_post_meta( $post_id, '_tt_addresses', wp_json_encode( $addresses, JSON_UNESCAPED_UNICODE ) );
 
 		// Covered postcodes are derived from the stops — no separate field.
 		$postcodes = array_values( array_unique( $postcodes ) );

@@ -27,6 +27,15 @@ class Importer {
 	const GEOCODE_BATCH = 25;
 
 	/**
+	 * Locations whose addresses have already been reset in the current import
+	 * run (so the first CSV row for a city replaces stale data, then following
+	 * rows append).
+	 *
+	 * @var array<int,bool>
+	 */
+	private $reset_addresses = array();
+
+	/**
 	 * Hook registration.
 	 */
 	public function register(): void {
@@ -178,8 +187,9 @@ class Importer {
 		);
 		$index = array_flip( $header );
 
-		$created = 0;
-		$updated = 0;
+		$this->reset_addresses = array();
+		$created               = 0;
+		$updated               = 0;
 		while ( ( $row = fgetcsv( $handle ) ) !== false ) {
 			$get  = static fn( $key ) => isset( $index[ $key ] ) ? trim( (string) ( $row[ $index[ $key ] ] ?? '' ) ) : '';
 			$city = $get( 'city' );
@@ -199,6 +209,12 @@ class Importer {
 			);
 			if ( is_wp_error( $location_id ) || ! $location_id ) {
 				continue;
+			}
+
+			// First row for this city in this run replaces any stale addresses.
+			if ( empty( $this->reset_addresses[ (int) $location_id ] ) ) {
+				delete_post_meta( (int) $location_id, '_tt_addresses' );
+				$this->reset_addresses[ (int) $location_id ] = true;
 			}
 
 			$this->apply_meta( (int) $location_id, $get );
@@ -412,7 +428,7 @@ class Importer {
 			if ( ! $matched ) {
 				$addresses[] = $entry;
 			}
-			update_post_meta( $location_id, '_tt_addresses', wp_json_encode( $addresses ) );
+			update_post_meta( $location_id, '_tt_addresses', wp_json_encode( $addresses, JSON_UNESCAPED_UNICODE ) );
 		}
 
 		// Covered postcodes = unique set across the address list (+ a bare row).
@@ -598,7 +614,7 @@ class Importer {
 			}
 			unset( $a );
 			if ( $changed ) {
-				update_post_meta( $lid, '_tt_addresses', wp_json_encode( $addresses ) );
+				update_post_meta( $lid, '_tt_addresses', wp_json_encode( $addresses, JSON_UNESCAPED_UNICODE ) );
 				$this->recompute_centroid( $lid, $addresses );
 			}
 		}
