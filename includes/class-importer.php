@@ -21,6 +21,12 @@ defined( 'ABSPATH' ) || exit;
 class Importer {
 
 	/**
+	 * Addresses geocoded per page load (kept small to stay well under the
+	 * web-server gateway timeout).
+	 */
+	const GEOCODE_BATCH = 25;
+
+	/**
 	 * Hook registration.
 	 */
 	public function register(): void {
@@ -50,15 +56,37 @@ class Importer {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
+
+		// Background pin geocoder: process one small batch per page load and
+		// auto-continue via a meta refresh, so no single request can time out.
+		if ( isset( $_GET['tt_geocode'] ) && 'run' === $_GET['tt_geocode'] ) {
+			$this->render_geocode();
+			return;
+		}
+
 		$notice = get_transient( 'tur_takvimi_import_notice' );
 		delete_transient( 'tur_takvimi_import_notice' );
+		list( $total, $done ) = $this->geocode_stats();
+		$pending     = $total - $done;
+		$geocode_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run' ), 'tt_geocode' );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Import Locations', 'tur-takvimi' ); ?></h1>
 			<?php if ( $notice ) : ?>
 				<div class="notice notice-success"><p><?php echo esc_html( $notice ); ?></p></div>
 			<?php endif; ?>
-			<p><?php esc_html_e( 'Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address; it is geocoded and pinned on the map automatically. Re-importing the same file fills any missing pins without creating duplicates.', 'tur-takvimi' ); ?></p>
+			<?php if ( $pending > 0 ) : ?>
+				<div class="notice notice-warning">
+					<p>
+						<?php
+						/* translators: %d: number of addresses still needing a map pin. */
+						echo esc_html( sprintf( __( '%d addresses still need a map pin.', 'tur-takvimi' ), $pending ) );
+						?>
+						<a class="button button-primary" href="<?php echo esc_url( $geocode_url ); ?>"><?php esc_html_e( 'Geocode pins now', 'tur-takvimi' ); ?></a>
+					</p>
+				</div>
+			<?php endif; ?>
+			<p><?php esc_html_e( 'Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address. Importing is fast; map pins are geocoded afterwards on a progress screen (and can be resumed any time).', 'tur-takvimi' ); ?></p>
 			<p><?php esc_html_e( 'Optional: add a "routes" column (e.g. R07;R08) to assign each city to its routes. Import routes first so the codes resolve.', 'tur-takvimi' ); ?></p>
 			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="tur_takvimi_import">
@@ -82,6 +110,45 @@ class Importer {
 	}
 
 	/**
+	 * Geocode one batch of pending pins, then auto-continue until none remain.
+	 */
+	private function render_geocode(): void {
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'tt_geocode' ) ) {
+			wp_die( esc_html__( 'Invalid or expired link. Please return to the import screen.', 'tur-takvimi' ) );
+		}
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 0 );
+		}
+
+		$this->geocode_batch( self::GEOCODE_BATCH );
+		list( $total, $done ) = $this->geocode_stats();
+		$pending      = $total - $done;
+		$pct          = $total > 0 ? (int) round( $done * 100 / $total ) : 100;
+		$continue_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run' ), 'tt_geocode' );
+		$back_url     = admin_url( 'admin.php?page=tur-takvimi-import' );
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Geocoding map pins…', 'tur-takvimi' ); ?></h1>
+			<?php if ( $pending > 0 ) : ?>
+				<meta http-equiv="refresh" content="1;url=<?php echo esc_url( $continue_url ); ?>">
+				<p>
+					<?php
+					/* translators: 1: pinned count, 2: total, 3: percent. */
+					echo esc_html( sprintf( __( 'Pinned %1$d of %2$d addresses (%3$d%%). This continues automatically — keep this tab open.', 'tur-takvimi' ), $done, $total, $pct ) );
+					?>
+				</p>
+				<progress value="<?php echo esc_attr( $done ); ?>" max="<?php echo esc_attr( $total ); ?>" style="width:320px;height:18px;"></progress>
+				<p><a href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a></p>
+			<?php else : ?>
+				<div class="notice notice-success"><p><?php echo esc_html( sprintf( /* translators: %d: total addresses. */ __( 'Done — %d addresses processed.', 'tur-takvimi' ), $total ) ); ?></p></div>
+				<p><a class="button button-primary" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Back to import', 'tur-takvimi' ); ?></a></p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Handle the uploaded CSV.
 	 */
 	public function handle(): void {
@@ -90,11 +157,11 @@ class Importer {
 		}
 		check_admin_referer( 'tur_takvimi_import' );
 
-		// Geocoding each address can take a while for large files.
+		// The import itself does no network calls, so it is fast; pins are
+		// geocoded afterwards in batches. Still raise the limit for big files.
 		if ( function_exists( 'set_time_limit' ) ) {
 			set_time_limit( 0 );
 		}
-		ignore_user_abort( true );
 
 		if ( empty( $_FILES['csv']['tmp_name'] ) || ! is_uploaded_file( $_FILES['csv']['tmp_name'] ) ) {
 			$this->redirect( __( 'No file uploaded.', 'tur-takvimi' ) );
@@ -148,14 +215,20 @@ class Importer {
 		// Refresh materialized schedule so new data appears immediately.
 		( new Schedule() )->regenerate_all();
 
-		$this->redirect(
+		set_transient(
+			'tur_takvimi_import_notice',
 			sprintf(
 				/* translators: 1: created count, 2: updated count */
-				__( 'Import complete: %1$d created, %2$d updated.', 'tur-takvimi' ),
+				__( 'Import complete: %1$d created, %2$d updated. Geocoding map pins…', 'tur-takvimi' ),
 				$created,
 				$updated
-			)
+			),
+			60
 		);
+
+		// Hand off to the batched pin geocoder (runs to completion, no timeout).
+		wp_safe_redirect( wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run' ), 'tt_geocode' ) );
+		exit;
 	}
 
 	/**
@@ -307,15 +380,6 @@ class Importer {
 		$addresses = is_array( $addresses ) ? $addresses : array();
 
 		if ( '' !== $address ) {
-			// Geocode for the map pin when coordinates were not supplied.
-			if ( '' === $lat || '' === $lng ) {
-				$point = $this->geocode_address( $address, $postcode, get_the_title( $location_id ) );
-				if ( $point ) {
-					$lat = (string) $point['lat'];
-					$lng = (string) $point['lng'];
-				}
-			}
-
 			$entry = array(
 				'address'  => $address,
 				'postcode' => $postcode,
@@ -444,6 +508,124 @@ class Importer {
 		);
 		set_transient( $key, $point, MONTH_IN_SECONDS );
 		return $point;
+	}
+
+	/**
+	 * All location IDs (any status).
+	 *
+	 * @return int[]
+	 */
+	private function all_location_ids(): array {
+		return array_map(
+			'intval',
+			get_posts(
+				array(
+					'post_type'      => Post_Types::LOCATION,
+					'post_status'    => 'any',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+				)
+			)
+		);
+	}
+
+	/**
+	 * Count how many addresses exist and how many are already resolved
+	 * (have coordinates or were tried and could not be geocoded).
+	 *
+	 * @return array{0:int,1:int} [total, done]
+	 */
+	private function geocode_stats(): array {
+		$total = 0;
+		$done  = 0;
+		foreach ( $this->all_location_ids() as $lid ) {
+			$addresses = json_decode( (string) get_post_meta( $lid, '_tt_addresses', true ), true );
+			if ( ! is_array( $addresses ) ) {
+				continue;
+			}
+			foreach ( $addresses as $a ) {
+				if ( '' === (string) ( $a['address'] ?? '' ) ) {
+					continue;
+				}
+				++$total;
+				if ( ( isset( $a['lat'], $a['lng'] ) ) || ! empty( $a['nogeo'] ) ) {
+					++$done;
+				}
+			}
+		}
+		return array( $total, $done );
+	}
+
+	/**
+	 * Geocode up to $limit unresolved addresses, filling map pins. Addresses
+	 * that cannot be geocoded are flagged so they are not retried forever.
+	 *
+	 * @param int $limit Max addresses to process this call.
+	 * @return int Number processed.
+	 */
+	private function geocode_batch( int $limit ): int {
+		$processed = 0;
+		foreach ( $this->all_location_ids() as $lid ) {
+			if ( $processed >= $limit ) {
+				break;
+			}
+			$addresses = json_decode( (string) get_post_meta( $lid, '_tt_addresses', true ), true );
+			if ( ! is_array( $addresses ) ) {
+				continue;
+			}
+			$changed = false;
+			foreach ( $addresses as &$a ) {
+				if ( $processed >= $limit ) {
+					break;
+				}
+				if ( '' === (string) ( $a['address'] ?? '' ) ) {
+					continue;
+				}
+				if ( isset( $a['lat'], $a['lng'] ) || ! empty( $a['nogeo'] ) ) {
+					continue;
+				}
+				$point = $this->geocode_address( (string) $a['address'], (string) ( $a['postcode'] ?? '' ), get_the_title( $lid ) );
+				if ( $point ) {
+					$a['lat'] = $point['lat'];
+					$a['lng'] = $point['lng'];
+					unset( $a['nogeo'] );
+				} else {
+					$a['nogeo'] = true;
+				}
+				++$processed;
+				$changed = true;
+				usleep( 120000 ); // ~0.12s: be polite to the geocoder.
+			}
+			unset( $a );
+			if ( $changed ) {
+				update_post_meta( $lid, '_tt_addresses', wp_json_encode( $addresses ) );
+				$this->recompute_centroid( $lid, $addresses );
+			}
+		}
+		return $processed;
+	}
+
+	/**
+	 * Set a location's centroid to the average of its pinned addresses.
+	 *
+	 * @param int   $location_id Location ID.
+	 * @param array $addresses   Address entries.
+	 */
+	private function recompute_centroid( int $location_id, array $addresses ): void {
+		$sum_lat = 0.0;
+		$sum_lng = 0.0;
+		$count   = 0;
+		foreach ( $addresses as $a ) {
+			if ( isset( $a['lat'], $a['lng'] ) ) {
+				$sum_lat += (float) $a['lat'];
+				$sum_lng += (float) $a['lng'];
+				++$count;
+			}
+		}
+		if ( $count > 0 ) {
+			update_post_meta( $location_id, '_tt_lat', round( $sum_lat / $count, 6 ) );
+			update_post_meta( $location_id, '_tt_lng', round( $sum_lng / $count, 6 ) );
+		}
 	}
 
 	/**

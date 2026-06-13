@@ -239,6 +239,36 @@ msgstr "Şu başlığa sahip bir CSV yükleyin: city, region, address, postcode,
 msgid "Optional: add a \"routes\" column (e.g. R07;R08) to assign each city to its routes. Import routes first so the codes resolve."
 msgstr "İsteğe bağlı: her şehri rotalarına atamak için bir \"routes\" sütunu ekleyin (örn. R07;R08). Kodların çözülmesi için önce rotaları içe aktarın."
 
+msgid "Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address. Importing is fast; map pins are geocoded afterwards on a progress screen (and can be resumed any time)."
+msgstr "Şu başlığa sahip bir CSV yükleyin: city, region, address, postcode, frequency. Her satır bir teslimat adresidir. İçe aktarma hızlıdır; harita iğneleri sonrasında bir ilerleme ekranında coğrafi konumlanır (istediğiniz zaman kaldığı yerden devam ettirilebilir)."
+
+msgid "%d addresses still need a map pin."
+msgstr "%d adresin hâlâ harita iğnesi gerekiyor."
+
+msgid "Geocode pins now"
+msgstr "İğneleri şimdi konumla"
+
+msgid "Geocoding map pins…"
+msgstr "Harita iğneleri konumlanıyor…"
+
+msgid "Pinned %1$d of %2$d addresses (%3$d%%). This continues automatically — keep this tab open."
+msgstr "%2$d adresin %1$d tanesi iğnelendi (%%%3$d). Otomatik olarak devam eder — bu sekmeyi açık tutun."
+
+msgid "Continue now"
+msgstr "Şimdi devam et"
+
+msgid "Done — %d addresses processed."
+msgstr "Bitti — %d adres işlendi."
+
+msgid "Back to import"
+msgstr "İçe aktarmaya dön"
+
+msgid "Invalid or expired link. Please return to the import screen."
+msgstr "Geçersiz veya süresi dolmuş bağlantı. Lütfen içe aktarma ekranına dönün."
+
+msgid "Import complete: %1$d created, %2$d updated. Geocoding map pins…"
+msgstr "İçe aktarma tamamlandı: %1$d eklendi, %2$d güncellendi. Harita iğneleri konumlanıyor…"
+
 msgid "No file uploaded."
 msgstr "Dosya yüklenmedi."
 
