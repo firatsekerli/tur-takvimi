@@ -93,7 +93,19 @@ class Rest_Api {
 		$query   = (string) $req->get_param( 'q' );
 		$country = (string) Settings::get( 'country', 'DE' );
 		$results = Geocoder::search( $query, 8, $country );
-		return new \WP_REST_Response( array( 'results' => $results ) );
+
+		// Admin-only endpoint: expose upstream status so an empty dropdown can
+		// be told apart from a blocked/rate-limited geocoder.
+		return new \WP_REST_Response(
+			array(
+				'results' => $results,
+				'debug'   => array(
+					'count'  => count( $results ),
+					'status' => Geocoder::$last_debug['status'],
+					'error'  => Geocoder::$last_debug['error'],
+				),
+			)
+		);
 	}
 
 	/**

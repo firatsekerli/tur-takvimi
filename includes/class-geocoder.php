@@ -19,6 +19,16 @@ defined( 'ABSPATH' ) || exit;
 class Geocoder {
 
 	/**
+	 * Diagnostics from the last upstream call (for the admin geocode proxy).
+	 *
+	 * @var array{status:int,error:string}
+	 */
+	public static $last_debug = array(
+		'status' => 0,
+		'error'  => '',
+	);
+
+	/**
 	 * Default provider endpoint (filterable).
 	 */
 	private static function endpoint(): string {
@@ -48,14 +58,28 @@ class Geocoder {
 			self::endpoint()
 		);
 
+		self::$last_debug = array(
+			'status' => 0,
+			'error'  => '',
+		);
+
 		$response = wp_remote_get(
 			$url,
 			array(
-				'timeout' => 6,
-				'headers' => array( 'Accept' => 'application/json' ),
+				'timeout'    => 8,
+				'user-agent' => 'TurTakvimi/1.0 (+' . home_url( '/' ) . ')',
+				'headers'    => array( 'Accept' => 'application/json' ),
 			)
 		);
 		if ( is_wp_error( $response ) ) {
+			self::$last_debug['error'] = $response->get_error_message();
+			return array();
+		}
+
+		$status                     = (int) wp_remote_retrieve_response_code( $response );
+		self::$last_debug['status'] = $status;
+		if ( $status < 200 || $status >= 300 ) {
+			self::$last_debug['error'] = 'HTTP ' . $status . ': ' . substr( (string) wp_remote_retrieve_body( $response ), 0, 200 );
 			return array();
 		}
 
