@@ -1,6 +1,6 @@
 <?php
 /**
- * Activation / deactivation routines.
+ * Activation / deactivation and schema migrations.
  *
  * @package TurTakvimi
  */
@@ -10,7 +10,7 @@ namespace TurTakvimi;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Creates custom tables, registers rewrite rules and seeds bundled data.
+ * Creates custom tables, registers rewrite rules and runs migrations.
  */
 class Activator {
 
@@ -20,13 +20,11 @@ class Activator {
 	public static function activate(): void {
 		self::create_tables();
 
-		// Register post types so their rewrite rules exist before we flush.
 		( new Post_Types() )->register_post_types();
 		flush_rewrite_rules();
 
-		Postcode::maybe_seed();
-
 		add_option( 'tur_takvimi_version', TURTAKVIMI_VERSION );
+		update_option( 'tur_takvimi_db_version', TURTAKVIMI_DB_VERSION );
 	}
 
 	/**
@@ -37,7 +35,22 @@ class Activator {
 	}
 
 	/**
-	 * Create the schedule and postcode tables.
+	 * Apply schema changes after a plugin file update (no reactivation needed).
+	 *
+	 * The schedule table is a derived cache, so it is safe to rebuild and
+	 * re-materialize whenever the DB version changes.
+	 */
+	public static function maybe_upgrade(): void {
+		if ( get_option( 'tur_takvimi_db_version' ) === TURTAKVIMI_DB_VERSION ) {
+			return;
+		}
+		self::create_tables();
+		( new Schedule() )->regenerate_all();
+		update_option( 'tur_takvimi_db_version', TURTAKVIMI_DB_VERSION );
+	}
+
+	/**
+	 * Create/refresh the schedule and postcode tables.
 	 */
 	private static function create_tables(): void {
 		global $wpdb;
@@ -47,9 +60,13 @@ class Activator {
 		$schedule        = $wpdb->prefix . 'tt_schedule';
 		$postcodes       = $wpdb->prefix . 'tt_postcodes';
 
+		// Schedule is a derived cache; drop it so key/column changes apply cleanly.
+		$wpdb->query( "DROP TABLE IF EXISTS {$schedule}" ); // phpcs:ignore WordPress.DB
+
 		$sql_schedule = "CREATE TABLE {$schedule} (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			route_id BIGINT UNSIGNED NOT NULL,
+			location_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
 			tour_date DATE NOT NULL,
 			weekday TINYINT NOT NULL,
 			vehicle VARCHAR(100) NOT NULL DEFAULT '',
@@ -57,12 +74,13 @@ class Activator {
 			PRIMARY KEY  (id),
 			KEY tour_date (tour_date),
 			KEY route_id (route_id),
-			UNIQUE KEY route_date (route_id, tour_date)
+			KEY location_id (location_id),
+			UNIQUE KEY route_loc_date (route_id, location_id, tour_date)
 		) {$charset_collate};";
 
 		$sql_postcodes = "CREATE TABLE {$postcodes} (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-			country CHAR(2) NOT NULL DEFAULT 'NL',
+			country CHAR(2) NOT NULL DEFAULT 'DE',
 			pc4 VARCHAR(8) NOT NULL,
 			city VARCHAR(150) NOT NULL DEFAULT '',
 			lat DECIMAL(9,6) NOT NULL,

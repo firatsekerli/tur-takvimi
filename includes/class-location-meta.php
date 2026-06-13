@@ -63,12 +63,15 @@ class Location_Meta {
 			array(
 				'rest'      => esc_url_raw( rest_url( Rest_Api::NS ) ),
 				'nonce'     => wp_create_nonce( 'wp_rest' ),
-				'center'    => array( 'lat' => 51.1657, 'lng' => 10.4515 ), // Germany centroid.
-				'city'      => $title,
-				'addresses' => is_array( $stored ) ? array_values( $stored ) : array(),
-				'i18n'      => array(
+				'center'      => array( 'lat' => 51.1657, 'lng' => 10.4515 ), // Germany centroid.
+				'city'        => $title,
+				'addresses'   => is_array( $stored ) ? array_values( $stored ) : array(),
+				'defaultFreq' => (int) Settings::get( 'default_frequency_weeks', 4 ),
+				'i18n'        => array(
 					'street'   => __( 'Street address', 'tur-takvimi' ),
 					'postcode' => __( 'Postcode', 'tur-takvimi' ),
+					'freq'     => __( 'Weeks', 'tur-takvimi' ),
+					'freqTitle' => __( 'Visit frequency in weeks (0 = on demand)', 'tur-takvimi' ),
 					'remove'   => __( 'Remove', 'tur-takvimi' ),
 					'addRow'   => __( 'Add a stop manually', 'tur-takvimi' ),
 					'empty'    => __( 'No stops yet. Search an address above to add one.', 'tur-takvimi' ),
@@ -160,6 +163,11 @@ class Location_Meta {
 				'address'  => $street,
 				'postcode' => $postcode,
 			);
+
+			// Visit frequency in weeks; 0 means on-demand (no fixed schedule).
+			if ( array_key_exists( 'frequency', $row ) && '' !== $row['frequency'] ) {
+				$entry['frequency'] = max( 0, (int) $row['frequency'] );
+			}
 
 			if ( isset( $row['lat'], $row['lng'] ) && is_numeric( $row['lat'] ) && is_numeric( $row['lng'] ) ) {
 				$entry['lat'] = (float) $row['lat'];

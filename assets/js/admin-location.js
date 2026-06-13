@@ -112,6 +112,22 @@
 			} );
 			row.appendChild( pc );
 
+			var freq = document.createElement( 'input' );
+			freq.type = 'number';
+			freq.min = '0';
+			freq.className = 'tt-address-row__freq';
+			freq.value = ( item.frequency != null && item.frequency !== '' ) ? item.frequency : cfg.defaultFreq;
+			freq.placeholder = cfg.i18n.freq;
+			freq.title = cfg.i18n.freqTitle;
+			freq.addEventListener( 'input', function () {
+				state[ index ].frequency = freq.value === '' ? '' : parseInt( freq.value, 10 );
+				sync();
+			} );
+			row.appendChild( freq );
+
+			var freqLabel = el( 'span', 'tt-address-row__freq-label', cfg.i18n.freq.toLowerCase() );
+			row.appendChild( freqLabel );
+
 			var rm = el( 'button', 'button-link tt-address-row__remove', cfg.i18n.remove );
 			rm.type = 'button';
 			rm.addEventListener( 'click', function () {
@@ -146,7 +162,8 @@
 			address: item.street || item.label,
 			postcode: item.postcode || '',
 			lat: item.lat,
-			lng: item.lng
+			lng: item.lng,
+			frequency: cfg.defaultFreq
 		} );
 		search.value = '';
 		clearResults();
@@ -220,7 +237,7 @@
 
 	if ( addBtn ) {
 		addBtn.addEventListener( 'click', function () {
-			state.push( { address: '', postcode: '', lat: null, lng: null } );
+			state.push( { address: '', postcode: '', lat: null, lng: null, frequency: cfg.defaultFreq } );
 			refresh();
 		} );
 	}

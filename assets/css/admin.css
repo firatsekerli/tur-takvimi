@@ -82,7 +82,17 @@
 }
 
 .tt-address-row__pc {
-	flex: 0 0 110px;
+	flex: 0 0 100px;
+}
+
+.tt-address-row__freq {
+	flex: 0 0 64px;
+}
+
+.tt-address-row__freq-label {
+	flex: 0 0 auto;
+	color: #646970;
+	font-size: 0.85rem;
 }
 
 .tt-address-row__remove {

@@ -44,6 +44,9 @@ final class Plugin {
 	public function run(): void {
 		$this->has_woocommerce = class_exists( 'WooCommerce' );
 
+		// Apply DB migrations after a plain file update (no reactivation needed).
+		add_action( 'init', array( Activator::class, 'maybe_upgrade' ), 99 );
+
 		// Core layer — always loaded, zero hard dependencies.
 		( new Post_Types() )->register();
 		( new Settings() )->register();

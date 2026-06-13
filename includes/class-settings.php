@@ -30,9 +30,10 @@ class Settings {
 			'country'            => 'DE',
 			'currency'           => 'EUR',
 			'working_days'       => array( 5, 6, 0 ), // Fri, Sat, Sun.
-			'calendar_weeks'     => 3,
-			'discount_percent'   => 10,
-			'order_cutoff_days'  => 2,
+			'calendar_weeks'         => 3,
+			'default_frequency_weeks' => 4,
+			'discount_percent'       => 10,
+			'order_cutoff_days'      => 2,
 		);
 	}
 
@@ -92,7 +93,8 @@ class Settings {
 		$out['location_slug_base'] = sanitize_title( $in['location_slug_base'] ?? $out['location_slug_base'] );
 		$out['country']            = strtoupper( sanitize_text_field( $in['country'] ?? 'NL' ) );
 		$out['currency']           = strtoupper( sanitize_text_field( $in['currency'] ?? 'EUR' ) );
-		$out['calendar_weeks']     = max( 1, min( 12, absint( $in['calendar_weeks'] ?? 3 ) ) );
+		$out['calendar_weeks']          = max( 1, min( 12, absint( $in['calendar_weeks'] ?? 3 ) ) );
+		$out['default_frequency_weeks'] = max( 1, min( 52, absint( $in['default_frequency_weeks'] ?? 4 ) ) );
 		$out['discount_percent']   = max( 0, min( 100, absint( $in['discount_percent'] ?? 10 ) ) );
 		$out['order_cutoff_days']  = max( 0, absint( $in['order_cutoff_days'] ?? 2 ) );
 
@@ -157,6 +159,10 @@ class Settings {
 					<tr>
 						<th><label for="tt_weeks"><?php esc_html_e( 'Calendar weeks shown', 'tur-takvimi' ); ?></label></th>
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[calendar_weeks]" id="tt_weeks" type="number" min="1" max="12" value="<?php echo esc_attr( $s['calendar_weeks'] ); ?>"></td>
+					</tr>
+					<tr>
+						<th><label for="tt_default_freq"><?php esc_html_e( 'Default visit frequency (weeks)', 'tur-takvimi' ); ?></label></th>
+						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[default_frequency_weeks]" id="tt_default_freq" type="number" min="1" max="52" value="<?php echo esc_attr( $s['default_frequency_weeks'] ); ?>"> <span class="description"><?php esc_html_e( 'Used for stops that have no frequency set.', 'tur-takvimi' ); ?></span></td>
 					</tr>
 					<tr>
 						<th><label for="tt_discount"><?php esc_html_e( 'Upfront discount (%)', 'tur-takvimi' ); ?></label></th>

@@ -126,6 +126,21 @@ msgstr "Sokak adresi"
 msgid "Postcode"
 msgstr "Posta kodu"
 
+msgid "Weeks"
+msgstr "Hafta"
+
+msgid "Visit frequency in weeks (0 = on demand)"
+msgstr "Hafta cinsinden ziyaret sıklığı (0 = talebe göre)"
+
+msgid "Default visit frequency (weeks)"
+msgstr "Varsayılan ziyaret sıklığı (hafta)"
+
+msgid "Used for stops that have no frequency set."
+msgstr "Sıklığı belirlenmemiş duraklar için kullanılır."
+
+msgid "Each stop recurs from this date at its own frequency (set per stop inside the location)."
+msgstr "Her durak bu tarihten itibaren kendi sıklığında tekrarlanır (sıklık, konum içinde durak bazında ayarlanır)."
+
 msgid "Remove"
 msgstr "Kaldır"
 

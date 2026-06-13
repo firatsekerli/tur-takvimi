@@ -49,7 +49,6 @@ class Route_Meta {
 
 		$code      = (string) get_post_meta( $post->ID, '_tt_route_code', true );
 		$vehicle   = (string) get_post_meta( $post->ID, '_tt_vehicle', true );
-		$frequency = (int) get_post_meta( $post->ID, '_tt_frequency_weeks', true );
 		$anchor    = (string) get_post_meta( $post->ID, '_tt_anchor_date', true );
 		$plz       = (string) get_post_meta( $post->ID, '_tt_plz_range', true );
 		$selected  = json_decode( (string) get_post_meta( $post->ID, '_tt_location_ids', true ), true );
@@ -82,11 +81,7 @@ class Route_Meta {
 		<div class="tt-field">
 			<label for="tt_anchor"><?php esc_html_e( 'First visit date (anchor)', 'tur-takvimi' ); ?></label>
 			<input type="date" id="tt_anchor" name="tt_anchor" value="<?php echo esc_attr( $anchor ); ?>">
-			<p class="description"><?php esc_html_e( 'The recurrence repeats from this date.', 'tur-takvimi' ); ?></p>
-		</div>
-		<div class="tt-field">
-			<label for="tt_frequency"><?php esc_html_e( 'Repeat every (weeks)', 'tur-takvimi' ); ?></label>
-			<input type="number" id="tt_frequency" name="tt_frequency" min="1" max="26" value="<?php echo esc_attr( $frequency ?: 4 ); ?>">
+			<p class="description"><?php esc_html_e( 'Each stop recurs from this date at its own frequency (set per stop inside the location).', 'tur-takvimi' ); ?></p>
 		</div>
 		<div class="tt-field">
 			<label><?php esc_html_e( 'Covered postcodes', 'tur-takvimi' ); ?></label>
@@ -136,7 +131,6 @@ class Route_Meta {
 		update_post_meta( $post_id, '_tt_route_code', sanitize_text_field( wp_unslash( $_POST['tt_route_code'] ?? '' ) ) );
 		update_post_meta( $post_id, '_tt_vehicle', sanitize_text_field( wp_unslash( $_POST['tt_vehicle'] ?? '' ) ) );
 		update_post_meta( $post_id, '_tt_anchor_date', sanitize_text_field( wp_unslash( $_POST['tt_anchor'] ?? '' ) ) );
-		update_post_meta( $post_id, '_tt_frequency_weeks', max( 1, absint( $_POST['tt_frequency'] ?? 4 ) ) );
 
 		$ids = isset( $_POST['tt_location_ids'] ) && is_array( $_POST['tt_location_ids'] )
 			? array_values( array_map( 'absint', wp_unslash( $_POST['tt_location_ids'] ) ) )
