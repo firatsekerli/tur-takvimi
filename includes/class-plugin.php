@@ -54,6 +54,7 @@ final class Plugin {
 		( new Rest_Api() )->register();
 		( new Shortcodes() )->register();
 		( new City_Page() )->register();
+		( new Map_Explorer() )->register();
 
 		if ( is_admin() ) {
 			( new Importer() )->register();

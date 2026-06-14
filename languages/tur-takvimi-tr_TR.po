@@ -484,3 +484,34 @@ msgstr "Tümü"
 
 msgid "Filter by country"
 msgstr "Ülkeye göre filtrele"
+
+#. Map explorer
+msgid "Region / Route"
+msgstr "Bölge / Rota"
+
+msgid "Week"
+msgstr "Hafta"
+
+msgid "This week"
+msgstr "Bu hafta"
+
+msgid "Next week"
+msgstr "Gelecek hafta"
+
+msgid "+2 weeks"
+msgstr "+2 hafta"
+
+msgid "Search a city…"
+msgstr "Şehir ara…"
+
+msgid "Search a city"
+msgstr "Şehir ara"
+
+msgid "Stops"
+msgstr "Duraklar"
+
+msgid "No delivery stops yet."
+msgstr "Henüz teslimat durağı yok."
+
+msgid "%d stops"
+msgstr "%d durak"

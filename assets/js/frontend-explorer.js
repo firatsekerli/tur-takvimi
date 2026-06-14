@@ -1,0 +1,167 @@
+/**
+ * Delivery-regions explorer.
+ *
+ * Enhances the server-rendered stop list with a Leaflet map and instant,
+ * fully client-side filtering (country, region/route, week, city search).
+ * Markers are slaved to list-item visibility so map and list never diverge.
+ */
+( function () {
+	'use strict';
+
+	var cfg = window.TurTakvimiMap || { i18n: { stops: '%d' } };
+
+	function buildMarkers( root, map ) {
+		var holder = root.querySelector( '[data-tt-explorer-points]' );
+		var markers = {};
+		if ( ! holder ) {
+			return markers;
+		}
+		var points;
+		try {
+			points = JSON.parse( holder.textContent );
+		} catch ( e ) {
+			return markers;
+		}
+		points.forEach( function ( p ) {
+			var marker = window.L.marker( [ p.lat, p.lng ] );
+			if ( p.label ) {
+				marker.bindPopup( p.label );
+			}
+			markers[ p.id ] = marker;
+		} );
+		return markers;
+	}
+
+	function bind( root ) {
+		if ( ! window.L || root.dataset.ttReady ) {
+			return;
+		}
+		var mapEl = root.querySelector( '[data-tt-explorer-map]' );
+		if ( ! mapEl ) {
+			return;
+		}
+		root.dataset.ttReady = '1';
+
+		var map = window.L.map( mapEl, { scrollWheelZoom: false } );
+		window.L.tileLayer( 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '© OpenStreetMap',
+			maxZoom: 19
+		} ).addTo( map );
+
+		var markers = buildMarkers( root, map );
+		var items = Array.prototype.slice.call( root.querySelectorAll( '[data-tt-stop]' ) );
+		var countEl = root.querySelector( '[data-tt-stop-count]' );
+		var searchEl = root.querySelector( '[data-tt-stop-search]' );
+
+		var state = { country: '', region: '', week: '', q: '' };
+
+		function matches( it ) {
+			if ( state.country && it.dataset.country !== state.country ) {
+				return false;
+			}
+			if ( state.region && ( ',' + ( it.dataset.regions || '' ) + ',' ).indexOf( ',' + state.region + ',' ) < 0 ) {
+				return false;
+			}
+			if ( state.week && it.dataset.week !== state.week ) {
+				return false;
+			}
+			if ( state.q && ( it.dataset.title || '' ).indexOf( state.q ) < 0 ) {
+				return false;
+			}
+			return true;
+		}
+
+		function apply() {
+			var bounds = [];
+			var visible = 0;
+			items.forEach( function ( it ) {
+				var ok = matches( it );
+				it.parentNode.style.display = ok ? '' : 'none';
+				var m = markers[ it.dataset.id ];
+				if ( ok ) {
+					visible++;
+					if ( m ) {
+						m.addTo( map );
+						bounds.push( m.getLatLng() );
+					}
+				} else if ( m ) {
+					map.removeLayer( m );
+				}
+			} );
+
+			if ( countEl ) {
+				countEl.textContent = cfg.i18n.stops.replace( '%d', visible );
+			}
+			if ( bounds.length === 1 ) {
+				map.setView( bounds[ 0 ], 11 );
+			} else if ( bounds.length > 1 ) {
+				map.fitBounds( bounds, { padding: [ 30, 30 ] } );
+			}
+		}
+
+		// Filter chips.
+		Array.prototype.forEach.call( root.querySelectorAll( '.tt-explorer__chip' ), function ( chip ) {
+			chip.addEventListener( 'click', function () {
+				var type = chip.getAttribute( 'data-filter' );
+				var value = chip.getAttribute( 'data-value' ) || '';
+				state[ type ] = value;
+
+				// Highlight the active chip within its own group.
+				var group = chip.parentNode;
+				Array.prototype.forEach.call( group.querySelectorAll( '.tt-explorer__chip' ), function ( c ) {
+					c.classList.toggle( 'is-active', c === chip );
+				} );
+
+				// Picking a country resets the region filter and hides region
+				// chips that don't belong to the chosen country.
+				if ( 'country' === type ) {
+					state.region = '';
+					var regionGroup = root.querySelector( '[data-filter="region"]' );
+					regionGroup = regionGroup ? regionGroup.parentNode : null;
+					if ( regionGroup ) {
+						Array.prototype.forEach.call( regionGroup.querySelectorAll( '.tt-explorer__chip' ), function ( rc ) {
+							var rcCountries = rc.getAttribute( 'data-country' );
+							var show = ! value || ! rcCountries || ( ',' + rcCountries + ',' ).indexOf( ',' + value + ',' ) >= 0;
+							rc.style.display = show ? '' : 'none';
+							rc.classList.toggle( 'is-active', '' === rc.getAttribute( 'data-value' ) );
+						} );
+					}
+				}
+				apply();
+			} );
+		} );
+
+		if ( searchEl ) {
+			searchEl.addEventListener( 'input', function () {
+				state.q = searchEl.value.trim().toLowerCase();
+				apply();
+			} );
+		}
+
+		// Initial fit to all located stops.
+		var initial = [];
+		Object.keys( markers ).forEach( function ( id ) {
+			markers[ id ].addTo( map );
+			initial.push( markers[ id ].getLatLng() );
+		} );
+		if ( initial.length === 1 ) {
+			map.setView( initial[ 0 ], 11 );
+		} else if ( initial.length > 1 ) {
+			map.fitBounds( initial, { padding: [ 30, 30 ] } );
+		} else {
+			map.setView( [ 51.2, 7.0 ], 7 );
+		}
+	}
+
+	function ready( fn ) {
+		if ( document.readyState !== 'loading' ) {
+			fn();
+		} else {
+			document.addEventListener( 'DOMContentLoaded', fn );
+		}
+	}
+
+	ready( function () {
+		Array.prototype.forEach.call( document.querySelectorAll( '[data-tt-explorer]' ), bind );
+	} );
+}() );

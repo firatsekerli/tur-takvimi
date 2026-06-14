@@ -439,3 +439,215 @@
 .tt-stops__addr {
 	flex: 1 1 auto;
 }
+
+/* ------------------------------------------------------------------ *
+ * Delivery-regions explorer — [tur_takvimi_map]
+ * ------------------------------------------------------------------ */
+.tt-explorer {
+	max-width: 1200px;
+	margin: 0 auto;
+	color: var(--tt-text);
+}
+
+.tt-explorer__filters {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	margin-bottom: 1rem;
+}
+
+.tt-explorer__row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+}
+
+.tt-explorer__label {
+	flex: 0 0 auto;
+	min-width: 5.5rem;
+	font-size: 0.7rem;
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--tt-muted);
+}
+
+.tt-explorer__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.tt-explorer__chip {
+	background: var(--tt-card);
+	border: 1px solid var(--tt-border);
+	border-radius: 999px;
+	padding: 0.4rem 1rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--tt-text);
+	cursor: pointer;
+	transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.tt-explorer__chip:hover {
+	border-color: var(--tt-accent);
+}
+
+.tt-explorer__chip.is-active {
+	background: var(--tt-accent);
+	border-color: var(--tt-accent);
+	color: #fff;
+}
+
+/* The week row's active chip uses the brand primary to distinguish it. */
+.tt-explorer__row [data-filter="week"].is-active {
+	background: var(--tt-primary);
+	border-color: var(--tt-primary);
+}
+
+.tt-explorer__search {
+	position: relative;
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+}
+
+.tt-explorer__search-icon {
+	position: absolute;
+	left: 0.85rem;
+	display: flex;
+	color: var(--tt-muted);
+	pointer-events: none;
+}
+
+.tt-explorer__search input {
+	border: 1px solid var(--tt-border);
+	border-radius: 999px;
+	padding: 0.5rem 1rem 0.5rem 2.4rem;
+	font-size: 0.9rem;
+	min-width: 16rem;
+	background: var(--tt-card);
+}
+
+.tt-explorer__search input:focus {
+	outline: 2px solid var(--tt-primary);
+	outline-offset: 1px;
+}
+
+.tt-explorer__body {
+	display: grid;
+	grid-template-columns: 1.6fr 1fr;
+	gap: 1rem;
+	align-items: stretch;
+}
+
+.tt-explorer__map {
+	border-radius: var(--tt-radius);
+	overflow: hidden;
+	border: 1px solid var(--tt-border);
+	z-index: 0;
+}
+
+.tt-explorer__panel {
+	display: flex;
+	flex-direction: column;
+	background: var(--tt-card);
+	border: 1px solid var(--tt-border);
+	border-radius: var(--tt-radius);
+	box-shadow: 0 1px 2px rgba( 0, 0, 0, 0.04 );
+	overflow: hidden;
+}
+
+.tt-explorer__panel-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1rem 1.25rem;
+	border-bottom: 1px solid var(--tt-border);
+}
+
+.tt-explorer__panel-head strong {
+	font-size: 1.05rem;
+}
+
+.tt-explorer__count {
+	font-size: 0.85rem;
+	color: var(--tt-muted);
+}
+
+.tt-explorer__empty {
+	padding: 1.5rem 1.25rem;
+	text-align: center;
+	color: var(--tt-muted);
+}
+
+.tt-explorer__stops {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	max-height: 520px;
+}
+
+.tt-explorer__stop {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.7rem 1.25rem;
+	border-bottom: 1px solid var(--tt-border);
+	text-decoration: none;
+	color: inherit;
+}
+
+.tt-explorer__stop:hover {
+	background: var(--tt-bg);
+}
+
+.tt-explorer__dot {
+	flex: 0 0 auto;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--tt-accent);
+}
+
+.tt-explorer__stop-name {
+	font-weight: 700;
+}
+
+.tt-explorer__stop-region {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: 0.78rem;
+	color: var(--tt-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tt-explorer__stop-date {
+	flex: 0 0 auto;
+	margin-left: auto;
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: var(--tt-accent);
+	background: rgba( 22, 163, 74, 0.1 );
+	border-radius: 999px;
+	padding: 0.2rem 0.6rem;
+	white-space: nowrap;
+}
+
+@media ( max-width: 860px ) {
+	.tt-explorer__body {
+		grid-template-columns: 1fr;
+	}
+	.tt-explorer__search {
+		margin-left: 0;
+	}
+	.tt-explorer__search input {
+		min-width: 0;
+		width: 100%;
+	}
+}

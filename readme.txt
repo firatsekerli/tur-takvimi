@@ -34,8 +34,11 @@ The plugin has two layers:
 
 * `[tur_takvimi_calendar weeks="3"]` — the weekly tour calendar.
 * `[tur_takvimi_postcode_search]` — the nearest-stop postcode finder.
+* `[tur_takvimi_map]` — the delivery-regions explorer (filterable map + stop
+  list). Optional `country="DE"` hard-scopes it; `height="520"` sets the map
+  height. On multi-country sites it shows a country filter automatically.
 
-Both work in Breakdance, Gutenberg, the classic editor and any theme.
+All work in Breakdance, Gutenberg, the classic editor and any theme.
 
 == Changelog ==
 
