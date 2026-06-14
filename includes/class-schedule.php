@@ -250,8 +250,9 @@ class Schedule {
 	 * @param string $end   Y-m-d.
 	 * @return array<int,array<string,mixed>>
 	 */
-	public function get_tours_between( string $start, string $end ): array {
+	public function get_tours_between( string $start, string $end, string $country = '' ): array {
 		global $wpdb;
+		$country = strtoupper( $country );
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
@@ -268,6 +269,9 @@ class Schedule {
 		foreach ( (array) $rows as $row ) {
 			$location_id = (int) $row['location_id'];
 			if ( 'publish' !== get_post_status( $location_id ) ) {
+				continue;
+			}
+			if ( '' !== $country && Country::of_post( $location_id ) !== $country ) {
 				continue;
 			}
 			$key = $row['tour_date'] . '|' . $row['route_id'];

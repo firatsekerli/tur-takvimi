@@ -45,12 +45,20 @@ class Postcode {
 	/**
 	 * Resolve a typed postcode to the nearest location and its next visit.
 	 *
-	 * @param string $raw Typed postcode.
+	 * @param string $raw     Typed postcode.
+	 * @param string $country Optional ISO-2 override; otherwise auto-detected
+	 *                        from the postcode format, then the default.
 	 * @return array|null {location_id, title, url, distance_km, next_date} or null.
 	 */
-	public static function nearest( string $raw ): ?array {
-		$country = (string) Settings::get( 'country', 'DE' );
-		$norm    = self::normalize( $raw, $country );
+	public static function nearest( string $raw, string $country = '' ): ?array {
+		$country = strtoupper( $country );
+		if ( '' === $country ) {
+			$country = Country::detect( $raw );
+		}
+		if ( '' === $country ) {
+			$country = Country::default_code();
+		}
+		$norm = self::normalize( $raw, $country );
 
 		// 1) Exact coverage: a location's address carries this postcode.
 		if ( '' !== $norm ) {
@@ -69,7 +77,7 @@ class Postcode {
 		$best      = null;
 		$best_dist = PHP_FLOAT_MAX;
 		$best_addr = '';
-		foreach ( self::located_stops() as $stop ) {
+		foreach ( self::located_stops( $country ) as $stop ) {
 			$dist = self::haversine( $center['lat'], $center['lng'], $stop['lat'], $stop['lng'] );
 			if ( $dist < $best_dist ) {
 				$best_dist = $dist;
@@ -90,7 +98,7 @@ class Postcode {
 	 * @return array{id:int,address:string}|null
 	 */
 	private static function exact_coverage( string $norm, string $country ): ?array {
-		foreach ( self::locations() as $id ) {
+		foreach ( self::locations( $country ) as $id ) {
 			$id        = (int) $id;
 			$addresses = json_decode( (string) get_post_meta( $id, '_tt_addresses', true ), true );
 			if ( is_array( $addresses ) ) {
@@ -122,11 +130,12 @@ class Postcode {
 	 * Every stop with coordinates: each address point, plus the city centroid
 	 * as a fallback for locations whose addresses lack coordinates.
 	 *
+	 * @param string $country Optional ISO-2 restriction.
 	 * @return array<int,array{location_id:int,lat:float,lng:float}>
 	 */
-	private static function located_stops(): array {
+	private static function located_stops( string $country = '' ): array {
 		$stops = array();
-		foreach ( self::locations() as $id ) {
+		foreach ( self::locations( $country ) as $id ) {
 			$id        = (int) $id;
 			$addresses = json_decode( (string) get_post_meta( $id, '_tt_addresses', true ), true );
 			$has_addr  = false;
@@ -160,19 +169,27 @@ class Postcode {
 	}
 
 	/**
-	 * All published location IDs.
+	 * Published location IDs, optionally restricted to a country.
 	 *
+	 * @param string $country Optional ISO-2 code.
 	 * @return int[]
 	 */
-	private static function locations(): array {
-		return get_posts(
-			array(
-				'post_type'      => Post_Types::LOCATION,
-				'post_status'    => 'publish',
-				'posts_per_page' => -1,
-				'fields'         => 'ids',
-			)
+	private static function locations( string $country = '' ): array {
+		$args = array(
+			'post_type'      => Post_Types::LOCATION,
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
 		);
+		if ( '' !== $country ) {
+			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery
+				array(
+					'key'   => '_tt_country',
+					'value' => strtoupper( $country ),
+				),
+			);
+		}
+		return get_posts( $args );
 	}
 
 	/**

@@ -52,9 +52,35 @@ class Activator {
 			self::migrate_route_membership();
 		}
 
+		// v4: multi-country. Stamp existing cities/routes with the default
+		// country so the new per-post field and filter work immediately.
+		if ( version_compare( $stored ?: '0', '4', '<' ) ) {
+			self::migrate_country();
+		}
+
 		self::create_tables();
 		( new Schedule() )->regenerate_all();
 		update_option( 'tur_takvimi_db_version', TURTAKVIMI_DB_VERSION );
+	}
+
+	/**
+	 * Stamp every city and route that has no country yet with the default.
+	 */
+	private static function migrate_country(): void {
+		$default = Country::default_code();
+		$posts   = get_posts(
+			array(
+				'post_type'      => array( Post_Types::LOCATION, Post_Types::ROUTE ),
+				'post_status'    => 'any',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+			)
+		);
+		foreach ( $posts as $id ) {
+			if ( '' === (string) get_post_meta( $id, '_tt_country', true ) ) {
+				update_post_meta( $id, '_tt_country', $default );
+			}
+		}
 	}
 
 	/**

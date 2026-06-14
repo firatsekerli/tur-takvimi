@@ -131,6 +131,7 @@ class Importer {
 			<?php endif; ?>
 			<p><?php esc_html_e( 'Upload a CSV with header: city, region, address, postcode, frequency. Each row is one delivery address. Importing is fast; map pins are geocoded afterwards on a progress screen (and can be resumed any time).', 'tur-takvimi' ); ?></p>
 			<p><?php esc_html_e( 'Optional: add a "routes" column (e.g. R07;R08) to assign each city to its routes. Import routes first so the codes resolve.', 'tur-takvimi' ); ?></p>
+			<p><?php esc_html_e( 'Optional: a "country" column (ISO-2, e.g. NL) sets each row\'s country; it defaults to the site default.', 'tur-takvimi' ); ?></p>
 			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="tur_takvimi_import">
 				<?php wp_nonce_field( 'tur_takvimi_import' ); ?>
@@ -141,7 +142,7 @@ class Importer {
 			<hr style="margin:2rem 0;">
 
 			<h2><?php esc_html_e( 'Import Routes', 'tur-takvimi' ); ?></h2>
-			<p><?php esc_html_e( 'Upload a CSV with header: route_id, route_group, vehicle, first_visit_date. Routes are matched by route_id (created or updated). Vehicle and date may be left empty.', 'tur-takvimi' ); ?></p>
+			<p><?php esc_html_e( 'Upload a CSV with header: route_id, route_group, vehicle, first_visit_date. Routes are matched by route_id (created or updated). Vehicle and date may be left empty. An optional "country" column (ISO-2) sets the route\'s country.', 'tur-takvimi' ); ?></p>
 			<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="tur_takvimi_import_routes">
 				<?php wp_nonce_field( 'tur_takvimi_import_routes' ); ?>
@@ -322,6 +323,7 @@ class Importer {
 			'group'   => array( 'route_group', 'route group', 'rota grubu', 'rota_grubu', 'group', 'grup' ),
 			'vehicle' => array( 'vehicle', 'araç', 'arac', 'araba' ),
 			'date'    => array( 'first_visit_date', 'first visit date', 'ilk ziyaret tarihi', 'i̇lk ziyaret tarihi', 'anchor', 'anchor_date', 'date', 'tarih' ),
+			'country' => array( 'country', 'ülke', 'ulke', 'land' ),
 		);
 		$raw_header = array_map(
 			static fn( $h ) => function_exists( 'mb_strtolower' ) ? mb_strtolower( trim( (string) $h ) ) : strtolower( trim( (string) $h ) ),
@@ -362,6 +364,7 @@ class Importer {
 			}
 
 			update_post_meta( (int) $route_id, '_tt_route_code', $code );
+			update_post_meta( (int) $route_id, '_tt_country', $this->row_country( $get ) );
 			if ( '' !== $get( 'vehicle' ) ) {
 				update_post_meta( (int) $route_id, '_tt_vehicle', $get( 'vehicle' ) );
 			}
@@ -428,7 +431,9 @@ class Importer {
 	 * @param callable $get         Column accessor.
 	 */
 	private function apply_meta( int $location_id, callable $get ): void {
-		$region  = $get( 'region' );
+		update_post_meta( $location_id, '_tt_country', $this->row_country( $get ) );
+
+		$region = $get( 'region' );
 		if ( '' !== $region ) {
 			wp_set_object_terms( $location_id, $region, Post_Types::REGION );
 		}
@@ -542,6 +547,17 @@ class Importer {
 	}
 
 	/**
+	 * Country for a CSV row: the row's "country" column, else the site default.
+	 *
+	 * @param callable $get Column accessor.
+	 * @return string ISO-2.
+	 */
+	private function row_country( callable $get ): string {
+		$code = strtoupper( (string) $get( 'country' ) );
+		return preg_match( '/^[A-Z]{2}$/', $code ) ? $code : Country::default_code();
+	}
+
+	/**
 	 * Geocode a single address (cached).
 	 *
 	 * @param string $street   Street + house number.
@@ -550,12 +566,13 @@ class Importer {
 	 * @return array{lat:float,lng:float}|false|null Point on success, false on a
 	 *         genuine no-match (flag it), null on a transient error (retry).
 	 */
-	private function geocode_address( string $street, string $postcode, string $city ) {
+	private function geocode_address( string $street, string $postcode, string $city, string $country = '' ) {
 		$query = trim( $street . ', ' . trim( $postcode . ' ' . $city ) );
 		if ( strlen( $query ) < 5 ) {
 			return false;
 		}
-		$key    = 'tt_geoaddr_' . md5( strtolower( $query ) );
+		$country = '' !== $country ? $country : Country::default_code();
+		$key     = 'tt_geoaddr_' . md5( strtolower( $country . '|' . $query ) );
 		$cached = get_transient( $key );
 		if ( is_array( $cached ) ) {
 			return $cached;
@@ -564,7 +581,7 @@ class Importer {
 			return false;
 		}
 
-		$results = Geocoder::search( $query, 1, (string) Settings::get( 'country', 'DE' ) );
+		$results = Geocoder::search( $query, 1, $country );
 		if ( ! empty( $results ) ) {
 			$point = array(
 				'lat' => (float) $results[0]['lat'],
@@ -659,7 +676,7 @@ class Importer {
 				if ( isset( $a['lat'], $a['lng'] ) || ! empty( $a['nogeo'] ) ) {
 					continue;
 				}
-				$point = $this->geocode_address( (string) $a['address'], (string) ( $a['postcode'] ?? '' ), get_the_title( $lid ) );
+				$point = $this->geocode_address( (string) $a['address'], (string) ( $a['postcode'] ?? '' ), get_the_title( $lid ), Country::of_post( $lid ) );
 				if ( is_array( $point ) ) {
 					$a['lat'] = $point['lat'];
 					$a['lng'] = $point['lng'];

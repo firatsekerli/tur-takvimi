@@ -124,7 +124,29 @@ class Location_Meta {
 			<input type="hidden" id="tt_addresses_json" name="tt_addresses_json" value="<?php echo esc_attr( wp_json_encode( array_values( $addresses ) ) ); ?>">
 		</div>
 
+		<?php $this->render_country_field( $post ); ?>
 		<?php $this->render_routes_field( $post ); ?>
+		<?php
+	}
+
+	/**
+	 * Country selector (multi-country sites).
+	 *
+	 * @param \WP_Post $post Current location post.
+	 */
+	private function render_country_field( $post ): void {
+		$current   = Country::of_post( $post->ID );
+		$countries = Country::supported();
+		?>
+		<div class="tt-field tt-country">
+			<label for="tt_country_sel"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></label>
+			<select id="tt_country_sel" name="tt_country">
+				<?php foreach ( $countries as $code ) : ?>
+					<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $current, $code ); ?>><?php echo esc_html( $code ); ?></option>
+				<?php endforeach; ?>
+			</select>
+			<p class="description"><?php esc_html_e( 'Which country this city belongs to (for the postcode search and filtering).', 'tur-takvimi' ); ?></p>
+		</div>
 		<?php
 	}
 
@@ -248,6 +270,13 @@ class Location_Meta {
 		}
 
 		$this->save_routes( $post_id );
+
+		if ( isset( $_POST['tt_country'] ) ) {
+			$code = strtoupper( sanitize_text_field( wp_unslash( $_POST['tt_country'] ) ) );
+			if ( preg_match( '/^[A-Z]{2}$/', $code ) ) {
+				update_post_meta( $post_id, '_tt_country', $code );
+			}
+		}
 	}
 
 	/**

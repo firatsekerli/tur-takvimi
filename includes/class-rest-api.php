@@ -43,6 +43,10 @@ class Rest_Api {
 						'type'    => 'integer',
 						'default' => 0,
 					),
+					'country' => array(
+						'type'    => 'string',
+						'default' => '',
+					),
 				),
 			)
 		);
@@ -58,6 +62,10 @@ class Rest_Api {
 					'postcode' => array(
 						'type'     => 'string',
 						'required' => true,
+					),
+					'country'  => array(
+						'type'    => 'string',
+						'default' => '',
 					),
 				),
 			)
@@ -122,7 +130,7 @@ class Rest_Api {
 		$end   = $start->modify( '+' . $weeks . ' weeks -1 day' );
 
 		$schedule = new Schedule();
-		$tours    = $schedule->get_tours_between( $start->format( 'Y-m-d' ), $end->format( 'Y-m-d' ) );
+		$tours    = $schedule->get_tours_between( $start->format( 'Y-m-d' ), $end->format( 'Y-m-d' ), (string) $req->get_param( 'country' ) );
 
 		$days = array();
 		foreach ( $tours as $tour ) {
@@ -156,7 +164,7 @@ class Rest_Api {
 	 */
 	public function search( \WP_REST_Request $req ): \WP_REST_Response {
 		$postcode = (string) $req->get_param( 'postcode' );
-		$result   = Postcode::nearest( $postcode );
+		$result   = Postcode::nearest( $postcode, (string) $req->get_param( 'country' ) );
 
 		if ( null === $result ) {
 			return new \WP_REST_Response(

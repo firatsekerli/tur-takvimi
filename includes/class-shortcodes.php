@@ -80,7 +80,8 @@ class Shortcodes {
 	public function calendar( $atts ): string {
 		$atts = shortcode_atts(
 			array(
-				'weeks' => (int) Settings::get( 'calendar_weeks', 3 ),
+				'weeks'   => (int) Settings::get( 'calendar_weeks', 3 ),
+				'country' => '',
 			),
 			$atts,
 			'tur_takvimi_calendar'
@@ -93,7 +94,7 @@ class Shortcodes {
 		$start    = new \DateTimeImmutable( current_time( 'Y-m-d' ) );
 		$end      = $start->modify( '+' . $weeks . ' weeks -1 day' );
 		$schedule = new Schedule();
-		$tours    = $schedule->get_tours_between( $start->format( 'Y-m-d' ), $end->format( 'Y-m-d' ) );
+		$tours    = $schedule->get_tours_between( $start->format( 'Y-m-d' ), $end->format( 'Y-m-d' ), strtoupper( (string) $atts['country'] ) );
 
 		$days = array();
 		foreach ( $tours as $tour ) {
@@ -147,10 +148,18 @@ class Shortcodes {
 	 * @return string
 	 */
 	public function postcode_search( $atts ): string {
+		$atts = shortcode_atts( array( 'country' => '' ), $atts, 'tur_takvimi_postcode_search' );
+
 		wp_enqueue_style( 'tur-takvimi' );
 		wp_enqueue_script( 'tur-takvimi' );
 
-		$example     = 'NL' === Settings::get( 'country', 'DE' ) ? '1234 AB' : '45134';
+		// Lock the widget to a country when set; otherwise show the default's
+		// example (the country is auto-detected from what the visitor types).
+		$country = strtoupper( (string) $atts['country'] );
+		$example = Country::example( '' !== $country ? $country : Country::default_code() );
+		if ( '' === $example ) {
+			$example = '45134';
+		}
 		$placeholder = sprintf(
 			/* translators: %s: example postcode. */
 			__( 'Postcode (e.g. %s)', 'tur-takvimi' ),
@@ -159,7 +168,7 @@ class Shortcodes {
 
 		ob_start();
 		?>
-		<div class="tt-search" data-tt-search>
+		<div class="tt-search" data-tt-search data-country="<?php echo esc_attr( $country ); ?>">
 			<form class="tt-search__form" role="search">
 				<label class="tt-search__sr" for="tt-postcode"><?php esc_html_e( 'Enter your postcode to find the nearest stop and date', 'tur-takvimi' ); ?></label>
 				<div class="tt-search__row">

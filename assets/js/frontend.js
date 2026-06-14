@@ -95,7 +95,11 @@
 			box.innerHTML = '';
 			box.appendChild( el( 'p', 'tt-search__loading', cfg.i18n.searching ) );
 
+			var country = root.getAttribute( 'data-country' ) || '';
 			var url = cfg.rest + '/search?postcode=' + encodeURIComponent( value );
+			if ( country ) {
+				url += '&country=' + encodeURIComponent( country );
+			}
 			fetch( url, { headers: { 'X-WP-Nonce': cfg.nonce } } )
 				.then( function ( r ) {
 					return r.json();

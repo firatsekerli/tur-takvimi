@@ -116,6 +116,14 @@ class Route_Meta {
 			<p class="description"><?php esc_html_e( 'On first save, the title is set to "Route ID - Route group".', 'tur-takvimi' ); ?></p>
 		</div>
 		<div class="tt-field">
+			<label for="tt_country_sel"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></label>
+			<select id="tt_country_sel" name="tt_country">
+				<?php foreach ( Country::supported() as $code ) : ?>
+					<option value="<?php echo esc_attr( $code ); ?>" <?php selected( Country::of_post( $post->ID ), $code ); ?>><?php echo esc_html( $code ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+		<div class="tt-field">
 			<label for="tt_vehicle"><?php esc_html_e( 'Vehicle', 'tur-takvimi' ); ?></label>
 			<input type="text" id="tt_vehicle" name="tt_vehicle" class="regular-text" value="<?php echo esc_attr( $vehicle ); ?>" placeholder="<?php esc_attr_e( 'e.g. Vehicle 1', 'tur-takvimi' ); ?>">
 		</div>
@@ -208,6 +216,11 @@ class Route_Meta {
 		$code = sanitize_text_field( wp_unslash( $_POST['tt_route_code'] ?? '' ) );
 		update_post_meta( $post_id, '_tt_route_code', $code );
 		update_post_meta( $post_id, '_tt_vehicle', sanitize_text_field( wp_unslash( $_POST['tt_vehicle'] ?? '' ) ) );
+
+		$ccode = strtoupper( sanitize_text_field( wp_unslash( $_POST['tt_country'] ?? '' ) ) );
+		if ( preg_match( '/^[A-Z]{2}$/', $ccode ) ) {
+			update_post_meta( $post_id, '_tt_country', $ccode );
+		}
 
 		// Route group maps to the shared region taxonomy (created if new).
 		$group = sanitize_text_field( wp_unslash( $_POST['tt_rota_grubu'] ?? '' ) );

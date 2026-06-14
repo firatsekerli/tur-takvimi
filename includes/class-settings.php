@@ -28,6 +28,7 @@ class Settings {
 			'calendar_heading'   => __( 'Weekly Delivery Tours', 'tur-takvimi' ),
 			'location_slug_base' => 'teslimat',
 			'country'            => 'DE',
+			'countries'          => array( 'DE' ), // Supported countries (ISO-2); default is always included.
 			'currency'           => 'EUR',
 			'working_days'       => array( 5, 6, 0 ), // Fri, Sat, Sun.
 			'calendar_weeks'         => 3,
@@ -94,8 +95,19 @@ class Settings {
 		$out['accent_color']       = sanitize_hex_color( $in['accent_color'] ?? '' ) ?: $out['accent_color'];
 		$out['calendar_heading']   = sanitize_text_field( $in['calendar_heading'] ?? $out['calendar_heading'] );
 		$out['location_slug_base'] = sanitize_title( $in['location_slug_base'] ?? $out['location_slug_base'] );
-		$out['country']            = strtoupper( sanitize_text_field( $in['country'] ?? 'NL' ) );
+		$out['country']            = strtoupper( sanitize_text_field( $in['country'] ?? 'DE' ) );
 		$out['currency']           = strtoupper( sanitize_text_field( $in['currency'] ?? 'EUR' ) );
+
+		// Supported countries: ISO-2 list; the default country is always kept.
+		$countries = preg_split( '/[\s,]+/', (string) ( $in['countries'] ?? '' ), -1, PREG_SPLIT_NO_EMPTY );
+		$countries = array_values( array_unique( array_filter(
+			array_map( 'strtoupper', (array) $countries ),
+			static fn( $c ) => (bool) preg_match( '/^[A-Z]{2}$/', $c )
+		) ) );
+		if ( ! in_array( $out['country'], $countries, true ) ) {
+			array_unshift( $countries, $out['country'] );
+		}
+		$out['countries'] = $countries;
 		$out['calendar_weeks']          = max( 1, min( 12, absint( $in['calendar_weeks'] ?? 3 ) ) );
 		$out['default_frequency_weeks'] = max( 1, min( 52, absint( $in['default_frequency_weeks'] ?? 4 ) ) );
 		$out['discount_percent']   = max( 0, min( 100, absint( $in['discount_percent'] ?? 10 ) ) );
@@ -163,7 +175,13 @@ class Settings {
 					</tr>
 					<tr>
 						<th><label for="tt_country"><?php esc_html_e( 'Country / currency', 'tur-takvimi' ); ?></label></th>
-						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[country]" id="tt_country" type="text" size="3" value="<?php echo esc_attr( $s['country'] ); ?>"> <input name="<?php echo esc_attr( self::OPTION ); ?>[currency]" type="text" size="4" value="<?php echo esc_attr( $s['currency'] ); ?>"></td>
+						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[country]" id="tt_country" type="text" size="3" value="<?php echo esc_attr( $s['country'] ); ?>"> <input name="<?php echo esc_attr( self::OPTION ); ?>[currency]" type="text" size="4" value="<?php echo esc_attr( $s['currency'] ); ?>">
+						<p class="description"><?php esc_html_e( 'Default country (ISO-2) for new cities/routes and the postcode search fallback.', 'tur-takvimi' ); ?></p></td>
+					</tr>
+					<tr>
+						<th><label for="tt_countries"><?php esc_html_e( 'Supported countries', 'tur-takvimi' ); ?></label></th>
+						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[countries]" id="tt_countries" type="text" class="regular-text" value="<?php echo esc_attr( implode( ', ', (array) $s['countries'] ) ); ?>" placeholder="DE, NL">
+						<p class="description"><?php esc_html_e( 'Comma-separated ISO-2 codes the business delivers to (e.g. DE, NL). The postcode search auto-detects the country from these.', 'tur-takvimi' ); ?></p></td>
 					</tr>
 					<tr>
 						<th><label for="tt_weeks"><?php esc_html_e( 'Calendar weeks shown', 'tur-takvimi' ); ?></label></th>

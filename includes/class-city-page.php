@@ -241,7 +241,7 @@ class City_Page {
 	private function json_ld( int $id ): array {
 		$brand   = (string) Settings::get( 'brand_name', 'Tur Takvimi' );
 		$city    = get_the_title( $id );
-		$country = (string) Settings::get( 'country', 'DE' );
+		$country = Country::of_post( $id );
 		$plz     = $this->postcode_list( $id );
 
 		$data = array(

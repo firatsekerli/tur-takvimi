@@ -428,3 +428,28 @@ msgstr "Optimize etmek için harita iğnesi olan en az iki şehir gerekir. Önce
 
 msgid "Order is the postcode default; drag to override, or use \"Optimize by distance\" to order cities by geographic proximity from the start city. Save to keep the order."
 msgstr "Sıralama varsayılan olarak posta koduna göredir; geçersiz kılmak için sürükleyin ya da şehirleri başlangıç şehrinden coğrafi yakınlığa göre sıralamak için \"Mesafeye göre optimize et\" seçeneğini kullanın. Sıralamayı korumak için kaydedin."
+
+#. Multi-country
+msgid "Country"
+msgstr "Ülke"
+
+msgid "All countries"
+msgstr "Tüm ülkeler"
+
+msgid "Supported countries"
+msgstr "Desteklenen ülkeler"
+
+msgid "Default country (ISO-2) for new cities/routes and the postcode search fallback."
+msgstr "Yeni şehirler/rotalar ve posta kodu aramasının yedeği için varsayılan ülke (ISO-2)."
+
+msgid "Comma-separated ISO-2 codes the business delivers to (e.g. DE, NL). The postcode search auto-detects the country from these."
+msgstr "İşletmenin teslimat yaptığı, virgülle ayrılmış ISO-2 kodları (örn. DE, NL). Posta kodu araması ülkeyi bunlardan otomatik algılar."
+
+msgid "Which country this city belongs to (for the postcode search and filtering)."
+msgstr "Bu şehrin hangi ülkeye ait olduğu (posta kodu araması ve filtreleme için)."
+
+msgid "Optional: a \"country\" column (ISO-2, e.g. NL) sets each row's country; it defaults to the site default."
+msgstr "İsteğe bağlı: bir \"country\" sütunu (ISO-2, örn. NL) her satırın ülkesini belirler; varsayılan olarak site varsayılanını kullanır."
+
+msgid "Upload a CSV with header: route_id, route_group, vehicle, first_visit_date. Routes are matched by route_id (created or updated). Vehicle and date may be left empty. An optional \"country\" column (ISO-2) sets the route's country."
+msgstr "Şu başlığa sahip bir CSV yükleyin: route_id, route_group, vehicle, first_visit_date. Rotalar route_id ile eşleştirilir (oluşturulur veya güncellenir). Araç ve tarih boş bırakılabilir. İsteğe bağlı bir \"country\" sütunu (ISO-2) rotanın ülkesini belirler."

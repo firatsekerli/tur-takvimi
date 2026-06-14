@@ -26,6 +26,14 @@ class Post_Types {
 		add_action( 'init', array( $this, 'register_post_types' ) );
 		add_action( 'init', array( $this, 'register_taxonomy' ) );
 		add_action( 'init', array( $this, 'register_meta' ) );
+
+		// Admin list: country filter + column on both post types.
+		add_action( 'restrict_manage_posts', array( $this, 'country_filter' ) );
+		add_action( 'pre_get_posts', array( $this, 'filter_by_country' ) );
+		foreach ( array( self::LOCATION, self::ROUTE ) as $type ) {
+			add_filter( "manage_{$type}_posts_columns", array( $this, 'country_column' ) );
+			add_action( "manage_{$type}_posts_custom_column", array( $this, 'country_column_value' ), 10, 2 );
+		}
 	}
 
 	/**
@@ -157,6 +165,102 @@ class Post_Types {
 					},
 				)
 			);
+		}
+
+		// Country (ISO-2) on both cities and routes for multi-country sites.
+		foreach ( array( self::LOCATION, self::ROUTE ) as $type ) {
+			register_post_meta(
+				$type,
+				'_tt_country',
+				array(
+					'type'          => 'string',
+					'single'        => true,
+					'show_in_rest'  => true,
+					'auth_callback' => static function () {
+						return current_user_can( 'edit_posts' );
+					},
+				)
+			);
+		}
+	}
+
+	/**
+	 * Add a "Country" filter dropdown above the Şehir/Rota list tables.
+	 *
+	 * @param string $post_type Current screen post type.
+	 */
+	public function country_filter( $post_type ): void {
+		if ( ! in_array( $post_type, array( self::LOCATION, self::ROUTE ), true ) ) {
+			return;
+		}
+		$current = isset( $_GET['tt_country'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_GET['tt_country'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		echo '<select name="tt_country">';
+		echo '<option value="">' . esc_html__( 'All countries', 'tur-takvimi' ) . '</option>';
+		foreach ( Country::supported() as $code ) {
+			printf(
+				'<option value="%s"%s>%s</option>',
+				esc_attr( $code ),
+				selected( $current, $code, false ),
+				esc_html( $code )
+			);
+		}
+		echo '</select>';
+	}
+
+	/**
+	 * Apply the country filter to the admin list query.
+	 *
+	 * @param \WP_Query $query Current query.
+	 */
+	public function filter_by_country( $query ): void {
+		if ( ! is_admin() || ! $query->is_main_query() ) {
+			return;
+		}
+		$pt = $query->get( 'post_type' );
+		if ( ! in_array( $pt, array( self::LOCATION, self::ROUTE ), true ) ) {
+			return;
+		}
+		if ( empty( $_GET['tt_country'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+		$code = strtoupper( sanitize_text_field( wp_unslash( $_GET['tt_country'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$query->set(
+			'meta_query',
+			array(
+				array(
+					'key'   => '_tt_country',
+					'value' => $code,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Add a "Country" column to the list tables.
+	 *
+	 * @param array $columns Existing columns.
+	 * @return array
+	 */
+	public function country_column( $columns ): array {
+		$out = array();
+		foreach ( $columns as $key => $label ) {
+			$out[ $key ] = $label;
+			if ( 'title' === $key ) {
+				$out['tt_country'] = __( 'Country', 'tur-takvimi' );
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Render the country column value.
+	 *
+	 * @param string $column  Column key.
+	 * @param int    $post_id Post ID.
+	 */
+	public function country_column_value( $column, $post_id ): void {
+		if ( 'tt_country' === $column ) {
+			echo esc_html( Country::of_post( (int) $post_id ) );
 		}
 	}
 }
