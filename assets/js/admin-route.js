@@ -33,7 +33,7 @@
 			update: sync
 		} );
 
-		// Great-circle distance between two [lat,lng] points, in km.
+		// Great-circle distance between two {lat,lng} points, in km.
 		function haversine( a, b ) {
 			var r = 6371;
 			var dLat = ( b.lat - a.lat ) * Math.PI / 180;
@@ -42,6 +42,36 @@
 				Math.cos( a.lat * Math.PI / 180 ) * Math.cos( b.lat * Math.PI / 180 ) *
 				Math.sin( dLng / 2 ) * Math.sin( dLng / 2 );
 			return r * 2 * Math.asin( Math.min( 1, Math.sqrt( s ) ) );
+		}
+
+		// Total length of an open path through the points (no return to start).
+		function pathLength( route ) {
+			var d = 0;
+			for ( var i = 0; i < route.length - 1; i++ ) {
+				d += haversine( route[ i ], route[ i + 1 ] );
+			}
+			return d;
+		}
+
+		// 2-opt: repeatedly reverse a segment when it shortens the path,
+		// keeping the start city fixed at index 0. N is small (≤ ~20 cities).
+		function twoOpt( route ) {
+			var improved = true;
+			while ( improved ) {
+				improved = false;
+				for ( var i = 1; i < route.length - 1; i++ ) {
+					for ( var k = i + 1; k < route.length; k++ ) {
+						var candidate = route.slice( 0, i )
+							.concat( route.slice( i, k + 1 ).reverse() )
+							.concat( route.slice( k + 1 ) );
+						if ( pathLength( candidate ) < pathLength( route ) - 1e-9 ) {
+							route = candidate;
+							improved = true;
+						}
+					}
+				}
+			}
+			return route;
 		}
 
 		function optimize() {
@@ -96,6 +126,9 @@
 				current = remaining.splice( best, 1 )[ 0 ];
 				order.push( current );
 			}
+
+			// Tighten the nearest-neighbour result by un-crossing legs.
+			order = twoOpt( order );
 
 			// Re-append the DOM nodes in the new order, then unlocated cities.
 			order.forEach( function ( p ) {
