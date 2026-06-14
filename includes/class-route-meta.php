@@ -41,6 +41,13 @@ class Route_Meta {
 		}
 		wp_enqueue_style( 'tur-takvimi-admin', TURTAKVIMI_URL . 'assets/css/admin.css', array(), Plugin::asset_ver( 'assets/css/admin.css' ) );
 		wp_enqueue_script( 'tur-takvimi-admin-route', TURTAKVIMI_URL . 'assets/js/admin-route.js', array( 'jquery', 'jquery-ui-sortable' ), Plugin::asset_ver( 'assets/js/admin-route.js' ), true );
+		wp_localize_script(
+			'tur-takvimi-admin-route',
+			'ttRouteI18n',
+			array(
+				'needCoords' => __( 'Need at least two cities with map pins to optimize. Geocode the addresses first.', 'tur-takvimi' ),
+			)
+		);
 	}
 
 	/**
@@ -154,16 +161,29 @@ class Route_Meta {
 					<?php esc_html_e( 'No locations assigned yet. Open a location and tick this route under "Routes this location belongs to".', 'tur-takvimi' ); ?>
 				</p>
 			<?php else : ?>
+				<div class="tt-route-optimize">
+					<label class="tt-route-optimize__label" for="tt-route-start"><?php esc_html_e( 'Start city', 'tur-takvimi' ); ?></label>
+					<select id="tt-route-start" class="tt-route-optimize__start">
+						<?php foreach ( $ordered as $loc_id ) : ?>
+							<option value="<?php echo esc_attr( $loc_id ); ?>"><?php echo esc_html( get_the_title( $loc_id ) ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<button type="button" class="button" id="tt-route-optimize"><?php esc_html_e( 'Optimize by distance', 'tur-takvimi' ); ?></button>
+				</div>
 				<ol id="tt-route-order" class="tt-route-order">
-					<?php foreach ( $ordered as $loc_id ) : ?>
-						<li class="tt-route-order__item" data-id="<?php echo esc_attr( $loc_id ); ?>">
+					<?php
+					foreach ( $ordered as $loc_id ) :
+						$lat = get_post_meta( $loc_id, '_tt_lat', true );
+						$lng = get_post_meta( $loc_id, '_tt_lng', true );
+						?>
+						<li class="tt-route-order__item" data-id="<?php echo esc_attr( $loc_id ); ?>" data-lat="<?php echo esc_attr( $lat ); ?>" data-lng="<?php echo esc_attr( $lng ); ?>">
 							<span class="tt-route-order__handle" aria-hidden="true">⠿</span>
 							<span class="tt-route-order__title"><?php echo esc_html( get_the_title( $loc_id ) ); ?></span>
 						</li>
 					<?php endforeach; ?>
 				</ol>
 				<input type="hidden" id="tt_location_order" name="tt_location_order" value="<?php echo esc_attr( wp_json_encode( $ordered ) ); ?>">
-				<p class="description"><?php esc_html_e( 'Drag to set the visit order. By default stops are sorted by postcode; dragging overrides that for this route.', 'tur-takvimi' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Order is the postcode default; drag to override, or use "Optimize by distance" to order cities by geographic proximity from the start city. Save to keep the order.', 'tur-takvimi' ); ?></p>
 			<?php endif; ?>
 		</div>
 		<?php

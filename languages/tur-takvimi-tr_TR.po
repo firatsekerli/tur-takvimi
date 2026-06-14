@@ -418,3 +418,13 @@ msgstr "%2$s şehrinde %1$s teslimat noktaları (posta kodları: %3$s). En yakı
 
 msgid "%1$s delivery stops in %2$s. Enter your postcode to find your nearest stop and next visit date."
 msgstr "%2$s şehrinde %1$s teslimat noktaları. En yakın durağınızı ve sonraki ziyaret tarihini bulmak için posta kodunuzu girin."
+
+#. Route editor: optimize by distance
+msgid "Optimize by distance"
+msgstr "Mesafeye göre optimize et"
+
+msgid "Need at least two cities with map pins to optimize. Geocode the addresses first."
+msgstr "Optimize etmek için harita iğnesi olan en az iki şehir gerekir. Önce adresleri coğrafi olarak konumlayın."
+
+msgid "Order is the postcode default; drag to override, or use \"Optimize by distance\" to order cities by geographic proximity from the start city. Save to keep the order."
+msgstr "Sıralama varsayılan olarak posta koduna göredir; geçersiz kılmak için sürükleyin ya da şehirleri başlangıç şehrinden coğrafi yakınlığa göre sıralamak için \"Mesafeye göre optimize et\" seçeneğini kullanın. Sıralamayı korumak için kaydedin."

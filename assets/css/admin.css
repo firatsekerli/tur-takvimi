@@ -197,3 +197,21 @@
 	font-weight: 600;
 	white-space: nowrap;
 }
+
+/* Route editor: distance-optimize controls. */
+.tt-route-optimize {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0 0 0.6rem;
+	flex-wrap: wrap;
+}
+
+.tt-route-optimize__label {
+	font-weight: 600;
+	color: #646970;
+}
+
+.tt-route-optimize__start {
+	max-width: 220px;
+}
