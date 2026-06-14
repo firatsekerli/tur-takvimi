@@ -478,3 +478,9 @@ msgstr "Lüksemburg"
 
 msgid "Comma-separated ISO-2 codes the business delivers to, with an optional display name (e.g. DE:Almanya, NL:Hollanda). The postcode search auto-detects the country from these, and shows a country picker when more than one is listed."
 msgstr "İşletmenin teslimat yaptığı, virgülle ayrılmış ISO-2 kodları ve isteğe bağlı görünen ad (örn. DE:Almanya, NL:Hollanda). Posta kodu araması ülkeyi bunlardan otomatik algılar ve birden fazla ülke listelendiğinde bir ülke seçici gösterir."
+
+msgid "All"
+msgstr "Tümü"
+
+msgid "Filter by country"
+msgstr "Ülkeye göre filtrele"

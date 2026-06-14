@@ -104,10 +104,31 @@ class Shortcodes {
 		$heading = Settings::get( 'calendar_heading', __( 'Weekly Delivery Tours', 'tur-takvimi' ) );
 		$today   = current_time( 'Y-m-d' );
 
+		// Country filter toggle: only when the shortcode isn't pinned to one
+		// country and the rendered period actually spans more than one. The
+		// filtering happens client-side so the full calendar stays in the HTML.
+		$pinned  = strtoupper( (string) $atts['country'] );
+		$present = array();
+		foreach ( $tours as $tour ) {
+			foreach ( $tour['locations'] as $loc ) {
+				$present[ Country::of_post( (int) $loc['id'] ) ] = true;
+			}
+		}
+		$present = array_values( array_intersect( Country::supported(), array_keys( $present ) ) );
+		$toggle  = '' === $pinned && count( $present ) > 1;
+
 		ob_start();
 		?>
-		<section class="tt-calendar" aria-label="<?php echo esc_attr( $heading ); ?>">
+		<section class="tt-calendar" aria-label="<?php echo esc_attr( $heading ); ?>"<?php echo $toggle ? ' data-tt-calendar' : ''; ?>>
 			<h2 class="tt-calendar__heading"><?php echo esc_html( $heading ); ?></h2>
+			<?php if ( $toggle ) : ?>
+				<div class="tt-calendar__filter" role="group" aria-label="<?php esc_attr_e( 'Filter by country', 'tur-takvimi' ); ?>">
+					<button type="button" class="tt-calendar__filter-btn is-active" data-tt-cal-filter data-country=""><?php esc_html_e( 'All', 'tur-takvimi' ); ?></button>
+					<?php foreach ( $present as $code ) : ?>
+						<button type="button" class="tt-calendar__filter-btn" data-tt-cal-filter data-country="<?php echo esc_attr( $code ); ?>"><?php echo esc_html( Country::name( $code ) ); ?></button>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
 			<?php if ( empty( $days ) ) : ?>
 				<p class="tt-calendar__empty"><?php esc_html_e( 'No tours scheduled for this period yet.', 'tur-takvimi' ); ?></p>
 			<?php else : ?>
@@ -124,7 +145,7 @@ class Shortcodes {
 							foreach ( $items as $tour ) :
 								foreach ( $tour['locations'] as $loc ) :
 									?>
-									<a class="tt-chip" href="<?php echo esc_url( $loc['url'] ); ?>">
+									<a class="tt-chip" href="<?php echo esc_url( $loc['url'] ); ?>" data-country="<?php echo esc_attr( Country::of_post( (int) $loc['id'] ) ); ?>">
 										<span class="tt-chip__pin" aria-hidden="true">📍</span>
 										<?php echo esc_html( $loc['title'] ); ?>
 									</a>

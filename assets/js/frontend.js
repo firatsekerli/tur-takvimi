@@ -115,9 +115,45 @@
 		} );
 	}
 
+	// Client-side country filter for the server-rendered calendar: show/hide
+	// chips by country and collapse days that end up with no visible stops.
+	function bindCalendar( section ) {
+		var buttons = section.querySelectorAll( '[data-tt-cal-filter]' );
+		if ( ! buttons.length ) {
+			return;
+		}
+		Array.prototype.forEach.call( buttons, function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				var country = btn.getAttribute( 'data-country' ) || '';
+
+				Array.prototype.forEach.call( buttons, function ( b ) {
+					b.classList.toggle( 'is-active', b === btn );
+				} );
+
+				Array.prototype.forEach.call( section.querySelectorAll( '.tt-chip' ), function ( chip ) {
+					var cc = chip.getAttribute( 'data-country' ) || '';
+					chip.style.display = ( ! country || cc === country ) ? '' : 'none';
+				} );
+
+				Array.prototype.forEach.call( section.querySelectorAll( '.tt-day' ), function ( day ) {
+					var visible = false;
+					Array.prototype.forEach.call( day.querySelectorAll( '.tt-chip' ), function ( ch ) {
+						if ( 'none' !== ch.style.display ) {
+							visible = true;
+						}
+					} );
+					day.style.display = visible ? '' : 'none';
+				} );
+			} );
+		} );
+	}
+
 	function init() {
 		var widgets = document.querySelectorAll( '[data-tt-search]' );
 		Array.prototype.forEach.call( widgets, bind );
+
+		var calendars = document.querySelectorAll( '[data-tt-calendar]' );
+		Array.prototype.forEach.call( calendars, bindCalendar );
 	}
 
 	if ( document.readyState === 'loading' ) {
