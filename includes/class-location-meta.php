@@ -105,6 +105,8 @@ class Location_Meta {
 		$addresses = json_decode( (string) get_post_meta( $post->ID, '_tt_addresses', true ), true );
 		$addresses = is_array( $addresses ) ? $addresses : array();
 		?>
+		<?php $this->render_country_field( $post ); ?>
+
 		<p class="description">
 			<?php esc_html_e( 'Search an address to add a delivery stop. The postcode and map pin are filled in automatically.', 'tur-takvimi' ); ?>
 		</p>
@@ -124,7 +126,6 @@ class Location_Meta {
 			<input type="hidden" id="tt_addresses_json" name="tt_addresses_json" value="<?php echo esc_attr( wp_json_encode( array_values( $addresses ) ) ); ?>">
 		</div>
 
-		<?php $this->render_country_field( $post ); ?>
 		<?php $this->render_routes_field( $post ); ?>
 		<?php
 	}
@@ -145,7 +146,7 @@ class Location_Meta {
 					<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $current, $code ); ?>><?php echo esc_html( $code ); ?></option>
 				<?php endforeach; ?>
 			</select>
-			<p class="description"><?php esc_html_e( 'Which country this city belongs to (for the postcode search and filtering).', 'tur-takvimi' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Which country this city is in. Set this first so address searches are geocoded in the right country.', 'tur-takvimi' ); ?></p>
 		</div>
 		<?php
 	}

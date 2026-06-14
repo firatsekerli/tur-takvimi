@@ -202,8 +202,20 @@
 		return q;
 	}
 
+	// Geocode within the city's selected country so e.g. a Dutch address on an
+	// NL city isn't biased toward the site default country.
+	function selectedCountry() {
+		var sel = document.getElementById( 'tt_country_sel' );
+		return sel && sel.value ? sel.value : '';
+	}
+
 	function lookup( q ) {
-		fetch( cfg.rest + '/geocode?q=' + encodeURIComponent( biasedQuery( q ) ), {
+		var url = cfg.rest + '/geocode?q=' + encodeURIComponent( biasedQuery( q ) );
+		var country = selectedCountry();
+		if ( country ) {
+			url += '&country=' + encodeURIComponent( country );
+		}
+		fetch( url, {
 			headers: { 'X-WP-Nonce': cfg.nonce }
 		} )
 			.then( function ( r ) {

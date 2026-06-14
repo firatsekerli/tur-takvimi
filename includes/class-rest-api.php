@@ -82,9 +82,13 @@ class Rest_Api {
 				},
 				'callback'            => array( $this, 'geocode' ),
 				'args'                => array(
-					'q' => array(
+					'q'       => array(
 						'type'     => 'string',
 						'required' => true,
+					),
+					'country' => array(
+						'type'    => 'string',
+						'default' => '',
 					),
 				),
 			)
@@ -99,7 +103,8 @@ class Rest_Api {
 	 */
 	public function geocode( \WP_REST_Request $req ): \WP_REST_Response {
 		$query   = (string) $req->get_param( 'q' );
-		$country = (string) Settings::get( 'country', 'DE' );
+		$param   = strtoupper( (string) $req->get_param( 'country' ) );
+		$country = preg_match( '/^[A-Z]{2}$/', $param ) ? $param : (string) Settings::get( 'country', 'DE' );
 		$results = Geocoder::search( $query, 8, $country );
 
 		// Admin-only endpoint: expose upstream status so an empty dropdown can

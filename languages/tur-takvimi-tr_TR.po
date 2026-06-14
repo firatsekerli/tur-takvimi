@@ -515,3 +515,6 @@ msgstr "Henüz teslimat durağı yok."
 
 msgid "%d stops"
 msgstr "%d durak"
+
+msgid "Which country this city is in. Set this first so address searches are geocoded in the right country."
+msgstr "Bu şehrin bulunduğu ülke. Adres aramalarının doğru ülkede coğrafi konumlanması için önce bunu ayarlayın."
