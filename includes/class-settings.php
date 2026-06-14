@@ -98,14 +98,21 @@ class Settings {
 		$out['country']            = strtoupper( sanitize_text_field( $in['country'] ?? 'DE' ) );
 		$out['currency']           = strtoupper( sanitize_text_field( $in['currency'] ?? 'EUR' ) );
 
-		// Supported countries: ISO-2 list; the default country is always kept.
-		$countries = preg_split( '/[\s,]+/', (string) ( $in['countries'] ?? '' ), -1, PREG_SPLIT_NO_EMPTY );
-		$countries = array_values( array_unique( array_filter(
-			array_map( 'strtoupper', (array) $countries ),
-			static fn( $c ) => (bool) preg_match( '/^[A-Z]{2}$/', $c )
-		) ) );
-		if ( ! in_array( $out['country'], $countries, true ) ) {
-			array_unshift( $countries, $out['country'] );
+		// Supported countries: ISO-2 list with optional "CODE:Label" pairs
+		// (e.g. "DE:Almanya, NL:Hollanda"). The default country is always kept.
+		$countries = array();
+		foreach ( array_map( 'trim', explode( ',', (string) ( $in['countries'] ?? '' ) ) ) as $token ) {
+			if ( '' === $token ) {
+				continue;
+			}
+			$parts = explode( ':', $token, 2 );
+			$code  = strtoupper( trim( $parts[0] ) );
+			if ( preg_match( '/^[A-Z]{2}$/', $code ) ) {
+				$countries[ $code ] = isset( $parts[1] ) ? sanitize_text_field( trim( $parts[1] ) ) : '';
+			}
+		}
+		if ( ! isset( $countries[ $out['country'] ] ) ) {
+			$countries = array( $out['country'] => '' ) + $countries;
 		}
 		$out['countries'] = $countries;
 		$out['calendar_weeks']          = max( 1, min( 12, absint( $in['calendar_weeks'] ?? 3 ) ) );
@@ -180,8 +187,14 @@ class Settings {
 					</tr>
 					<tr>
 						<th><label for="tt_countries"><?php esc_html_e( 'Supported countries', 'tur-takvimi' ); ?></label></th>
-						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[countries]" id="tt_countries" type="text" class="regular-text" value="<?php echo esc_attr( implode( ', ', (array) $s['countries'] ) ); ?>" placeholder="DE, NL">
-						<p class="description"><?php esc_html_e( 'Comma-separated ISO-2 codes the business delivers to (e.g. DE, NL). The postcode search auto-detects the country from these.', 'tur-takvimi' ); ?></p></td>
+						<?php
+						$country_pairs = array();
+						foreach ( Country::map() as $cc => $clabel ) {
+							$country_pairs[] = '' !== $clabel ? $cc . ':' . $clabel : $cc;
+						}
+						?>
+						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[countries]" id="tt_countries" type="text" class="regular-text" value="<?php echo esc_attr( implode( ', ', $country_pairs ) ); ?>" placeholder="DE:Almanya, NL:Hollanda">
+						<p class="description"><?php esc_html_e( 'Comma-separated ISO-2 codes the business delivers to, with an optional display name (e.g. DE:Almanya, NL:Hollanda). The postcode search auto-detects the country from these, and shows a country picker when more than one is listed.', 'tur-takvimi' ); ?></p></td>
 					</tr>
 					<tr>
 						<th><label for="tt_weeks"><?php esc_html_e( 'Calendar weeks shown', 'tur-takvimi' ); ?></label></th>

@@ -39,7 +39,7 @@ class Shortcodes {
 			array(
 				'rest'    => esc_url_raw( rest_url( Rest_Api::NS ) ),
 				'nonce'   => wp_create_nonce( 'wp_rest' ),
-				'country' => Settings::get( 'country', 'NL' ),
+				'country' => Country::default_code(),
 				'i18n'    => array(
 					'searching' => __( 'Searching…', 'tur-takvimi' ),
 					'nearest'   => __( 'Your nearest stop', 'tur-takvimi' ),
@@ -166,12 +166,31 @@ class Shortcodes {
 			$example
 		);
 
+		// Show a country picker only when the widget isn't pinned to a single
+		// country and the business serves more than one. "Auto" keeps the
+		// type-and-go flow; picking a country disambiguates overlapping formats.
+		$picker = '' === $country ? Country::supported() : array();
+		if ( count( $picker ) < 2 ) {
+			$picker = array();
+		}
+
 		ob_start();
 		?>
 		<div class="tt-search" data-tt-search data-country="<?php echo esc_attr( $country ); ?>">
 			<form class="tt-search__form" role="search">
 				<label class="tt-search__sr" for="tt-postcode"><?php esc_html_e( 'Enter your postcode to find the nearest stop and date', 'tur-takvimi' ); ?></label>
 				<div class="tt-search__row">
+					<?php if ( $picker ) : ?>
+						<div class="tt-search__field tt-search__field--country">
+							<label class="tt-search__sr" for="tt-country"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></label>
+							<select id="tt-country" class="tt-search__country" data-tt-country>
+								<option value=""><?php esc_html_e( 'Auto', 'tur-takvimi' ); ?></option>
+								<?php foreach ( $picker as $code ) : ?>
+									<option value="<?php echo esc_attr( $code ); ?>"><?php echo esc_html( Country::name( $code ) ); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+					<?php endif; ?>
 					<div class="tt-search__field">
 						<span class="tt-search__icon" aria-hidden="true">
 							<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>

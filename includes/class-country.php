@@ -29,24 +29,78 @@ class Country {
 	}
 
 	/**
+	 * Configured countries as an ordered code => custom-label map. The label is
+	 * an empty string when the admin did not supply one (use name() to resolve).
+	 * Accepts the stored map, a list of codes, or a "DE:Almanya, NL" string.
+	 *
+	 * @return array<string,string> ISO-2 => label ('' when unset).
+	 */
+	public static function map(): array {
+		$raw    = Settings::get( 'countries', array() );
+		$tokens = array();
+		if ( is_string( $raw ) ) {
+			$tokens = array_map( 'trim', explode( ',', $raw ) );
+		} else {
+			foreach ( (array) $raw as $key => $value ) {
+				$tokens[] = is_string( $key ) && preg_match( '/^[A-Za-z]{2}$/', $key )
+					? $key . ':' . $value      // Stored assoc map.
+					: (string) $value;          // Legacy list of codes.
+			}
+		}
+
+		$map = array();
+		foreach ( $tokens as $token ) {
+			if ( '' === $token ) {
+				continue;
+			}
+			$parts = explode( ':', $token, 2 );
+			$code  = strtoupper( trim( $parts[0] ) );
+			if ( preg_match( '/^[A-Z]{2}$/', $code ) ) {
+				$map[ $code ] = isset( $parts[1] ) ? trim( $parts[1] ) : '';
+			}
+		}
+
+		$default = self::default_code();
+		if ( ! isset( $map[ $default ] ) ) {
+			$map = array( $default => '' ) + $map;
+		}
+		return $map;
+	}
+
+	/**
 	 * Countries the business operates in (always includes the default).
 	 *
 	 * @return string[] ISO-2 codes.
 	 */
 	public static function supported(): array {
-		$list = Settings::get( 'countries', array() );
-		if ( is_string( $list ) ) {
-			$list = preg_split( '/[\s,]+/', $list, -1, PREG_SPLIT_NO_EMPTY );
+		return array_keys( self::map() );
+	}
+
+	/**
+	 * Human-readable country name: the admin's custom label, else a built-in
+	 * translatable name, else the bare ISO-2 code.
+	 *
+	 * @param string $code ISO-2.
+	 * @return string
+	 */
+	public static function name( string $code ): string {
+		$code  = strtoupper( $code );
+		$map   = self::map();
+		if ( ! empty( $map[ $code ] ) ) {
+			return $map[ $code ];
 		}
-		$list = array_filter(
-			array_map( 'strtoupper', (array) $list ),
-			static fn( $c ) => (bool) preg_match( '/^[A-Z]{2}$/', $c )
+		$names = apply_filters(
+			'tur_takvimi_country_names',
+			array(
+				'DE' => __( 'Germany', 'tur-takvimi' ),
+				'NL' => __( 'Netherlands', 'tur-takvimi' ),
+				'BE' => __( 'Belgium', 'tur-takvimi' ),
+				'FR' => __( 'France', 'tur-takvimi' ),
+				'AT' => __( 'Austria', 'tur-takvimi' ),
+				'LU' => __( 'Luxembourg', 'tur-takvimi' ),
+			)
 		);
-		$list = array_values( array_unique( $list ) );
-		if ( ! in_array( self::default_code(), $list, true ) ) {
-			array_unshift( $list, self::default_code() );
-		}
-		return $list;
+		return (string) ( $names[ $code ] ?? $code );
 	}
 
 	/**

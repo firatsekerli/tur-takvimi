@@ -453,3 +453,28 @@ msgstr "İsteğe bağlı: bir \"country\" sütunu (ISO-2, örn. NL) her satırı
 
 msgid "Upload a CSV with header: route_id, route_group, vehicle, first_visit_date. Routes are matched by route_id (created or updated). Vehicle and date may be left empty. An optional \"country\" column (ISO-2) sets the route's country."
 msgstr "Şu başlığa sahip bir CSV yükleyin: route_id, route_group, vehicle, first_visit_date. Rotalar route_id ile eşleştirilir (oluşturulur veya güncellenir). Araç ve tarih boş bırakılabilir. İsteğe bağlı bir \"country\" sütunu (ISO-2) rotanın ülkesini belirler."
+
+#. Country picker
+msgid "Auto"
+msgstr "Otomatik"
+
+msgid "Germany"
+msgstr "Almanya"
+
+msgid "Netherlands"
+msgstr "Hollanda"
+
+msgid "Belgium"
+msgstr "Belçika"
+
+msgid "France"
+msgstr "Fransa"
+
+msgid "Austria"
+msgstr "Avusturya"
+
+msgid "Luxembourg"
+msgstr "Lüksemburg"
+
+msgid "Comma-separated ISO-2 codes the business delivers to, with an optional display name (e.g. DE:Almanya, NL:Hollanda). The postcode search auto-detects the country from these, and shows a country picker when more than one is listed."
+msgstr "İşletmenin teslimat yaptığı, virgülle ayrılmış ISO-2 kodları ve isteğe bağlı görünen ad (örn. DE:Almanya, NL:Hollanda). Posta kodu araması ülkeyi bunlardan otomatik algılar ve birden fazla ülke listelendiğinde bir ülke seçici gösterir."
