@@ -394,6 +394,26 @@ class Calendar {
 			'X-WR-TIMEZONE:' . self::ics_escape( (string) wp_timezone_string() ),
 		);
 
+		$lines = array_merge( $lines, self::vevents( $tours, $location, $route, $host, $stamp ) );
+		$lines[] = 'END:VCALENDAR';
+
+		$folded = array_map( array( self::class, 'ics_fold' ), $lines );
+		return implode( "\r\n", $folded ) . "\r\n";
+	}
+
+	/**
+	 * Build VEVENT lines for the given tours — one all-day event per delivered
+	 * city per date.
+	 *
+	 * @param array  $tours    Tours grouped per (date, route).
+	 * @param int    $location Optional location filter.
+	 * @param int    $route    Optional route filter.
+	 * @param string $host     Host for the UID domain.
+	 * @param string $stamp    DTSTAMP value.
+	 * @return string[]
+	 */
+	private static function vevents( array $tours, int $location, int $route, string $host, string $stamp ): array {
+		$lines = array();
 		foreach ( $tours as $tour ) {
 			if ( $route && (int) $tour['route_id'] !== $route ) {
 				continue;
@@ -428,11 +448,7 @@ class Calendar {
 				$lines[] = 'END:VEVENT';
 			}
 		}
-
-		$lines[] = 'END:VCALENDAR';
-
-		$folded = array_map( array( self::class, 'ics_fold' ), $lines );
-		return implode( "\r\n", $folded ) . "\r\n";
+		return $lines;
 	}
 
 	/* --------------------------------------------------------------------- *
