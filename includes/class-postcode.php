@@ -69,26 +69,33 @@ class Postcode {
 		}
 
 		// 2) Geocode the typed postcode, then find the nearest stop by distance.
+		//    This is what lets nearby villages (postcodes we don't explicitly
+		//    list) resolve to their closest covered stop.
 		$center = Geocoder::geocode_postcode( $raw, $country );
-		if ( ! $center ) {
-			return null;
-		}
-
-		$best      = null;
-		$best_dist = PHP_FLOAT_MAX;
-		$best_addr = '';
-		$best_time = '';
-		foreach ( self::located_stops( $country ) as $stop ) {
-			$dist = self::haversine( $center['lat'], $center['lng'], $stop['lat'], $stop['lng'] );
-			if ( $dist < $best_dist ) {
-				$best_dist = $dist;
-				$best      = $stop['location_id'];
-				$best_addr = $stop['address'];
-				$best_time = $stop['time'];
+		if ( $center ) {
+			$best      = null;
+			$best_dist = PHP_FLOAT_MAX;
+			$best_addr = '';
+			$best_time = '';
+			foreach ( self::located_stops( $country ) as $stop ) {
+				$dist = self::haversine( $center['lat'], $center['lng'], $stop['lat'], $stop['lng'] );
+				if ( $dist < $best_dist ) {
+					$best_dist = $dist;
+					$best      = $stop['location_id'];
+					$best_addr = $stop['address'];
+					$best_time = $stop['time'];
+				}
+			}
+			if ( null !== $best ) {
+				return self::decorate( $best, $best_dist, $best_addr, $best_time );
 			}
 		}
 
-		return null === $best ? null : self::decorate( $best, $best_dist, $best_addr, $best_time );
+		// 3) Geocoding unavailable (provider miss/rate-limit) or no located
+		//    stops: fall back to the closest covered postcode by shared leading
+		//    digits, then numeric proximity — no network needed, so a nearby
+		//    village still resolves to its nearest stop.
+		return self::nearest_by_prefix( $norm, $country );
 	}
 
 	/**
@@ -128,6 +135,125 @@ class Postcode {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Network-free fallback: the covered postcode closest to the typed one by
+	 * shared leading digits, then numeric distance. Used when geocoding is
+	 * unavailable so a nearby village still resolves to its nearest stop.
+	 *
+	 * Requires a minimum number of shared leading characters (filterable), so a
+	 * genuinely far-away postcode returns null ("not in your area") instead of a
+	 * random distant stop. For German PLZ, 2 digits ≈ the same lead region.
+	 *
+	 * @param string $norm    Normalized typed postcode.
+	 * @param string $country ISO-2 country code.
+	 * @return array|null
+	 */
+	private static function nearest_by_prefix( string $norm, string $country ): ?array {
+		if ( '' === $norm ) {
+			return null;
+		}
+
+		/**
+		 * Minimum shared leading characters for a proximity match.
+		 *
+		 * @param int    $min     Default minimum (2).
+		 * @param string $country ISO-2 country code.
+		 */
+		$min_prefix = (int) apply_filters( 'tur_takvimi_postcode_min_prefix', 2, $country );
+
+		$best_id     = 0;
+		$best_addr   = '';
+		$best_time   = '';
+		$best_prefix = -1;
+		$best_delta  = PHP_INT_MAX;
+
+		foreach ( self::locations( $country ) as $id ) {
+			$id = (int) $id;
+			foreach ( self::covered_postcodes( $id, $country ) as $pc => $meta ) {
+				$prefix = self::common_prefix_len( $norm, (string) $pc );
+				if ( $prefix < $min_prefix ) {
+					continue;
+				}
+				$delta = self::numeric_delta( $norm, (string) $pc );
+				if ( $prefix > $best_prefix || ( $prefix === $best_prefix && $delta < $best_delta ) ) {
+					$best_prefix = $prefix;
+					$best_delta  = $delta;
+					$best_id     = $id;
+					$best_addr   = $meta['address'];
+					$best_time   = $meta['time'];
+				}
+			}
+		}
+
+		return $best_id ? self::decorate( $best_id, 0.0, $best_addr, $best_time ) : null;
+	}
+
+	/**
+	 * A location's covered postcodes (normalized) mapped to a representative
+	 * street/time: the address stops first, then the covered-postcodes summary.
+	 *
+	 * @param int    $id      Location ID.
+	 * @param string $country ISO-2 country code.
+	 * @return array<string,array{address:string,time:string}>
+	 */
+	private static function covered_postcodes( int $id, string $country ): array {
+		$out       = array();
+		$addresses = json_decode( (string) get_post_meta( $id, '_tt_addresses', true ), true );
+		if ( is_array( $addresses ) ) {
+			foreach ( $addresses as $a ) {
+				$pc = self::normalize( (string) ( $a['postcode'] ?? '' ), $country );
+				if ( '' !== $pc && ! isset( $out[ $pc ] ) ) {
+					$out[ $pc ] = array(
+						'address' => (string) ( $a['address'] ?? '' ),
+						'time'    => (string) ( $a['time'] ?? '' ),
+					);
+				}
+			}
+		}
+		$raw = (string) get_post_meta( $id, '_tt_postcodes', true );
+		foreach ( preg_split( '/[\s,]+/', $raw, -1, PREG_SPLIT_NO_EMPTY ) as $token ) {
+			$pc = self::normalize( $token, $country );
+			if ( '' !== $pc && ! isset( $out[ $pc ] ) ) {
+				$out[ $pc ] = array(
+					'address' => '',
+					'time'    => '',
+				);
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Number of shared leading characters between two strings.
+	 *
+	 * @param string $a First string.
+	 * @param string $b Second string.
+	 * @return int
+	 */
+	private static function common_prefix_len( string $a, string $b ): int {
+		$max = min( strlen( $a ), strlen( $b ) );
+		$n   = 0;
+		while ( $n < $max && $a[ $n ] === $b[ $n ] ) {
+			++$n;
+		}
+		return $n;
+	}
+
+	/**
+	 * Absolute numeric difference between two postcodes, or PHP_INT_MAX when
+	 * either is non-numeric.
+	 *
+	 * @param string $a First postcode.
+	 * @param string $b Second postcode.
+	 * @return int
+	 */
+	private static function numeric_delta( string $a, string $b ): int {
+		if ( ! ctype_digit( $a ) || ! ctype_digit( $b ) ) {
+			return PHP_INT_MAX;
+		}
+		return abs( (int) $a - (int) $b );
 	}
 
 	/**
