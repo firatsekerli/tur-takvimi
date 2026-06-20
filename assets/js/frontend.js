@@ -57,13 +57,9 @@
 		head.appendChild( headText );
 		card.appendChild( head );
 
-		// Body: distance + next visit.
-		var distText = ( typeof data.distance_km === 'number' && data.distance_km > 0 )
-			? ( String( data.distance_km ).replace( '.', ',' ) + ' ' + cfg.i18n.kmAway )
-			: cfg.i18n.inArea;
-
+		// Body: delivery hour + next visit.
 		var grid = el( 'div', 'tt-search__grid' );
-		grid.appendChild( cell( cfg.i18n.distance, distText, false ) );
+		grid.appendChild( cell( cfg.i18n.time, data.time || '—', false ) );
 		grid.appendChild( cell( cfg.i18n.next, data.next_date_label || cfg.i18n.noDate, true ) );
 		card.appendChild( grid );
 

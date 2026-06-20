@@ -64,7 +64,7 @@ class Postcode {
 		if ( '' !== $norm ) {
 			$exact = self::exact_coverage( $norm, $country );
 			if ( $exact ) {
-				return self::decorate( $exact['id'], 0.0, $exact['address'] );
+				return self::decorate( $exact['id'], 0.0, $exact['address'], $exact['time'] );
 			}
 		}
 
@@ -77,16 +77,18 @@ class Postcode {
 		$best      = null;
 		$best_dist = PHP_FLOAT_MAX;
 		$best_addr = '';
+		$best_time = '';
 		foreach ( self::located_stops( $country ) as $stop ) {
 			$dist = self::haversine( $center['lat'], $center['lng'], $stop['lat'], $stop['lng'] );
 			if ( $dist < $best_dist ) {
 				$best_dist = $dist;
 				$best      = $stop['location_id'];
 				$best_addr = $stop['address'];
+				$best_time = $stop['time'];
 			}
 		}
 
-		return null === $best ? null : self::decorate( $best, $best_dist, $best_addr );
+		return null === $best ? null : self::decorate( $best, $best_dist, $best_addr, $best_time );
 	}
 
 	/**
@@ -107,6 +109,7 @@ class Postcode {
 						return array(
 							'id'      => $id,
 							'address' => (string) ( $a['address'] ?? '' ),
+							'time'    => (string) ( $a['time'] ?? '' ),
 						);
 					}
 				}
@@ -119,6 +122,7 @@ class Postcode {
 					return array(
 						'id'      => $id,
 						'address' => '',
+						'time'    => '',
 					);
 				}
 			}
@@ -147,6 +151,7 @@ class Postcode {
 							'lat'         => (float) $a['lat'],
 							'lng'         => (float) $a['lng'],
 							'address'     => (string) ( $a['address'] ?? '' ),
+							'time'        => (string) ( $a['time'] ?? '' ),
 						);
 						$has_addr = true;
 					}
@@ -161,6 +166,7 @@ class Postcode {
 						'lat'         => (float) $lat,
 						'lng'         => (float) $lng,
 						'address'     => '',
+						'time'        => '',
 					);
 				}
 			}
@@ -198,9 +204,10 @@ class Postcode {
 	 * @param int    $location_id Location ID.
 	 * @param float  $distance_km Distance in km.
 	 * @param string $address     Nearest stop street, when known.
+	 * @param string $time        Delivery time/hour for the nearest stop.
 	 * @return array
 	 */
-	private static function decorate( int $location_id, float $distance_km, string $address = '' ): array {
+	private static function decorate( int $location_id, float $distance_km, string $address = '', string $time = '' ): array {
 		$schedule = new Schedule();
 		return array(
 			'location_id' => $location_id,
@@ -208,6 +215,7 @@ class Postcode {
 			'address'     => $address,
 			'url'         => (string) get_permalink( $location_id ),
 			'distance_km' => round( $distance_km, 1 ),
+			'time'        => $time,
 			'next_date'   => $schedule->next_tour_for_location( $location_id ),
 		);
 	}

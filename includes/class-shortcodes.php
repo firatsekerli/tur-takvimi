@@ -44,6 +44,7 @@ class Shortcodes {
 					'searching' => __( 'Searching…', 'tur-takvimi' ),
 					'nearest'   => __( 'Your nearest stop', 'tur-takvimi' ),
 					'next'      => __( 'Next visit', 'tur-takvimi' ),
+					'time'      => __( 'Hour', 'tur-takvimi' ),
 					'distance'  => __( 'Distance', 'tur-takvimi' ),
 					'kmAway'    => __( 'km away', 'tur-takvimi' ),
 					'inArea'    => __( 'In your area', 'tur-takvimi' ),
