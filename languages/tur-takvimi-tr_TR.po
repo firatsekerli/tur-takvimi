@@ -588,3 +588,6 @@ msgstr "Teslimat — %1$s +%2$d diğer"
 
 msgid "Route: %s"
 msgstr "Rota: %s"
+
+msgid "+%d more"
+msgstr "+%d daha"

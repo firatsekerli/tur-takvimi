@@ -273,11 +273,26 @@ class Calendar {
 					<div class="<?php echo esc_attr( $class ); ?>">
 						<span class="tt-month__num"><?php echo esc_html( (string) $d ); ?></span>
 						<?php if ( $stops ) : ?>
+							<?php
+							$cap     = 6;
+							$visible = array_slice( $stops, 0, $cap );
+							$extra   = array_slice( $stops, $cap );
+							?>
 							<div class="tt-month__stops">
-								<?php foreach ( $stops as $s ) : ?>
+								<?php foreach ( $visible as $s ) : ?>
 									<a class="tt-month__stop" href="<?php echo esc_url( $s['url'] ); ?>"><?php echo esc_html( $s['title'] ); ?></a>
 								<?php endforeach; ?>
 							</div>
+							<?php if ( $extra ) : ?>
+								<details class="tt-month__more">
+									<summary class="tt-month__more-toggle"><?php echo esc_html( sprintf( /* translators: %d: number of additional cities. */ __( '+%d more', 'tur-takvimi' ), count( $extra ) ) ); ?></summary>
+									<div class="tt-month__stops">
+										<?php foreach ( $extra as $s ) : ?>
+											<a class="tt-month__stop" href="<?php echo esc_url( $s['url'] ); ?>"><?php echo esc_html( $s['title'] ); ?></a>
+										<?php endforeach; ?>
+									</div>
+								</details>
+							<?php endif; ?>
 							<a class="tt-month__gcal" href="<?php echo esc_url( $this->google_url( $date, $stops ) ); ?>" target="_blank" rel="noopener nofollow" title="<?php esc_attr_e( 'Add to Google Calendar', 'tur-takvimi' ); ?>">＋</a>
 						<?php endif; ?>
 					</div>

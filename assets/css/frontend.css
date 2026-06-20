@@ -213,6 +213,30 @@
 	text-decoration: underline;
 }
 
+.tt-month__more {
+	margin-top: 2px;
+}
+
+.tt-month__more-toggle {
+	list-style: none;
+	cursor: pointer;
+	font-size: 0.72rem;
+	font-weight: 700;
+	color: var(--tt-primary);
+}
+
+.tt-month__more-toggle::-webkit-details-marker {
+	display: none;
+}
+
+.tt-month__more-toggle:hover {
+	text-decoration: underline;
+}
+
+.tt-month__more[open] .tt-month__more-toggle {
+	margin-bottom: 2px;
+}
+
 .tt-month__gcal {
 	position: absolute;
 	top: 0.25rem;
