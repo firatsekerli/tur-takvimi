@@ -125,13 +125,16 @@
 			return;
 		}
 
-		// Column headers above the rows.
+		// Column headers above the rows. Mirror every row column (including the
+		// trailing "weeks" word + remove link) so the labels line up exactly.
 		var head = el( 'div', 'tt-address-head' );
-		head.appendChild( el( 'span', 'tt-address-head__pin', '' ) );
-		head.appendChild( el( 'span', 'tt-address-head__street', cfg.i18n.street ) );
-		head.appendChild( el( 'span', 'tt-address-head__pc', cfg.i18n.postcode ) );
-		head.appendChild( el( 'span', 'tt-address-head__time', cfg.i18n.time ) );
-		head.appendChild( el( 'span', 'tt-address-head__freq', cfg.i18n.freq ) );
+		head.appendChild( el( 'span', 'tt-address-row__pin', '' ) );
+		head.appendChild( el( 'span', 'tt-address-row__street', cfg.i18n.street ) );
+		head.appendChild( el( 'span', 'tt-address-row__pc', cfg.i18n.postcode ) );
+		head.appendChild( el( 'span', 'tt-address-row__time', cfg.i18n.time ) );
+		head.appendChild( el( 'span', 'tt-address-row__freq', cfg.i18n.freq ) );
+		head.appendChild( el( 'span', 'tt-address-row__freq-label', '' ) );
+		head.appendChild( el( 'span', 'tt-address-row__remove', '' ) );
 		listEl.appendChild( head );
 
 		state.forEach( function ( item, index ) {

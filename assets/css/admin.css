@@ -76,27 +76,6 @@
 	color: #646970;
 }
 
-.tt-address-head__pin {
-	width: 1.25rem;
-	flex: 0 0 auto;
-}
-
-.tt-address-head__street {
-	flex: 1 1 auto;
-}
-
-.tt-address-head__pc {
-	flex: 0 0 100px;
-}
-
-.tt-address-head__time {
-	flex: 0 0 80px;
-}
-
-.tt-address-head__freq {
-	flex: 0 0 64px;
-}
-
 .tt-address-row {
 	display: flex;
 	align-items: center;
@@ -111,7 +90,8 @@
 }
 
 .tt-address-row__street {
-	flex: 1 1 auto;
+	flex: 1 1 0;
+	min-width: 0;
 }
 
 .tt-address-row__pc {
@@ -127,16 +107,17 @@
 }
 
 .tt-address-row__freq-label {
-	flex: 0 0 auto;
+	flex: 0 0 3rem;
 	color: #646970;
 	font-size: 0.85rem;
 }
 
 .tt-address-row__remove {
-	flex: 0 0 auto;
+	flex: 0 0 4rem;
 	color: #b32d2e;
 	text-decoration: none;
 	cursor: pointer;
+	white-space: nowrap;
 }
 
 .tt-address-row__remove:hover {
