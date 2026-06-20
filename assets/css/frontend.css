@@ -386,9 +386,11 @@
 /* Schedule — warm brand-amber card so the next dates stand out. */
 .tt-citysched {
 	display: grid;
-	grid-template-columns: minmax( 0, 1.6fr ) minmax( 0, 1fr );
+	/* Dates hug their (bounded, predictable) content; the route gets the rest
+	   so long route names have room. */
+	grid-template-columns: max-content minmax( 0, 1fr );
 	align-items: start;
-	gap: 1.5rem 2.5rem;
+	gap: 1.5rem 3rem;
 	padding: 1.5rem 1.75rem;
 	background: linear-gradient( 135deg, #ffce6e 0%, var( --tt-secondary, #ffbe51 ) 55%, #f6ad34 100% );
 	border: 1px solid rgba( 124, 83, 26, 0.18 );
@@ -431,6 +433,7 @@
 	padding: 0;
 	display: flex;
 	flex-direction: column;
+	align-items: flex-start;
 	gap: 0.45rem;
 }
 

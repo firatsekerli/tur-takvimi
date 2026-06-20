@@ -41,6 +41,14 @@
 		} else {
 			map.fitBounds( latlngs, { padding: [ 30, 30 ] } );
 		}
+
+		// Recompute tiles after late layout (iframes / builder canvases).
+		setTimeout( function () {
+			map.invalidateSize();
+		}, 300 );
+		window.addEventListener( 'resize', function () {
+			map.invalidateSize();
+		} );
 	}
 
 	function ready( fn ) {
@@ -51,8 +59,23 @@
 		}
 	}
 
-	ready( function () {
-		var maps = document.querySelectorAll( '[data-tt-citymap]' );
-		Array.prototype.forEach.call( maps, initMap );
-	} );
+	function scan() {
+		Array.prototype.forEach.call( document.querySelectorAll( '[data-tt-citymap]' ), initMap );
+	}
+
+	ready( scan );
+
+	// Builders inject/replace shortcode markup after load and Leaflet may load
+	// late; re-scan on load and on DOM changes (initMap is idempotent).
+	window.addEventListener( 'load', scan );
+	if ( window.MutationObserver ) {
+		var rescan;
+		var observer = new window.MutationObserver( function () {
+			clearTimeout( rescan );
+			rescan = setTimeout( scan, 200 );
+		} );
+		ready( function () {
+			observer.observe( document.body, { childList: true, subtree: true } );
+		} );
+	}
 }() );

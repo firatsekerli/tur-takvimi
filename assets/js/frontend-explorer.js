@@ -169,6 +169,15 @@
 		} else {
 			map.setView( [ 51.2, 7.0 ], 7 );
 		}
+
+		// The container is often laid out (or resized) after init inside iframes
+		// and page-builder canvases; recompute tiles once things settle.
+		setTimeout( function () {
+			map.invalidateSize();
+		}, 300 );
+		window.addEventListener( 'resize', function () {
+			map.invalidateSize();
+		} );
 	}
 
 	function ready( fn ) {
@@ -179,7 +188,24 @@
 		}
 	}
 
-	ready( function () {
+	function scan() {
 		Array.prototype.forEach.call( document.querySelectorAll( '[data-tt-explorer]' ), bind );
-	} );
+	}
+
+	ready( scan );
+
+	// Builders (Breakdance, Elementor…) inject or replace shortcode markup after
+	// load and Leaflet may arrive late; re-scan on load and on DOM changes
+	// (bind() is idempotent, so this only ever wires up new, unbound widgets).
+	window.addEventListener( 'load', scan );
+	if ( window.MutationObserver ) {
+		var rescan;
+		var observer = new window.MutationObserver( function () {
+			clearTimeout( rescan );
+			rescan = setTimeout( scan, 200 );
+		} );
+		ready( function () {
+			observer.observe( document.body, { childList: true, subtree: true } );
+		} );
+	}
 }() );
