@@ -173,6 +173,15 @@ class Calendar {
 						<?php endif; ?>
 					</div>
 				<?php endfor; ?>
+
+				<?php
+				// Pad to a fixed 6 rows (42 cells) so the height never shifts
+				// between months.
+				$trailing = 42 - $lead - $days_in_month;
+				for ( $i = 0; $i < $trailing; $i++ ) :
+					?>
+					<span class="tt-month__cell tt-month__cell--empty"></span>
+				<?php endfor; ?>
 			</div>
 		</div>
 		<?php

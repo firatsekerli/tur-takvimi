@@ -157,9 +157,8 @@
 }
 
 .tt-month__cell--empty {
-	border: none;
+	border-color: transparent;
 	background: transparent;
-	min-height: 0;
 }
 
 .tt-month__cell.has-stops {
