@@ -115,38 +115,40 @@ class Map_Explorer {
 		?>
 		<div class="tt-explorer" data-tt-explorer style="--tt-map-h:<?php echo (int) $height; ?>px">
 			<div class="tt-explorer__filters">
-				<?php if ( $show_country ) : ?>
+				<div class="tt-explorer__filters-main">
+					<?php if ( $show_country ) : ?>
+						<div class="tt-explorer__filter">
+							<label class="tt-explorer__label" for="tt-explorer-country"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></label>
+							<select id="tt-explorer-country" class="tt-explorer__select" data-tt-country>
+								<option value=""><?php esc_html_e( 'All countries', 'tur-takvimi' ); ?></option>
+								<?php foreach ( $countries as $code ) : ?>
+									<option value="<?php echo esc_attr( $code ); ?>"><?php echo esc_html( Country::name( $code ) ); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( $region_names ) : ?>
+						<div class="tt-explorer__filter">
+							<label class="tt-explorer__label" for="tt-explorer-region"><?php esc_html_e( 'Region / Route', 'tur-takvimi' ); ?></label>
+							<select id="tt-explorer-region" class="tt-explorer__select" data-tt-region>
+								<option value=""><?php esc_html_e( 'All regions', 'tur-takvimi' ); ?></option>
+								<?php foreach ( $region_names as $slug => $name ) : ?>
+									<option value="<?php echo esc_attr( $slug ); ?>" data-country="<?php echo esc_attr( implode( ',', array_keys( $region_countries[ $slug ] ) ) ); ?>"><?php echo esc_html( $name ); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+					<?php endif; ?>
+
 					<div class="tt-explorer__filter">
-						<label class="tt-explorer__label" for="tt-explorer-country"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></label>
-						<select id="tt-explorer-country" class="tt-explorer__select" data-tt-country>
-							<option value=""><?php esc_html_e( 'All countries', 'tur-takvimi' ); ?></option>
-							<?php foreach ( $countries as $code ) : ?>
-								<option value="<?php echo esc_attr( $code ); ?>"><?php echo esc_html( Country::name( $code ) ); ?></option>
-							<?php endforeach; ?>
+						<label class="tt-explorer__label" for="tt-explorer-week"><?php esc_html_e( 'Week', 'tur-takvimi' ); ?></label>
+						<select id="tt-explorer-week" class="tt-explorer__select" data-tt-week>
+							<option value=""><?php esc_html_e( 'All weeks', 'tur-takvimi' ); ?></option>
+							<option value="0"><?php esc_html_e( 'This week', 'tur-takvimi' ); ?></option>
+							<option value="1"><?php esc_html_e( 'Next week', 'tur-takvimi' ); ?></option>
+							<option value="2"><?php esc_html_e( '+2 weeks', 'tur-takvimi' ); ?></option>
 						</select>
 					</div>
-				<?php endif; ?>
-
-				<?php if ( $region_names ) : ?>
-					<div class="tt-explorer__filter">
-						<label class="tt-explorer__label" for="tt-explorer-region"><?php esc_html_e( 'Region / Route', 'tur-takvimi' ); ?></label>
-						<select id="tt-explorer-region" class="tt-explorer__select" data-tt-region>
-							<option value=""><?php esc_html_e( 'All regions', 'tur-takvimi' ); ?></option>
-							<?php foreach ( $region_names as $slug => $name ) : ?>
-								<option value="<?php echo esc_attr( $slug ); ?>" data-country="<?php echo esc_attr( implode( ',', array_keys( $region_countries[ $slug ] ) ) ); ?>"><?php echo esc_html( $name ); ?></option>
-							<?php endforeach; ?>
-						</select>
-					</div>
-				<?php endif; ?>
-
-				<div class="tt-explorer__filter">
-					<label class="tt-explorer__label" for="tt-explorer-week"><?php esc_html_e( 'Week', 'tur-takvimi' ); ?></label>
-					<select id="tt-explorer-week" class="tt-explorer__select" data-tt-week>
-						<option value=""><?php esc_html_e( 'All weeks', 'tur-takvimi' ); ?></option>
-						<option value="0"><?php esc_html_e( 'This week', 'tur-takvimi' ); ?></option>
-						<option value="1"><?php esc_html_e( 'Next week', 'tur-takvimi' ); ?></option>
-						<option value="2"><?php esc_html_e( '+2 weeks', 'tur-takvimi' ); ?></option>
-					</select>
 				</div>
 
 				<div class="tt-explorer__filter tt-explorer__filter--search">
