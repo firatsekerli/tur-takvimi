@@ -648,3 +648,15 @@ msgstr "Örnekler: %1$s takvim filtrelerini sola hizalar ve başlığını gizle
 
 msgid "Shortcodes render full-width (100%) of their container — wrap one in a column or set a max-width on the container to constrain it."
 msgstr "Kısa kodlar kapsayıcılarının tam genişliğinde (%100) görüntülenir — birini bir sütuna sarın veya sınırlamak için kapsayıcıya bir max-width verin."
+
+msgid "Full city panel: schedule + map + address list, combined."
+msgstr "Tam şehir paneli: program + harita + adres listesi bir arada."
+
+msgid "A city's next delivery dates and route(s)."
+msgstr "Bir şehrin sonraki teslimat tarihleri ve rota(lar)ı."
+
+msgid "A map of one city's delivery stops."
+msgstr "Bir şehrin teslimat duraklarının haritası."
+
+msgid "The city shortcodes default to the current city on a single-city page, or take an explicit id=\"123\"."
+msgstr "Şehir kısa kodları, tekil şehir sayfasında geçerli şehri varsayar veya açık bir id=\"123\" alır."

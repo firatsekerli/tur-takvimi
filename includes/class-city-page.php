@@ -87,8 +87,11 @@ class City_Page {
 		wp_enqueue_style( 'tur-takvimi' );
 		wp_enqueue_script( 'tur-takvimi-map' );
 
+		$opts = shortcode_atts( array( 'id' => 0, 'class' => '' ), $atts, 'tur_takvimi_city_map' );
+
 		return sprintf(
-			'<div class="tt-citymap" data-tt-citymap="%s" role="img" aria-label="%s"></div>',
+			'<div class="tt-citymap%s" data-tt-citymap="%s" role="img" aria-label="%s"></div>',
+			esc_attr( Shortcodes::extra_class( $opts['class'] ) ),
 			esc_attr( wp_json_encode( array( 'points' => $points ) ) ),
 			esc_attr( sprintf( /* translators: %s: city name. */ __( 'Delivery stops in %s', 'tur-takvimi' ), get_the_title( $id ) ) )
 		);
@@ -212,13 +215,14 @@ class City_Page {
 
 		wp_enqueue_style( 'tur-takvimi' );
 
+		$opts     = shortcode_atts( array( 'id' => 0, 'class' => '' ), $atts, 'tur_takvimi_city_schedule' );
 		$schedule = new Schedule();
 		$dates    = $schedule->upcoming_tours_for_location( $id, 4 );
 		$groups   = $this->route_groups( $schedule->routes_for_location( $id ) );
 
 		ob_start();
 		?>
-		<section class="tt-citysched" aria-label="<?php esc_attr_e( 'Delivery schedule', 'tur-takvimi' ); ?>">
+		<section class="tt-citysched<?php echo esc_attr( Shortcodes::extra_class( $opts['class'] ) ); ?>" aria-label="<?php esc_attr_e( 'Delivery schedule', 'tur-takvimi' ); ?>">
 			<div class="tt-citysched__next">
 				<span class="tt-citysched__label"><?php esc_html_e( 'Next deliveries', 'tur-takvimi' ); ?></span>
 				<?php if ( $dates ) : ?>
@@ -253,10 +257,15 @@ class City_Page {
 		if ( ! $id ) {
 			return '';
 		}
-		return '<div class="tt-city">'
-			. $this->schedule( $atts )
-			. $this->map( $atts )
-			. $this->stops( $atts )
+		$opts  = shortcode_atts( array( 'id' => 0, 'class' => '', 'align' => '' ), $atts, 'tur_takvimi_city' );
+		$class = Shortcodes::extra_class( $opts['class'] );
+		// Custom class goes on the wrapper only; align flows to the inner stops
+		// list (the one part with a filter row).
+		$child = array( 'id' => $id, 'align' => $opts['align'] );
+		return '<div class="tt-city' . esc_attr( $class ) . '">'
+			. $this->schedule( $child )
+			. $this->map( $child )
+			. $this->stops( $child )
 			. '</div>';
 	}
 

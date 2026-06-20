@@ -303,12 +303,30 @@ class Settings {
 					<td><code>months</code>, <code>country</code>, <code>id</code>, <code>align</code>, <code>class</code></td>
 				</tr>
 				<tr>
+					<td><code>[tur_takvimi_city]</code></td>
+					<td><?php esc_html_e( 'Full city panel: schedule + map + address list, combined.', 'tur-takvimi' ); ?></td>
+					<td><code>id</code>, <code>align</code>, <code>class</code></td>
+				</tr>
+				<tr>
+					<td><code>[tur_takvimi_city_schedule]</code></td>
+					<td><?php esc_html_e( 'A city\'s next delivery dates and route(s).', 'tur-takvimi' ); ?></td>
+					<td><code>id</code>, <code>class</code></td>
+				</tr>
+				<tr>
+					<td><code>[tur_takvimi_city_map]</code></td>
+					<td><?php esc_html_e( 'A map of one city\'s delivery stops.', 'tur-takvimi' ); ?></td>
+					<td><code>id</code>, <code>class</code></td>
+				</tr>
+				<tr>
 					<td><code>[tur_takvimi_city_stops]</code></td>
 					<td><?php esc_html_e( 'A city\'s delivery addresses (with per-address calendar links).', 'tur-takvimi' ); ?></td>
 					<td><code>id</code>, <code>heading</code>, <code>align</code>, <code>class</code></td>
 				</tr>
 			</tbody>
 		</table>
+		<p class="description" style="max-width:60rem">
+			<?php esc_html_e( 'The city shortcodes default to the current city on a single-city page, or take an explicit id="123".', 'tur-takvimi' ); ?>
+		</p>
 
 		<p class="description" style="max-width:60rem;margin-top:1rem">
 			<?php
