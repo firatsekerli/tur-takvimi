@@ -67,7 +67,7 @@ class Map_Explorer {
 		$atts = shortcode_atts(
 			array(
 				'country' => '',
-				'height'  => '520',
+				'height'  => '600',
 			),
 			$atts,
 			'tur_takvimi_map'
@@ -113,7 +113,7 @@ class Map_Explorer {
 
 		ob_start();
 		?>
-		<div class="tt-explorer" data-tt-explorer>
+		<div class="tt-explorer" data-tt-explorer style="--tt-map-h:<?php echo (int) $height; ?>px">
 			<div class="tt-explorer__filters">
 				<?php if ( $show_country ) : ?>
 					<div class="tt-explorer__row">
@@ -129,13 +129,13 @@ class Map_Explorer {
 
 				<?php if ( $region_names ) : ?>
 					<div class="tt-explorer__row">
-						<span class="tt-explorer__label"><?php esc_html_e( 'Region / Route', 'tur-takvimi' ); ?></span>
-						<div class="tt-explorer__chips">
-							<button type="button" class="tt-explorer__chip is-active" data-filter="region" data-value=""><?php esc_html_e( 'All', 'tur-takvimi' ); ?></button>
+						<label class="tt-explorer__label" for="tt-explorer-region"><?php esc_html_e( 'Region / Route', 'tur-takvimi' ); ?></label>
+						<select id="tt-explorer-region" class="tt-explorer__select" data-tt-region>
+							<option value=""><?php esc_html_e( 'All regions', 'tur-takvimi' ); ?></option>
 							<?php foreach ( $region_names as $slug => $name ) : ?>
-								<button type="button" class="tt-explorer__chip" data-filter="region" data-value="<?php echo esc_attr( $slug ); ?>" data-country="<?php echo esc_attr( implode( ',', array_keys( $region_countries[ $slug ] ) ) ); ?>"><?php echo esc_html( $name ); ?></button>
+								<option value="<?php echo esc_attr( $slug ); ?>" data-country="<?php echo esc_attr( implode( ',', array_keys( $region_countries[ $slug ] ) ) ); ?>"><?php echo esc_html( $name ); ?></option>
 							<?php endforeach; ?>
-						</div>
+						</select>
 					</div>
 				<?php endif; ?>
 
@@ -182,13 +182,17 @@ class Map_Explorer {
 										data-week="<?php echo esc_attr( (string) $s['bucket'] ); ?>"
 										data-title="<?php echo esc_attr( $s['search'] ); ?>">
 										<span class="tt-explorer__dot" aria-hidden="true"></span>
-										<span class="tt-explorer__stop-name"><?php echo esc_html( $s['title'] ); ?></span>
-										<?php if ( $s['region_label'] ) : ?>
-											<span class="tt-explorer__stop-region"><?php echo esc_html( $s['region_label'] ); ?></span>
-										<?php endif; ?>
-										<?php if ( $s['next_label'] ) : ?>
-											<span class="tt-explorer__stop-date"><?php echo esc_html( $s['next_label'] ); ?></span>
-										<?php endif; ?>
+										<span class="tt-explorer__stop-body">
+											<span class="tt-explorer__stop-top">
+												<span class="tt-explorer__stop-name"><?php echo esc_html( $s['title'] ); ?></span>
+												<?php if ( $s['next_label'] ) : ?>
+													<span class="tt-explorer__stop-date"><?php echo esc_html( $s['next_label'] ); ?></span>
+												<?php endif; ?>
+											</span>
+											<?php if ( $s['region_label'] ) : ?>
+												<span class="tt-explorer__stop-region"><?php echo esc_html( $s['region_label'] ); ?></span>
+											<?php endif; ?>
+										</span>
 									</a>
 								</li>
 							<?php endforeach; ?>

@@ -528,3 +528,6 @@ msgstr "Bu durak için teslimat saati (örn. 09:00 veya 09:00–12:00)"
 
 msgid "No routes for this country yet. Create a route and set its country to match."
 msgstr "Bu ülke için henüz rota yok. Bir rota oluşturup ülkesini eşleşecek şekilde ayarlayın."
+
+msgid "All regions"
+msgstr "Tüm bölgeler"

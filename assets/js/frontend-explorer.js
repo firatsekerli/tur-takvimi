@@ -99,7 +99,33 @@
 			}
 		}
 
-		// Filter chips.
+		var regionSelect = root.querySelector( '[data-tt-region]' );
+
+		// Limit the region dropdown to the chosen country and drop a now-invalid
+		// selection. Returns nothing; updates state.region.
+		function syncRegionOptions( country ) {
+			if ( ! regionSelect ) {
+				return;
+			}
+			var opts = regionSelect.options;
+			for ( var i = 0; i < opts.length; i++ ) {
+				var o = opts[ i ];
+				if ( ! o.value ) {
+					continue;
+				}
+				var oc = o.getAttribute( 'data-country' ) || '';
+				var show = ! country || ! oc || ( ',' + oc + ',' ).indexOf( ',' + country + ',' ) >= 0;
+				o.hidden = ! show;
+				o.disabled = ! show;
+			}
+			var current = regionSelect.options[ regionSelect.selectedIndex ];
+			if ( current && current.hidden ) {
+				regionSelect.value = '';
+			}
+			state.region = regionSelect.value;
+		}
+
+		// Country / week chips.
 		Array.prototype.forEach.call( root.querySelectorAll( '.tt-explorer__chip' ), function ( chip ) {
 			chip.addEventListener( 'click', function () {
 				var type = chip.getAttribute( 'data-filter' );
@@ -112,24 +138,19 @@
 					c.classList.toggle( 'is-active', c === chip );
 				} );
 
-				// Picking a country resets the region filter and hides region
-				// chips that don't belong to the chosen country.
 				if ( 'country' === type ) {
-					state.region = '';
-					var regionGroup = root.querySelector( '[data-filter="region"]' );
-					regionGroup = regionGroup ? regionGroup.parentNode : null;
-					if ( regionGroup ) {
-						Array.prototype.forEach.call( regionGroup.querySelectorAll( '.tt-explorer__chip' ), function ( rc ) {
-							var rcCountries = rc.getAttribute( 'data-country' );
-							var show = ! value || ! rcCountries || ( ',' + rcCountries + ',' ).indexOf( ',' + value + ',' ) >= 0;
-							rc.style.display = show ? '' : 'none';
-							rc.classList.toggle( 'is-active', '' === rc.getAttribute( 'data-value' ) );
-						} );
-					}
+					syncRegionOptions( value );
 				}
 				apply();
 			} );
 		} );
+
+		if ( regionSelect ) {
+			regionSelect.addEventListener( 'change', function () {
+				state.region = regionSelect.value;
+				apply();
+			} );
+		}
 
 		if ( searchEl ) {
 			searchEl.addEventListener( 'input', function () {
