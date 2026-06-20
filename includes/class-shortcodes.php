@@ -73,6 +73,28 @@ class Shortcodes {
 	}
 
 	/**
+	 * Resolve a `heading` shortcode attribute shared across shortcodes.
+	 *
+	 * - not provided (null) → the default text
+	 * - a "hide" keyword    → '' so the caller omits the heading entirely
+	 * - any other string    → used verbatim (a custom override)
+	 *
+	 * @param mixed  $value   Raw attribute value.
+	 * @param string $default Default heading when the attribute is absent.
+	 * @return string
+	 */
+	public static function heading_attr( $value, string $default ): string {
+		if ( null === $value ) {
+			return $default;
+		}
+		$normalized = strtolower( trim( (string) $value ) );
+		if ( in_array( $normalized, array( '', '0', 'no', 'false', 'none', 'hide', 'off' ), true ) ) {
+			return '';
+		}
+		return trim( (string) $value );
+	}
+
+	/**
 	 * Render the weekly tour calendar (server-side for SEO).
 	 *
 	 * @param array $atts Shortcode attributes.
@@ -83,6 +105,7 @@ class Shortcodes {
 			array(
 				'weeks'   => (int) Settings::get( 'calendar_weeks', 3 ),
 				'country' => '',
+				'heading' => null,
 			),
 			$atts,
 			'tur_takvimi_calendar'
@@ -102,8 +125,10 @@ class Shortcodes {
 			$days[ $tour['tour_date'] ][] = $tour;
 		}
 
-		$heading = Settings::get( 'calendar_heading', __( 'Weekly Delivery Tours', 'tur-takvimi' ) );
-		$today   = current_time( 'Y-m-d' );
+		$default_heading = (string) Settings::get( 'calendar_heading', __( 'Weekly Delivery Tours', 'tur-takvimi' ) );
+		$heading         = self::heading_attr( $atts['heading'], $default_heading );
+		$aria            = '' !== $heading ? $heading : $default_heading;
+		$today           = current_time( 'Y-m-d' );
 
 		// Country filter toggle: only when the shortcode isn't pinned to one
 		// country and the rendered period actually spans more than one. The
@@ -120,8 +145,10 @@ class Shortcodes {
 
 		ob_start();
 		?>
-		<section class="tt-calendar" aria-label="<?php echo esc_attr( $heading ); ?>"<?php echo $toggle ? ' data-tt-calendar' : ''; ?>>
-			<h2 class="tt-calendar__heading"><?php echo esc_html( $heading ); ?></h2>
+		<section class="tt-calendar" aria-label="<?php echo esc_attr( $aria ); ?>"<?php echo $toggle ? ' data-tt-calendar' : ''; ?>>
+			<?php if ( '' !== $heading ) : ?>
+				<h2 class="tt-calendar__heading"><?php echo esc_html( $heading ); ?></h2>
+			<?php endif; ?>
 			<?php if ( $toggle ) : ?>
 				<div class="tt-calendar__filter" role="group" aria-label="<?php esc_attr_e( 'Filter by country', 'tur-takvimi' ); ?>">
 					<button type="button" class="tt-calendar__filter-btn is-active" data-tt-cal-filter data-country=""><?php esc_html_e( 'All', 'tur-takvimi' ); ?></button>

@@ -33,14 +33,22 @@ The plugin has two layers:
 == Shortcodes ==
 
 * `[tur_takvimi_calendar weeks="3"]` — the weekly tour calendar (day list).
-* `[tur_takvimi_calendar_month]` — a real month-grid calendar with an "Add to
-  calendar" toolbar (subscribe / .ics download) and per-day Google Calendar
-  links. Optional `country="DE"`, `months="1"` (1–3), and `id="123"` to scope
-  to one city. On a single city page it defaults to that city automatically.
+* `[tur_takvimi_calendar_month]` — a real month-grid calendar. Optional
+  `country="DE"`, `months="1"` (1–3), and `id="123"` to scope to one city. On a
+  single city page it defaults to that city automatically.
 * `[tur_takvimi_postcode_search]` — the nearest-stop postcode finder.
 * `[tur_takvimi_map]` — the delivery-regions explorer (filterable map + stop
   list). Optional `country="DE"` hard-scopes it; `height="520"` sets the map
   height. On multi-country sites it shows a country filter automatically.
+
+Shortcodes that print their own heading (`[tur_takvimi_calendar]` and
+`[tur_takvimi_city_stops]`) accept a `heading` attribute: omit it for the
+default, set `heading="no"` (also `false`/`none`/`0`) to hide it when your page
+already has a title, or pass any text to override it, e.g.
+`[tur_takvimi_calendar heading="Yaklaşan teslimat günleri"]`.
+
+Shortcodes render full-width (100%) of their container; wrap them in a column
+or set a max-width on the container to constrain them.
 
 All work in Breakdance, Gutenberg, the classic editor and any theme.
 
