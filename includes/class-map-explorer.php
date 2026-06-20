@@ -68,6 +68,8 @@ class Map_Explorer {
 			array(
 				'country' => '',
 				'height'  => '600',
+				'class'   => '',
+				'align'   => '',
 			),
 			$atts,
 			'tur_takvimi_map'
@@ -111,9 +113,11 @@ class Map_Explorer {
 			}
 		}
 
+		$align = Shortcodes::align_value( $atts['align'] );
+
 		ob_start();
 		?>
-		<div class="tt-explorer" data-tt-explorer style="--tt-map-h:<?php echo (int) $height; ?>px">
+		<div class="tt-explorer<?php echo esc_attr( Shortcodes::extra_class( $atts['class'] ) ); ?>" data-tt-explorer<?php echo '' !== $align ? ' data-tt-align="' . esc_attr( $align ) . '"' : ''; ?> style="--tt-map-h:<?php echo (int) $height; ?>px">
 			<div class="tt-explorer__filters">
 				<div class="tt-explorer__filters-main">
 					<?php if ( $show_country ) : ?>

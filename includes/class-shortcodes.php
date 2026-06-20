@@ -95,6 +95,38 @@ class Shortcodes {
 	}
 
 	/**
+	 * Sanitize a `class` shortcode attribute into a leading-spaced class string
+	 * ready to append to a root element's class list (or '' when empty).
+	 *
+	 * @param mixed $value Raw attribute value.
+	 * @return string
+	 */
+	public static function extra_class( $value ): string {
+		if ( ! is_string( $value ) || '' === trim( $value ) ) {
+			return '';
+		}
+		$classes = array();
+		foreach ( preg_split( '/\s+/', trim( $value ) ) as $token ) {
+			$clean = sanitize_html_class( $token );
+			if ( '' !== $clean ) {
+				$classes[] = $clean;
+			}
+		}
+		return $classes ? ' ' . implode( ' ', $classes ) : '';
+	}
+
+	/**
+	 * Normalize an `align` shortcode attribute to left|center|right (or '').
+	 *
+	 * @param mixed $value Raw attribute value.
+	 * @return string
+	 */
+	public static function align_value( $value ): string {
+		$v = strtolower( trim( (string) $value ) );
+		return in_array( $v, array( 'left', 'center', 'right' ), true ) ? $v : '';
+	}
+
+	/**
 	 * Render the weekly tour calendar (server-side for SEO).
 	 *
 	 * @param array $atts Shortcode attributes.
@@ -106,6 +138,8 @@ class Shortcodes {
 				'weeks'   => (int) Settings::get( 'calendar_weeks', 3 ),
 				'country' => '',
 				'heading' => null,
+				'class'   => '',
+				'align'   => '',
 			),
 			$atts,
 			'tur_takvimi_calendar'
@@ -142,10 +176,11 @@ class Shortcodes {
 		}
 		$present = array_values( array_intersect( Country::supported(), array_keys( $present ) ) );
 		$toggle  = '' === $pinned && count( $present ) > 1;
+		$align   = self::align_value( $atts['align'] );
 
 		ob_start();
 		?>
-		<section class="tt-calendar" aria-label="<?php echo esc_attr( $aria ); ?>"<?php echo $toggle ? ' data-tt-calendar' : ''; ?>>
+		<section class="tt-calendar<?php echo esc_attr( self::extra_class( $atts['class'] ) ); ?>" aria-label="<?php echo esc_attr( $aria ); ?>"<?php echo '' !== $align ? ' data-tt-align="' . esc_attr( $align ) . '"' : ''; ?><?php echo $toggle ? ' data-tt-calendar' : ''; ?>>
 			<?php if ( '' !== $heading ) : ?>
 				<h2 class="tt-calendar__heading"><?php echo esc_html( $heading ); ?></h2>
 			<?php endif; ?>
@@ -197,7 +232,15 @@ class Shortcodes {
 	 * @return string
 	 */
 	public function postcode_search( $atts ): string {
-		$atts = shortcode_atts( array( 'country' => '' ), $atts, 'tur_takvimi_postcode_search' );
+		$atts = shortcode_atts(
+			array(
+				'country' => '',
+				'class'   => '',
+				'align'   => '',
+			),
+			$atts,
+			'tur_takvimi_postcode_search'
+		);
 
 		wp_enqueue_style( 'tur-takvimi' );
 		wp_enqueue_script( 'tur-takvimi' );
@@ -223,9 +266,11 @@ class Shortcodes {
 			$picker = array();
 		}
 
+		$align = self::align_value( $atts['align'] );
+
 		ob_start();
 		?>
-		<div class="tt-search" data-tt-search data-country="<?php echo esc_attr( $country ); ?>">
+		<div class="tt-search<?php echo esc_attr( self::extra_class( $atts['class'] ) ); ?>" data-tt-search data-country="<?php echo esc_attr( $country ); ?>"<?php echo '' !== $align ? ' data-tt-align="' . esc_attr( $align ) . '"' : ''; ?>>
 			<form class="tt-search__form" role="search">
 				<label class="tt-search__sr" for="tt-postcode"><?php esc_html_e( 'Enter your postcode to find the nearest stop and date', 'tur-takvimi' ); ?></label>
 				<div class="tt-search__row">

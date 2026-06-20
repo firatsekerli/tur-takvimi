@@ -217,6 +217,33 @@
 	margin: 0 0 1.25rem;
 }
 
+/* Shortcode `align` attribute: shifts a component's filter/toolbar row. The
+   targeted row differs per shortcode but the knob (left/center/right) is the
+   same everywhere. */
+.tt-calendar[data-tt-align="left"] .tt-calendar__filter,
+.tt-month[data-tt-align="left"] .tt-month__bar,
+.tt-search[data-tt-align="left"] .tt-search__row,
+.tt-stops[data-tt-align="left"] .tt-stops__bar,
+.tt-explorer[data-tt-align="left"] .tt-explorer__filters-main {
+	justify-content: flex-start;
+}
+
+.tt-calendar[data-tt-align="center"] .tt-calendar__filter,
+.tt-month[data-tt-align="center"] .tt-month__bar,
+.tt-search[data-tt-align="center"] .tt-search__row,
+.tt-stops[data-tt-align="center"] .tt-stops__bar,
+.tt-explorer[data-tt-align="center"] .tt-explorer__filters-main {
+	justify-content: center;
+}
+
+.tt-calendar[data-tt-align="right"] .tt-calendar__filter,
+.tt-month[data-tt-align="right"] .tt-month__bar,
+.tt-search[data-tt-align="right"] .tt-search__row,
+.tt-stops[data-tt-align="right"] .tt-stops__bar,
+.tt-explorer[data-tt-align="right"] .tt-explorer__filters-main {
+	justify-content: flex-end;
+}
+
 .tt-calendar__filter-btn {
 	background: #fff;
 	border: 1px solid var(--tt-border);

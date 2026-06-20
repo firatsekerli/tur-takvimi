@@ -113,14 +113,15 @@ class City_Page {
 		wp_enqueue_style( 'tur-takvimi' );
 		wp_enqueue_script( 'tur-takvimi' );
 
-		$opts    = shortcode_atts( array( 'id' => 0, 'heading' => null ), $atts, 'tur_takvimi_city_stops' );
+		$opts    = shortcode_atts( array( 'id' => 0, 'heading' => null, 'class' => '', 'align' => '' ), $atts, 'tur_takvimi_city_stops' );
 		$heading = Shortcodes::heading_attr( $opts['heading'], __( 'Delivery addresses', 'tur-takvimi' ) );
+		$align   = Shortcodes::align_value( $opts['align'] );
 
 		$default_freq = (int) Settings::get( 'default_frequency_weeks', 4 );
 
 		ob_start();
 		?>
-		<section class="tt-stops" aria-label="<?php esc_attr_e( 'Delivery addresses', 'tur-takvimi' ); ?>" data-tt-stops>
+		<section class="tt-stops<?php echo esc_attr( Shortcodes::extra_class( $opts['class'] ) ); ?>" aria-label="<?php esc_attr_e( 'Delivery addresses', 'tur-takvimi' ); ?>"<?php echo '' !== $align ? ' data-tt-align="' . esc_attr( $align ) . '"' : ''; ?> data-tt-stops>
 			<div class="tt-stops__bar">
 				<?php if ( '' !== $heading ) : ?>
 					<h2 class="tt-stops__heading"><?php echo esc_html( $heading ); ?></h2>

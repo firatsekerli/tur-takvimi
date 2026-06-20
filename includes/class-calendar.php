@@ -66,6 +66,8 @@ class Calendar {
 				'country' => '',
 				'id'      => 0,
 				'months'  => 1,
+				'class'   => '',
+				'align'   => '',
 			),
 			$atts,
 			'tur_takvimi_calendar_month'
@@ -84,10 +86,11 @@ class Calendar {
 
 		// Which month to show first (Y-m), navigable via ?tt_month / AJAX.
 		$cursor = $this->current_cursor();
+		$align  = Shortcodes::align_value( $atts['align'] );
 
 		ob_start();
 		?>
-		<section class="tt-month" data-tt-month-root
+		<section class="tt-month<?php echo esc_attr( Shortcodes::extra_class( $atts['class'] ) ); ?>"<?php echo '' !== $align ? ' data-tt-align="' . esc_attr( $align ) . '"' : ''; ?> data-tt-month-root
 			data-country="<?php echo esc_attr( $country ); ?>"
 			data-location="<?php echo esc_attr( (string) $loc_id ); ?>"
 			data-months="<?php echo esc_attr( (string) $months ); ?>"

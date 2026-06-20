@@ -600,3 +600,51 @@ msgstr "Google Takvim"
 
 msgid "Apple / Outlook (.ics)"
 msgstr "Apple / Outlook (.ics)"
+
+msgid "Shortcodes & styling"
+msgstr "Kısa kodlar ve stil"
+
+msgid "Every shortcode below accepts two styling attributes:"
+msgstr "Aşağıdaki her kısa kod iki stil özniteliği kabul eder:"
+
+msgid "aligns the filter / toolbar row of the shortcode (default: as designed)."
+msgstr "kısa kodun filtre / araç çubuğu satırını hizalar (varsayılan: tasarlandığı gibi)."
+
+msgid "adds your own CSS class(es) to the outer element, so you can target it from the theme/customizer for any other styling."
+msgstr "dış öğeye kendi CSS sınıf(lar)ınızı ekler; böylece temadan/özelleştiriciden diğer tüm stiller için hedefleyebilirsiniz."
+
+msgid "or"
+msgstr "veya"
+
+msgid "hides or overrides the built-in heading (calendar and address-list only). Use \"no\" when your page already has a title."
+msgstr "yerleşik başlığı gizler veya değiştirir (yalnızca takvim ve adres listesi). Sayfanızda zaten bir başlık varsa \"no\" kullanın."
+
+msgid "Shortcode"
+msgstr "Kısa kod"
+
+msgid "Shows"
+msgstr "Gösterir"
+
+msgid "Main attributes"
+msgstr "Ana öznitelikler"
+
+msgid "Nearest-stop postcode finder."
+msgstr "En yakın durak posta kodu bulucu."
+
+msgid "Delivery-regions explorer (map + filterable stop list)."
+msgstr "Teslimat bölgeleri gezgini (harita + filtrelenebilir durak listesi)."
+
+msgid "Upcoming delivery days as a grouped list."
+msgstr "Yaklaşan teslimat günleri gruplanmış liste olarak."
+
+msgid "Month-grid calendar."
+msgstr "Ay ızgaralı takvim."
+
+msgid "A city's delivery addresses (with per-address calendar links)."
+msgstr "Bir şehrin teslimat adresleri (adres başına takvim bağlantılarıyla)."
+
+msgid "Examples: %1$s left-aligns the calendar filters and hides its heading; %2$s adds a custom class you can style."
+msgstr "Örnekler: %1$s takvim filtrelerini sola hizalar ve başlığını gizler; %2$s stil verebileceğiniz özel bir sınıf ekler."
+
+msgid "Shortcodes render full-width (100%) of their container — wrap one in a column or set a max-width on the container to constrain it."
+msgstr "Kısa kodlar kapsayıcılarının tam genişliğinde (%100) görüntülenir — birini bir sütuna sarın veya sınırlamak için kapsayıcıya bir max-width verin."

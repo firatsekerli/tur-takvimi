@@ -242,7 +242,87 @@ class Settings {
 				</table>
 				<?php submit_button(); ?>
 			</form>
+
+			<?php $this->render_shortcode_help(); ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Reference panel: shortcodes and the styling attributes they accept.
+	 */
+	private function render_shortcode_help(): void {
+		?>
+		<hr>
+		<h2><?php esc_html_e( 'Shortcodes & styling', 'tur-takvimi' ); ?></h2>
+		<p class="description" style="max-width:48rem">
+			<?php esc_html_e( 'Every shortcode below accepts two styling attributes:', 'tur-takvimi' ); ?>
+		</p>
+		<ul style="max-width:48rem;list-style:disc;margin-left:1.5rem">
+			<li>
+				<code>align="left|center|right"</code> —
+				<?php esc_html_e( 'aligns the filter / toolbar row of the shortcode (default: as designed).', 'tur-takvimi' ); ?>
+			</li>
+			<li>
+				<code>class="my-class"</code> —
+				<?php esc_html_e( 'adds your own CSS class(es) to the outer element, so you can target it from the theme/customizer for any other styling.', 'tur-takvimi' ); ?>
+			</li>
+			<li>
+				<code>heading="no"</code> <?php esc_html_e( 'or', 'tur-takvimi' ); ?> <code>heading="Custom title"</code> —
+				<?php esc_html_e( 'hides or overrides the built-in heading (calendar and address-list only). Use "no" when your page already has a title.', 'tur-takvimi' ); ?>
+			</li>
+		</ul>
+
+		<table class="widefat striped" style="max-width:60rem;margin-top:1rem">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Shortcode', 'tur-takvimi' ); ?></th>
+					<th><?php esc_html_e( 'Shows', 'tur-takvimi' ); ?></th>
+					<th><?php esc_html_e( 'Main attributes', 'tur-takvimi' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><code>[tur_takvimi_postcode_search]</code></td>
+					<td><?php esc_html_e( 'Nearest-stop postcode finder.', 'tur-takvimi' ); ?></td>
+					<td><code>country</code>, <code>align</code>, <code>class</code></td>
+				</tr>
+				<tr>
+					<td><code>[tur_takvimi_map]</code></td>
+					<td><?php esc_html_e( 'Delivery-regions explorer (map + filterable stop list).', 'tur-takvimi' ); ?></td>
+					<td><code>country</code>, <code>height</code>, <code>align</code>, <code>class</code></td>
+				</tr>
+				<tr>
+					<td><code>[tur_takvimi_calendar]</code></td>
+					<td><?php esc_html_e( 'Upcoming delivery days as a grouped list.', 'tur-takvimi' ); ?></td>
+					<td><code>weeks</code>, <code>country</code>, <code>heading</code>, <code>align</code>, <code>class</code></td>
+				</tr>
+				<tr>
+					<td><code>[tur_takvimi_calendar_month]</code></td>
+					<td><?php esc_html_e( 'Month-grid calendar.', 'tur-takvimi' ); ?></td>
+					<td><code>months</code>, <code>country</code>, <code>id</code>, <code>align</code>, <code>class</code></td>
+				</tr>
+				<tr>
+					<td><code>[tur_takvimi_city_stops]</code></td>
+					<td><?php esc_html_e( 'A city\'s delivery addresses (with per-address calendar links).', 'tur-takvimi' ); ?></td>
+					<td><code>id</code>, <code>heading</code>, <code>align</code>, <code>class</code></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p class="description" style="max-width:60rem;margin-top:1rem">
+			<?php
+			printf(
+				/* translators: 1 and 2: example shortcodes wrapped in <code>. */
+				esc_html__( 'Examples: %1$s left-aligns the calendar filters and hides its heading; %2$s adds a custom class you can style.', 'tur-takvimi' ),
+				'<code>[tur_takvimi_calendar align="left" heading="no"]</code>',
+				'<code>[tur_takvimi_map class="benim-harita"]</code>'
+			);
+			?>
+		</p>
+		<p class="description" style="max-width:60rem">
+			<?php esc_html_e( 'Shortcodes render full-width (100%) of their container — wrap one in a column or set a max-width on the container to constrain it.', 'tur-takvimi' ); ?>
+		</p>
 		<?php
 	}
 }
