@@ -111,23 +111,60 @@ class City_Page {
 		}
 
 		wp_enqueue_style( 'tur-takvimi' );
+		wp_enqueue_script( 'tur-takvimi' );
+
+		$default_freq = (int) Settings::get( 'default_frequency_weeks', 4 );
 
 		ob_start();
 		?>
-		<section class="tt-stops" aria-label="<?php esc_attr_e( 'Delivery addresses', 'tur-takvimi' ); ?>">
-			<h2 class="tt-stops__heading"><?php esc_html_e( 'Delivery addresses', 'tur-takvimi' ); ?></h2>
-			<ul class="tt-stops__list">
-				<?php foreach ( $stops as $a ) : ?>
-					<li class="tt-stops__item">
-						<span class="tt-stops__pin" aria-hidden="true">📍</span>
-						<span class="tt-stops__pc"><?php echo esc_html( (string) ( $a['postcode'] ?? '' ) ); ?></span>
-						<span class="tt-stops__addr"><?php echo esc_html( (string) ( $a['address'] ?? '' ) ); ?></span>
-						<?php if ( ! empty( $a['time'] ) ) : ?>
-							<span class="tt-stops__time"><?php echo esc_html( (string) $a['time'] ); ?></span>
-						<?php endif; ?>
-					</li>
+		<section class="tt-stops" aria-label="<?php esc_attr_e( 'Delivery addresses', 'tur-takvimi' ); ?>" data-tt-stops>
+			<div class="tt-stops__bar">
+				<h2 class="tt-stops__heading"><?php esc_html_e( 'Delivery addresses', 'tur-takvimi' ); ?></h2>
+				<?php if ( count( $stops ) > 5 ) : ?>
+					<div class="tt-stops__filter">
+						<span class="tt-stops__filter-icon" aria-hidden="true">
+							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+						</span>
+						<input type="search" data-tt-stops-filter placeholder="<?php esc_attr_e( 'Filter by postcode', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'Filter by postcode', 'tur-takvimi' ); ?>">
+					</div>
+				<?php endif; ?>
+			</div>
+			<div class="tt-stops__table" role="table">
+				<div class="tt-stops__head" role="row">
+					<span class="tt-stops__col tt-stops__col--pin" aria-hidden="true"></span>
+					<span class="tt-stops__col tt-stops__col--addr" role="columnheader"><?php esc_html_e( 'Street address', 'tur-takvimi' ); ?></span>
+					<span class="tt-stops__col tt-stops__col--pc" role="columnheader"><?php esc_html_e( 'Postcode', 'tur-takvimi' ); ?></span>
+					<span class="tt-stops__col tt-stops__col--time" role="columnheader"><?php esc_html_e( 'Hour', 'tur-takvimi' ); ?></span>
+					<span class="tt-stops__col tt-stops__col--freq" role="columnheader"><?php esc_html_e( 'Frequency', 'tur-takvimi' ); ?></span>
+				</div>
+				<?php
+				foreach ( $stops as $a ) :
+					$addr = (string) ( $a['address'] ?? '' );
+					$pc   = (string) ( $a['postcode'] ?? '' );
+					$time = (string) ( $a['time'] ?? '' );
+					$freq = array_key_exists( 'frequency', $a ) && '' !== $a['frequency'] ? (int) $a['frequency'] : $default_freq;
+					?>
+					<div class="tt-stops__row" role="row" data-tt-stop-row data-search="<?php echo esc_attr( strtolower( $pc . ' ' . $addr ) ); ?>">
+						<span class="tt-stops__col tt-stops__col--pin" aria-hidden="true">📍</span>
+						<span class="tt-stops__col tt-stops__col--addr" role="cell"><?php echo esc_html( $addr ); ?></span>
+						<span class="tt-stops__col tt-stops__col--pc" role="cell"><?php echo esc_html( $pc ); ?></span>
+						<span class="tt-stops__col tt-stops__col--time" role="cell">
+							<?php echo '' !== $time ? esc_html( $time ) : '<span class="tt-stops__muted">—</span>'; ?>
+						</span>
+						<span class="tt-stops__col tt-stops__col--freq" role="cell">
+							<?php
+							if ( $freq > 0 ) {
+								/* translators: %d: number of weeks between deliveries. */
+								echo esc_html( sprintf( __( 'Every %d weeks', 'tur-takvimi' ), $freq ) );
+							} else {
+								esc_html_e( 'On demand', 'tur-takvimi' );
+							}
+							?>
+						</span>
+					</div>
 				<?php endforeach; ?>
-			</ul>
+			</div>
+			<p class="tt-stops__empty" data-tt-stops-empty style="display:none;"><?php esc_html_e( 'No stops match that postcode.', 'tur-takvimi' ); ?></p>
 		</section>
 		<?php
 		return (string) ob_get_clean();
@@ -148,17 +185,23 @@ class City_Page {
 		wp_enqueue_style( 'tur-takvimi' );
 
 		$schedule = new Schedule();
-		$next     = $schedule->next_tour_for_location( $id );
+		$dates    = $schedule->upcoming_tours_for_location( $id, 4 );
 		$groups   = $this->route_groups( $schedule->routes_for_location( $id ) );
 
 		ob_start();
 		?>
 		<section class="tt-citysched" aria-label="<?php esc_attr_e( 'Delivery schedule', 'tur-takvimi' ); ?>">
 			<div class="tt-citysched__next">
-				<span class="tt-citysched__label"><?php esc_html_e( 'Next delivery', 'tur-takvimi' ); ?></span>
-				<strong class="tt-citysched__date">
-					<?php echo $next ? esc_html( Rest_Api::format_day( $next ) ) : esc_html__( 'No upcoming date scheduled yet.', 'tur-takvimi' ); ?>
-				</strong>
+				<span class="tt-citysched__label"><?php esc_html_e( 'Next deliveries', 'tur-takvimi' ); ?></span>
+				<?php if ( $dates ) : ?>
+					<ol class="tt-citysched__dates">
+						<?php foreach ( $dates as $i => $date ) : ?>
+							<li class="tt-citysched__date<?php echo 0 === $i ? ' is-next' : ''; ?>"><?php echo esc_html( Rest_Api::format_day( $date ) ); ?></li>
+						<?php endforeach; ?>
+					</ol>
+				<?php else : ?>
+					<strong class="tt-citysched__date"><?php esc_html_e( 'No upcoming date scheduled yet.', 'tur-takvimi' ); ?></strong>
+				<?php endif; ?>
 			</div>
 			<?php if ( $groups ) : ?>
 				<div class="tt-citysched__route">

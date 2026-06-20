@@ -534,3 +534,21 @@ msgstr "Tüm bölgeler"
 
 msgid "All weeks"
 msgstr "Tüm haftalar"
+
+msgid "Next deliveries"
+msgstr "Sonraki teslimatlar"
+
+msgid "Frequency"
+msgstr "Sıklık"
+
+msgid "Filter by postcode"
+msgstr "Posta koduna göre filtrele"
+
+msgid "Every %d weeks"
+msgstr "%d haftada bir"
+
+msgid "On demand"
+msgstr "Talep üzerine"
+
+msgid "No stops match that postcode."
+msgstr "Bu posta koduna uygun durak yok."

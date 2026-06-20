@@ -162,3 +162,45 @@
 		init();
 	}
 } )();
+
+/**
+ * City-page delivery-address filter. Standalone (no REST config needed): hides
+ * stop rows whose postcode/address don't match the typed query.
+ */
+( function () {
+	'use strict';
+
+	function bindStops( root ) {
+		var input = root.querySelector( '[data-tt-stops-filter]' );
+		var rows = root.querySelectorAll( '[data-tt-stop-row]' );
+		var empty = root.querySelector( '[data-tt-stops-empty]' );
+		if ( ! input || ! rows.length ) {
+			return;
+		}
+		input.addEventListener( 'input', function () {
+			var q = input.value.trim().toLowerCase();
+			var shown = 0;
+			Array.prototype.forEach.call( rows, function ( row ) {
+				var hay = ( row.getAttribute( 'data-search' ) || '' );
+				var match = ! q || hay.indexOf( q ) >= 0;
+				row.style.display = match ? '' : 'none';
+				if ( match ) {
+					shown++;
+				}
+			} );
+			if ( empty ) {
+				empty.style.display = shown ? 'none' : '';
+			}
+		} );
+	}
+
+	function init() {
+		Array.prototype.forEach.call( document.querySelectorAll( '[data-tt-stops]' ), bindStops );
+	}
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', init );
+	} else {
+		init();
+	}
+} )();

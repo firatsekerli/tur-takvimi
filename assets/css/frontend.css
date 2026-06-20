@@ -3,6 +3,7 @@
 :root {
 	--tt-primary: #e3242b;
 	--tt-accent: #16a34a;
+	--tt-secondary: #ffbe51;
 	--tt-bg: #f7f7f8;
 	--tt-card: #ffffff;
 	--tt-border: #e5e7eb;
@@ -382,73 +383,185 @@
 	z-index: 0;
 }
 
-/* Schedule */
+/* Schedule — warm brand-amber card so the next dates stand out. */
 .tt-citysched {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 1.5rem;
-	padding: 1rem 1.25rem;
-	background: #f6f7f9;
-	border-radius: 10px;
+	gap: 1.25rem 2.5rem;
+	padding: 1.15rem 1.4rem;
+	background: var( --tt-secondary, #ffbe51 );
+	border: 1px solid rgba( 0, 0, 0, 0.08 );
+	border-radius: 12px;
+	box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.08 );
 }
 
 .tt-citysched__label {
 	display: block;
-	font-size: 0.8rem;
+	margin-bottom: 0.4rem;
+	font-size: 0.72rem;
+	font-weight: 800;
 	text-transform: uppercase;
-	letter-spacing: 0.03em;
-	color: #646970;
+	letter-spacing: 0.05em;
+	color: #7a531a;
 }
 
-.tt-citysched__date {
-	font-size: 1.15rem;
-	color: var( --tt-primary, #e3242b );
-}
-
-/* Stops list */
-.tt-stops__heading {
-	margin: 0 0 0.5rem;
-	font-size: 1.15rem;
-}
-
-.tt-stops__list {
+.tt-citysched__dates {
 	list-style: none;
 	margin: 0;
 	padding: 0;
-	display: grid;
-	gap: 0.4rem;
-}
-
-.tt-stops__item {
 	display: flex;
-	align-items: baseline;
-	gap: 0.6rem;
-	padding: 0.55rem 0.75rem;
-	background: #fff;
-	border: 1px solid #e2e4e7;
-	border-radius: 8px;
+	flex-direction: column;
+	gap: 0.3rem;
 }
 
-.tt-stops__pc {
-	flex: 0 0 auto;
-	font-variant-numeric: tabular-nums;
+.tt-citysched__date {
+	font-size: 0.98rem;
 	font-weight: 600;
-	color: #646970;
+	color: #4a3206;
 }
 
-.tt-stops__addr {
-	flex: 1 1 auto;
+.tt-citysched__date.is-next {
+	font-size: 1.2rem;
+	font-weight: 800;
+	color: #2a1c02;
 }
 
-.tt-stops__time {
-	flex: 0 0 auto;
-	font-size: 0.8rem;
+.tt-citysched__route {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.tt-citysched__route span:last-child {
 	font-weight: 700;
-	color: var(--tt-accent);
-	background: rgba( 22, 163, 74, 0.1 );
-	border-radius: 999px;
-	padding: 0.15rem 0.6rem;
+	color: #2a1c02;
+}
+
+/* Stops list — backend-style aligned table with a postcode filter. */
+.tt-stops__bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin: 0 0 0.75rem;
+}
+
+.tt-stops__heading {
+	margin: 0;
+	font-size: 1.15rem;
+}
+
+.tt-stops__filter {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.tt-stops__filter-icon {
+	position: absolute;
+	left: 0.7rem;
+	display: flex;
+	color: var(--tt-muted);
+	pointer-events: none;
+}
+
+.tt-stops__filter input {
+	border: 1px solid var(--tt-border);
+	border-radius: 10px;
+	padding: 0.45rem 0.9rem 0.45rem 2.1rem;
+	font-size: 0.88rem;
+	min-width: 14rem;
+	background: var(--tt-card);
+}
+
+.tt-stops__filter input:focus {
+	outline: 2px solid var(--tt-primary);
+	outline-offset: 1px;
+}
+
+.tt-stops__table {
+	border: 1px solid var(--tt-border);
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+/* Header + rows share one grid template so columns line up:
+   pin · street · postcode · hour · frequency. */
+.tt-stops__head,
+.tt-stops__row {
+	display: grid;
+	grid-template-columns: 1.5rem minmax( 0, 1fr ) 6rem 5rem 9rem;
+	align-items: center;
+	column-gap: 0.75rem;
+	padding: 0.6rem 0.9rem;
+}
+
+.tt-stops__head {
+	background: var(--tt-bg);
+	border-bottom: 1px solid var(--tt-border);
+	font-size: 0.7rem;
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--tt-muted);
+}
+
+.tt-stops__row + .tt-stops__row {
+	border-top: 1px solid var(--tt-border);
+}
+
+.tt-stops__row:nth-child(even) {
+	background: #fcfcfd;
+}
+
+.tt-stops__col--pin {
+	text-align: center;
+}
+
+.tt-stops__col--addr {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.tt-stops__col--pc {
+	font-variant-numeric: tabular-nums;
+	font-weight: 700;
+}
+
+.tt-stops__col--time,
+.tt-stops__col--freq {
+	font-size: 0.85rem;
+	color: var(--tt-muted);
+}
+
+.tt-stops__muted {
+	color: #cbd0d6;
+}
+
+.tt-stops__empty {
+	margin: 0.75rem 0 0;
+	color: var(--tt-muted);
+	font-style: italic;
+}
+
+@media ( max-width: 600px ) {
+	.tt-stops__head {
+		display: none;
+	}
+	.tt-stops__row {
+		grid-template-columns: 1.5rem minmax( 0, 1fr ) 5.5rem;
+		row-gap: 0.15rem;
+	}
+	.tt-stops__col--addr {
+		white-space: normal;
+	}
+	.tt-stops__col--time,
+	.tt-stops__col--freq {
+		grid-column: 2 / -1;
+	}
 }
 
 /* ------------------------------------------------------------------ *

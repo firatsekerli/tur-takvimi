@@ -317,6 +317,30 @@ class Schedule {
 	}
 
 	/**
+	 * The next upcoming visit dates for a location (distinct, ascending).
+	 *
+	 * @param int    $location_id Location post ID.
+	 * @param int    $limit       Maximum number of dates to return.
+	 * @param string $from        Y-m-d (defaults to today).
+	 * @return string[] Y-m-d dates.
+	 */
+	public function upcoming_tours_for_location( int $location_id, int $limit = 4, string $from = '' ): array {
+		global $wpdb;
+		$from  = $from ?: current_time( 'Y-m-d' );
+		$limit = max( 1, $limit );
+
+		$dates = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT tour_date FROM {$this->table()} WHERE location_id = %d AND tour_date >= %s ORDER BY tour_date ASC LIMIT %d", // phpcs:ignore WordPress.DB.PreparedSQL
+				$location_id,
+				$from,
+				$limit
+			)
+		);
+		return array_map( 'strval', (array) $dates );
+	}
+
+	/**
 	 * Route IDs a location belongs to (many-to-many; stored on the location).
 	 *
 	 * @param int $location_id Location post ID.
