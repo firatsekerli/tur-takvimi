@@ -85,7 +85,7 @@ class Calendar {
 		// Which month to show first (Y-m), navigable via ?tt_month / AJAX.
 		$cursor = $this->current_cursor();
 
-		$subscribe = $this->feed_url( $country, $loc_id, false );
+		$subscribe = $this->feed_url( $country, $loc_id, false, '', true );
 		$download  = $this->feed_url( $country, $loc_id, true );
 
 		ob_start();
@@ -298,7 +298,7 @@ class Calendar {
 							<details class="tt-month__add">
 								<summary class="tt-month__addbtn" title="<?php esc_attr_e( 'Add to calendar', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'Add to calendar', 'tur-takvimi' ); ?>">＋</summary>
 								<div class="tt-month__addmenu">
-									<a class="tt-month__addmenu-item" href="<?php echo esc_url( $this->feed_url( $country, $loc_id, true, $ymd ) ); ?>" download><?php esc_html_e( 'Apple / Outlook (.ics)', 'tur-takvimi' ); ?></a>
+									<a class="tt-month__addmenu-item" href="<?php echo esc_url( $this->feed_url( $country, $loc_id, false, $ymd ) ); ?>"><?php esc_html_e( 'Apple / Outlook (.ics)', 'tur-takvimi' ); ?></a>
 									<a class="tt-month__addmenu-item" href="<?php echo esc_url( $this->google_url( $date, $stops ) ); ?>" target="_blank" rel="noopener nofollow"><?php esc_html_e( 'Google Calendar', 'tur-takvimi' ); ?></a>
 								</div>
 							</details>
@@ -469,13 +469,14 @@ class Calendar {
 	/**
 	 * Build the .ics feed URL (webcal for subscribe, https for download).
 	 *
-	 * @param string $country  ISO-2 filter.
-	 * @param int    $location Location scope.
-	 * @param bool   $download Force download (attachment) vs. subscribe.
-	 * @param string $date     Optional single day (Y-m-d) to scope to.
+	 * @param string $country   ISO-2 filter.
+	 * @param int    $location  Location scope.
+	 * @param bool   $download  Add the attachment hint (save as a file).
+	 * @param string $date      Optional single day (Y-m-d) to scope to.
+	 * @param bool   $subscribe Use the webcal:// scheme (live subscription).
 	 * @return string
 	 */
-	private function feed_url( string $country, int $location, bool $download, string $date = '' ): string {
+	private function feed_url( string $country, int $location, bool $download, string $date = '', bool $subscribe = false ): string {
 		$args = array( 'tt_ics' => 1 );
 		if ( '' !== $country ) {
 			$args['country'] = $country;
@@ -492,7 +493,7 @@ class Calendar {
 		$url = add_query_arg( $args, home_url( '/' ) );
 
 		// Subscribe links use the webcal scheme so calendar apps auto-update.
-		if ( ! $download ) {
+		if ( $subscribe ) {
 			$url = preg_replace( '#^https?://#', 'webcal://', $url );
 		}
 		return $url;
