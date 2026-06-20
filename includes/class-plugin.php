@@ -56,6 +56,10 @@ final class Plugin {
 		( new City_Page() )->register();
 		( new Map_Explorer() )->register();
 
+		// Page builders render shortcodes out-of-band, so the per-shortcode
+		// asset enqueues never reach the editor canvas. Load them up-front there.
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_for_builder' ), 99 );
+
 		if ( is_admin() ) {
 			( new Importer() )->register();
 			( new Location_Meta() )->register();
@@ -78,6 +82,68 @@ final class Plugin {
 	 */
 	public function has_commerce(): bool {
 		return $this->has_woocommerce;
+	}
+
+	/**
+	 * In a builder canvas/preview, force-enqueue the front-end assets so
+	 * shortcodes (which normally enqueue lazily during render) display fully.
+	 * Runs only inside builders, never on the live front end.
+	 */
+	public function enqueue_for_builder(): void {
+		if ( ! self::is_builder_preview() ) {
+			return;
+		}
+		foreach ( array( 'tur-takvimi', 'leaflet', 'tur-takvimi-explorer', 'tur-takvimi-map' ) as $handle ) {
+			if ( wp_style_is( $handle, 'registered' ) ) {
+				wp_enqueue_style( $handle );
+			}
+			if ( wp_script_is( $handle, 'registered' ) ) {
+				wp_enqueue_script( $handle );
+			}
+		}
+	}
+
+	/**
+	 * Whether the current request is a page-builder canvas/preview render,
+	 * where shortcode content is shown but per-shortcode enqueues are dropped.
+	 *
+	 * @return bool
+	 */
+	public static function is_builder_preview(): bool {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// Breakdance builder app + canvas/preview render.
+		if ( function_exists( '\Breakdance\Render\isPreviewPage' ) && \Breakdance\Render\isPreviewPage() ) {
+			return true;
+		}
+
+		// Canvas/preview iframe flags used by the common builders.
+		$flags = array(
+			'breakdance',        // Breakdance builder.
+			'breakdance_iframe',
+			'elementor-preview', // Elementor.
+			'fl_builder',        // Beaver Builder.
+			'brizy-edit',        // Brizy.
+			'brizy-edit-iframe',
+			'ct_builder',        // Oxygen.
+		);
+		foreach ( $flags as $flag ) {
+			if ( isset( $_GET[ $flag ] ) ) {
+				return true;
+			}
+		}
+
+		// Oxygen / Breakdance edit constant.
+		if ( defined( 'SHOW_CT_BUILDER' ) && SHOW_CT_BUILDER ) {
+			return true;
+		}
+		// phpcs:enable
+
+		/**
+		 * Allow a site to flag additional builder/preview contexts.
+		 *
+		 * @param bool $is_preview Whether this is a builder preview render.
+		 */
+		return (bool) apply_filters( 'tur_takvimi_is_builder_preview', false );
 	}
 
 	/**
