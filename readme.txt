@@ -32,13 +32,21 @@ The plugin has two layers:
 
 == Shortcodes ==
 
-* `[tur_takvimi_calendar weeks="3"]` — the weekly tour calendar.
+* `[tur_takvimi_calendar weeks="3"]` — the weekly tour calendar (day list).
+* `[tur_takvimi_calendar_month]` — a real month-grid calendar with an "Add to
+  calendar" toolbar (subscribe / .ics download) and per-day Google Calendar
+  links. Optional `country="DE"`, `months="1"` (1–3), and `id="123"` to scope
+  to one city. On a single city page it defaults to that city automatically.
 * `[tur_takvimi_postcode_search]` — the nearest-stop postcode finder.
 * `[tur_takvimi_map]` — the delivery-regions explorer (filterable map + stop
   list). Optional `country="DE"` hard-scopes it; `height="520"` sets the map
   height. On multi-country sites it shows a country filter automatically.
 
 All work in Breakdance, Gutenberg, the classic editor and any theme.
+
+The calendar also exposes an iCalendar feed at `/?tt_ics=1` (optionally
+`&country=DE`, `&location=123`, `&route=45`, `&download=1`) for subscribing
+from Google/Apple/Outlook.
 
 == Changelog ==
 

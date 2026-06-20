@@ -558,3 +558,33 @@ msgstr "Hizmet yarıçapı (km)"
 
 msgid "0 = no limit. When set, a postcode farther than this from every stop is treated as outside the delivery area."
 msgstr "0 = sınır yok. Belirlendiğinde, her duraktan bu mesafeden daha uzak bir posta kodu teslimat alanı dışında sayılır."
+
+msgid "Delivery calendar"
+msgstr "Teslimat takvimi"
+
+msgid "Previous month"
+msgstr "Önceki ay"
+
+msgid "Next month"
+msgstr "Sonraki ay"
+
+msgid "Add to calendar"
+msgstr "Takvime ekle"
+
+msgid "Subscribe (auto-updates)"
+msgstr "Abone ol (otomatik güncellenir)"
+
+msgid "Download (.ics)"
+msgstr "İndir (.ics)"
+
+msgid "Add to Google Calendar"
+msgstr "Google Takvim'e ekle"
+
+msgid "Delivery — %s"
+msgstr "Teslimat — %s"
+
+msgid "Delivery — %1$s +%2$d more"
+msgstr "Teslimat — %1$s +%2$d diğer"
+
+msgid "Route: %s"
+msgstr "Rota: %s"
