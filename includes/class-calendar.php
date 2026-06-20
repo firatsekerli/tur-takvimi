@@ -360,6 +360,15 @@ class Calendar {
 	 * @return string
 	 */
 	private function build_ics( string $country, int $location, int $route, string $date = '' ): string {
+		// Cache the generated feed briefly: subscriptions poll repeatedly and the
+		// schedule changes rarely. Keyed by scope, not by download vs. inline
+		// (those only differ in the HTTP header, not the body).
+		$cache_key = 'tt_ics_' . md5( implode( '|', array( $country, $location, $route, $date ) ) );
+		$cached    = get_transient( $cache_key );
+		if ( is_string( $cached ) ) {
+			return $cached;
+		}
+
 		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
 			$start = $date;
 			$end   = $date;
@@ -394,11 +403,20 @@ class Calendar {
 			'X-WR-TIMEZONE:' . self::ics_escape( (string) wp_timezone_string() ),
 		);
 
-		$lines = array_merge( $lines, self::vevents( $tours, $location, $route, $host, $stamp ) );
+		// A location-scoped feed expands to per-address, time-of-day events (a
+		// customer cares about when delivery reaches their address). The broad
+		// feeds stay as lightweight all-day, per-city events.
+		$events  = $location
+			? self::vevents_per_address( $tours, $location, $route, $host, $stamp )
+			: self::vevents( $tours, $location, $route, $host, $stamp );
+		$lines   = array_merge( $lines, $events );
 		$lines[] = 'END:VCALENDAR';
 
 		$folded = array_map( array( self::class, 'ics_fold' ), $lines );
-		return implode( "\r\n", $folded ) . "\r\n";
+		$ics    = implode( "\r\n", $folded ) . "\r\n";
+
+		set_transient( $cache_key, $ics, HOUR_IN_SECONDS );
+		return $ics;
 	}
 
 	/**
@@ -449,6 +467,161 @@ class Calendar {
 			}
 		}
 		return $lines;
+	}
+
+	/**
+	 * Build per-address, time-of-day VEVENTs for a single location: each address
+	 * that is actually due on a date (by its own frequency, from the route's
+	 * anchor) becomes its own event, timed at the address's delivery hour.
+	 *
+	 * Computed on demand — no extra rows are stored — and only ever for one
+	 * location at a time, so the work is small.
+	 *
+	 * @param array  $tours    Tours grouped per (date, route).
+	 * @param int    $location Location scope.
+	 * @param int    $route    Optional route filter.
+	 * @param string $host     Host for the UID domain.
+	 * @param string $stamp    DTSTAMP value.
+	 * @return string[]
+	 */
+	private static function vevents_per_address( array $tours, int $location, int $route, string $host, string $stamp ): array {
+		$addresses = json_decode( (string) get_post_meta( $location, '_tt_addresses', true ), true );
+		if ( ! is_array( $addresses ) || ! $addresses ) {
+			// No address detail: fall back to the city-level all-day event.
+			return self::vevents( $tours, $location, $route, $host, $stamp );
+		}
+
+		$default_freq = max( 1, (int) Settings::get( 'default_frequency_weeks', 4 ) );
+		$city         = (string) get_the_title( $location );
+		$url          = (string) get_permalink( $location );
+
+		$anchors = array(); // route_id => \DateTimeImmutable|false.
+		$seen    = array();
+		$lines   = array();
+
+		foreach ( $tours as $tour ) {
+			if ( $route && (int) $tour['route_id'] !== $route ) {
+				continue;
+			}
+			// Only tours that include this location.
+			$in = false;
+			foreach ( $tour['locations'] as $loc ) {
+				if ( (int) $loc['id'] === $location ) {
+					$in = true;
+					break;
+				}
+			}
+			if ( ! $in ) {
+				continue;
+			}
+
+			$rid = (int) $tour['route_id'];
+			if ( ! array_key_exists( $rid, $anchors ) ) {
+				$a = (string) get_post_meta( $rid, '_tt_anchor_date', true );
+				try {
+					$anchors[ $rid ] = '' !== $a ? new \DateTimeImmutable( $a ) : false;
+				} catch ( \Exception $e ) {
+					$anchors[ $rid ] = false;
+				}
+			}
+			$anchor = $anchors[ $rid ];
+
+			try {
+				$day = new \DateTimeImmutable( $tour['tour_date'] );
+			} catch ( \Exception $e ) {
+				continue;
+			}
+			$dstart = $day->format( 'Ymd' );
+
+			foreach ( $addresses as $i => $a ) {
+				$freq = ( isset( $a['frequency'] ) && '' !== $a['frequency'] ) ? (int) $a['frequency'] : $default_freq;
+				if ( $freq <= 0 ) {
+					continue; // On-demand stop: never scheduled.
+				}
+
+				// Is this address due on this date (anchor + k·freq weeks)?
+				if ( $anchor instanceof \DateTimeImmutable ) {
+					if ( $day < $anchor ) {
+						continue;
+					}
+					if ( 0 !== (int) $anchor->diff( $day )->days % ( $freq * 7 ) ) {
+						continue;
+					}
+				}
+
+				$uid = 'tt-' . $location . '-a' . (int) $i . '-' . $dstart . '@' . $host;
+				if ( isset( $seen[ $uid ] ) ) {
+					continue;
+				}
+				$seen[ $uid ] = true;
+
+				$street  = (string) ( $a['address'] ?? '' );
+				$pc      = (string) ( $a['postcode'] ?? '' );
+				$label   = '' !== $street ? $street : $city;
+				$summary = sprintf( /* translators: %s: address or city. */ __( 'Delivery — %s', 'tur-takvimi' ), $label );
+				$where   = trim( $street . ( '' !== $pc ? ', ' . $pc : '' ) . ' ' . $city );
+				$desc    = ! empty( $tour['route'] ) ? sprintf( /* translators: %s: route name. */ __( 'Route: %s', 'tur-takvimi' ), $tour['route'] ) : $city;
+				$time    = self::parse_time( (string) ( $a['time'] ?? '' ) );
+
+				$lines[] = 'BEGIN:VEVENT';
+				$lines[] = 'UID:' . $uid;
+				$lines[] = 'DTSTAMP:' . $stamp;
+				if ( $time ) {
+					// Floating local time: shown in the delivery region's clock.
+					$lines[] = 'DTSTART:' . $dstart . 'T' . $time['start'];
+					$lines[] = 'DTEND:' . $dstart . 'T' . $time['end'];
+				} else {
+					$lines[] = 'DTSTART;VALUE=DATE:' . $dstart;
+					$lines[] = 'DTEND;VALUE=DATE:' . $day->modify( '+1 day' )->format( 'Ymd' );
+				}
+				$lines[] = 'SUMMARY:' . self::ics_escape( $summary );
+				$lines[] = 'DESCRIPTION:' . self::ics_escape( $desc );
+				if ( '' !== $url ) {
+					$lines[] = 'URL:' . self::ics_escape( $url );
+				}
+				$lines[] = 'LOCATION:' . self::ics_escape( $where );
+				$lines[] = 'END:VEVENT';
+			}
+		}
+		return $lines;
+	}
+
+	/**
+	 * Parse a free-text delivery time ("09:00", "9.00", "09:00–12:00") into
+	 * iCalendar HHMMSS start/end. Returns null when no time can be read (the
+	 * caller then emits an all-day event).
+	 *
+	 * @param string $raw Stored time string.
+	 * @return array{start:string,end:string}|null
+	 */
+	private static function parse_time( string $raw ): ?array {
+		if ( ! preg_match_all( '/(\d{1,2})[:.hH](\d{2})/', $raw, $matches, PREG_SET_ORDER ) ) {
+			return null;
+		}
+		$to_hms = static function ( $h, $m ) {
+			$h = (int) $h;
+			$m = (int) $m;
+			return ( $h > 23 || $m > 59 ) ? null : sprintf( '%02d%02d00', $h, $m );
+		};
+
+		$start = $to_hms( $matches[0][1], $matches[0][2] );
+		if ( null === $start ) {
+			return null;
+		}
+
+		$end = isset( $matches[1] ) ? $to_hms( $matches[1][1], $matches[1][2] ) : null;
+		if ( null === $end ) {
+			// No explicit end: default to a one-hour window (clamped to the day).
+			$h   = (int) substr( $start, 0, 2 );
+			$end = $h >= 23 ? '235900' : sprintf( '%02d%02d00', $h + 1, (int) substr( $start, 2, 2 ) );
+		}
+		if ( $end <= $start ) {
+			$end = '235900';
+		}
+		return array(
+			'start' => $start,
+			'end'   => $end,
+		);
 	}
 
 	/* --------------------------------------------------------------------- *
