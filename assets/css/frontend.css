@@ -385,24 +385,44 @@
 
 /* Schedule — warm brand-amber card so the next dates stand out. */
 .tt-citysched {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 1.25rem 2.5rem;
-	padding: 1.15rem 1.4rem;
-	background: var( --tt-secondary, #ffbe51 );
-	border: 1px solid rgba( 0, 0, 0, 0.08 );
-	border-radius: 12px;
-	box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.08 );
+	display: grid;
+	grid-template-columns: minmax( 0, 1.6fr ) minmax( 0, 1fr );
+	align-items: start;
+	gap: 1.5rem 2.5rem;
+	padding: 1.5rem 1.75rem;
+	background: linear-gradient( 135deg, #ffce6e 0%, var( --tt-secondary, #ffbe51 ) 55%, #f6ad34 100% );
+	border: 1px solid rgba( 124, 83, 26, 0.18 );
+	border-radius: 14px;
+	box-shadow: 0 6px 18px rgba( 240, 169, 42, 0.3 );
 }
 
 .tt-citysched__label {
-	display: block;
-	margin-bottom: 0.4rem;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin-bottom: 0.65rem;
 	font-size: 0.72rem;
 	font-weight: 800;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: #7a531a;
+	letter-spacing: 0.06em;
+	color: #8a5a12;
+}
+
+.tt-citysched__label::before {
+	content: "";
+	width: 0.85rem;
+	height: 0.85rem;
+	background-color: #8a5a12;
+	-webkit-mask: center / contain no-repeat var( --tt-ico );
+	mask: center / contain no-repeat var( --tt-ico );
+}
+
+.tt-citysched__next .tt-citysched__label {
+	--tt-ico: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E" );
+}
+
+.tt-citysched__route .tt-citysched__label {
+	--tt-ico: url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='6' cy='19' r='2'/%3E%3Ccircle cx='18' cy='5' r='2'/%3E%3Cpath d='M8 19h6a4 4 0 0 0 0-8H10a4 4 0 0 1 0-8h4'/%3E%3C/svg%3E" );
 }
 
 .tt-citysched__dates {
@@ -411,30 +431,49 @@
 	padding: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 0.3rem;
+	gap: 0.45rem;
 }
 
 .tt-citysched__date {
-	font-size: 0.98rem;
+	font-size: 1rem;
 	font-weight: 600;
-	color: #4a3206;
+	color: #5a3e0a;
+}
+
+.tt-citysched__date:not(.is-next) {
+	position: relative;
+	padding-left: 1.1rem;
+}
+
+.tt-citysched__date:not(.is-next)::before {
+	content: "";
+	position: absolute;
+	left: 0.15rem;
+	top: 0.55em;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: rgba( 124, 83, 26, 0.55 );
 }
 
 .tt-citysched__date.is-next {
-	font-size: 1.2rem;
+	display: inline-block;
+	margin-bottom: 0.15rem;
+	padding: 0.35rem 0.7rem;
+	font-size: 1.25rem;
 	font-weight: 800;
 	color: #2a1c02;
-}
-
-.tt-citysched__route {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
+	background: rgba( 255, 255, 255, 0.55 );
+	border-radius: 10px;
 }
 
 .tt-citysched__route span:last-child {
+	display: inline-block;
+	padding: 0.3rem 0.7rem;
 	font-weight: 700;
 	color: #2a1c02;
+	background: rgba( 255, 255, 255, 0.5 );
+	border-radius: 8px;
 }
 
 /* Stops list — backend-style aligned table with a postcode filter. */
@@ -548,6 +587,9 @@
 }
 
 @media ( max-width: 600px ) {
+	.tt-citysched {
+		grid-template-columns: 1fr;
+	}
 	.tt-stops__head {
 		display: none;
 	}

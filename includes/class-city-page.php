@@ -120,7 +120,7 @@ class City_Page {
 		<section class="tt-stops" aria-label="<?php esc_attr_e( 'Delivery addresses', 'tur-takvimi' ); ?>" data-tt-stops>
 			<div class="tt-stops__bar">
 				<h2 class="tt-stops__heading"><?php esc_html_e( 'Delivery addresses', 'tur-takvimi' ); ?></h2>
-				<?php if ( count( $stops ) > 5 ) : ?>
+				<?php if ( count( $stops ) > 1 ) : ?>
 					<div class="tt-stops__filter">
 						<span class="tt-stops__filter-icon" aria-hidden="true">
 							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
