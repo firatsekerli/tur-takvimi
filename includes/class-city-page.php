@@ -136,6 +136,7 @@ class City_Page {
 					<span class="tt-stops__col tt-stops__col--pc" role="columnheader"><?php esc_html_e( 'Postcode', 'tur-takvimi' ); ?></span>
 					<span class="tt-stops__col tt-stops__col--time" role="columnheader"><?php esc_html_e( 'Hour', 'tur-takvimi' ); ?></span>
 					<span class="tt-stops__col tt-stops__col--freq" role="columnheader"><?php esc_html_e( 'Frequency', 'tur-takvimi' ); ?></span>
+					<span class="tt-stops__col tt-stops__col--cal" aria-hidden="true"></span>
 				</div>
 				<?php
 				foreach ( $stops as $a ) :
@@ -143,6 +144,20 @@ class City_Page {
 					$pc   = (string) ( $a['postcode'] ?? '' );
 					$time = (string) ( $a['time'] ?? '' );
 					$freq = array_key_exists( 'frequency', $a ) && '' !== $a['frequency'] ? (int) $a['frequency'] : $default_freq;
+
+					// Subscribe to just this address's deliveries (webcal so the
+					// calendar app keeps it up to date).
+					$cal_url = add_query_arg(
+						array(
+							'tt_ics'  => 1,
+							'location' => $id,
+							'address' => (int) ( $a['_index'] ?? 0 ),
+						),
+						home_url( '/' )
+					);
+					$cal_url = (string) preg_replace( '#^https?://#', 'webcal://', $cal_url );
+					/* translators: %s: street address. */
+					$cal_label = $freq > 0 ? sprintf( __( 'Add %s deliveries to your calendar', 'tur-takvimi' ), $addr ) : '';
 					?>
 					<div class="tt-stops__row" role="row" data-tt-stop-row data-search="<?php echo esc_attr( strtolower( $pc . ' ' . $addr ) ); ?>">
 						<span class="tt-stops__col tt-stops__col--pin" aria-hidden="true">📍</span>
@@ -160,6 +175,13 @@ class City_Page {
 								esc_html_e( 'On demand', 'tur-takvimi' );
 							}
 							?>
+						</span>
+						<span class="tt-stops__col tt-stops__col--cal" role="cell">
+							<?php if ( $freq > 0 ) : ?>
+								<a class="tt-stops__cal" href="<?php echo esc_url( $cal_url ); ?>" title="<?php echo esc_attr( $cal_label ); ?>" aria-label="<?php echo esc_attr( $cal_label ); ?>">
+									<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/></svg>
+								</a>
+							<?php endif; ?>
 						</span>
 					</div>
 				<?php endforeach; ?>
@@ -415,6 +437,12 @@ class City_Page {
 	private function stop_list( int $id ): array {
 		$addresses = json_decode( (string) get_post_meta( $id, '_tt_addresses', true ), true );
 		$addresses = is_array( $addresses ) ? $addresses : array();
+		// Keep the raw storage index: the .ics feed scopes by it, but rows are
+		// displayed sorted by postcode.
+		foreach ( $addresses as $i => &$a ) {
+			$a['_index'] = (int) $i;
+		}
+		unset( $a );
 		usort(
 			$addresses,
 			static function ( $a, $b ) {

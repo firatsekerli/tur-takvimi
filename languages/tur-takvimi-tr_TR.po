@@ -547,6 +547,9 @@ msgstr "Posta koduna göre filtrele"
 msgid "Every %d weeks"
 msgstr "%d haftada bir"
 
+msgid "Add %s deliveries to your calendar"
+msgstr "%s teslimatlarını takviminize ekleyin"
+
 msgid "On demand"
 msgstr "Talep üzerine"
 

@@ -45,11 +45,13 @@ The plugin has two layers:
 All work in Breakdance, Gutenberg, the classic editor and any theme.
 
 The calendar also exposes an iCalendar feed at `/?tt_ics=1` (optionally
-`&country=DE`, `&location=123`, `&route=45`, `&date=2026-06-19`, `&download=1`)
-for subscribing from Google/Apple/Outlook. A location-scoped feed expands to
-per-address, time-of-day events (each address due on a date becomes its own
-event at its delivery hour); broader feeds stay as all-day per-city events.
-Feeds are cached for an hour.
+`&country=DE`, `&location=123`, `&route=45`, `&date=2026-06-19`,
+`&address=0`, `&download=1`) for subscribing from Google/Apple/Outlook. A
+location-scoped feed expands to per-address, time-of-day events (each address
+due on a date becomes its own event at its delivery hour); adding `&address=`
+(its row index) narrows the feed to a single address, which is what the
+"add to calendar" control on each city-page address row links to. Broader
+feeds stay as all-day per-city events. Feeds are cached for an hour.
 
 == Changelog ==
 

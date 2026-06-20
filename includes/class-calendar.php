@@ -337,14 +337,15 @@ class Calendar {
 		$route    = isset( $_GET['route'] ) ? absint( $_GET['route'] ) : 0;
 		$country  = isset( $_GET['country'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_GET['country'] ) ) ) : '';
 		$date     = isset( $_GET['date'] ) ? sanitize_text_field( wp_unslash( $_GET['date'] ) ) : '';
+		$address  = isset( $_GET['address'] ) ? (int) $_GET['address'] : -1; // Single address index; -1 = all.
 		$download = isset( $_GET['download'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		$ics = $this->build_ics( $country, $location, $route, $date );
+		$ics = $this->build_ics( $country, $location, $route, $date, $address );
 
 		nocache_headers();
 		header( 'Content-Type: text/calendar; charset=utf-8' );
-		$fname = 'tur-takvimi' . ( $location ? '-' . $location : '' ) . '.ics';
+		$fname = 'tur-takvimi' . ( $location ? '-' . $location : '' ) . ( $address >= 0 ? '-a' . $address : '' ) . '.ics';
 		header( 'Content-Disposition: ' . ( $download ? 'attachment' : 'inline' ) . '; filename="' . $fname . '"' );
 		echo $ics; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		exit;
@@ -359,11 +360,11 @@ class Calendar {
 	 * @param string $date     Optional single day (Y-m-d) to scope to.
 	 * @return string
 	 */
-	private function build_ics( string $country, int $location, int $route, string $date = '' ): string {
+	private function build_ics( string $country, int $location, int $route, string $date = '', int $address = -1 ): string {
 		// Cache the generated feed briefly: subscriptions poll repeatedly and the
 		// schedule changes rarely. Keyed by scope, not by download vs. inline
 		// (those only differ in the HTTP header, not the body).
-		$cache_key = 'tt_ics_' . md5( implode( '|', array( $country, $location, $route, $date ) ) );
+		$cache_key = 'tt_ics_' . md5( implode( '|', array( $country, $location, $route, $date, $address ) ) );
 		$cached    = get_transient( $cache_key );
 		if ( is_string( $cached ) ) {
 			return $cached;
@@ -407,7 +408,7 @@ class Calendar {
 		// customer cares about when delivery reaches their address). The broad
 		// feeds stay as lightweight all-day, per-city events.
 		$events  = $location
-			? self::vevents_per_address( $tours, $location, $route, $host, $stamp )
+			? self::vevents_per_address( $tours, $location, $route, $host, $stamp, $address )
 			: self::vevents( $tours, $location, $route, $host, $stamp );
 		$lines   = array_merge( $lines, $events );
 		$lines[] = 'END:VCALENDAR';
@@ -482,9 +483,10 @@ class Calendar {
 	 * @param int    $route    Optional route filter.
 	 * @param string $host     Host for the UID domain.
 	 * @param string $stamp    DTSTAMP value.
+	 * @param int    $only     Restrict to a single address index; -1 = all.
 	 * @return string[]
 	 */
-	private static function vevents_per_address( array $tours, int $location, int $route, string $host, string $stamp ): array {
+	private static function vevents_per_address( array $tours, int $location, int $route, string $host, string $stamp, int $only = -1 ): array {
 		$addresses = json_decode( (string) get_post_meta( $location, '_tt_addresses', true ), true );
 		if ( ! is_array( $addresses ) || ! $addresses ) {
 			// No address detail: fall back to the city-level all-day event.
@@ -534,6 +536,9 @@ class Calendar {
 			$dstart = $day->format( 'Ymd' );
 
 			foreach ( $addresses as $i => $a ) {
+				if ( $only >= 0 && (int) $i !== $only ) {
+					continue; // Scoped to a single address.
+				}
 				$freq = ( isset( $a['frequency'] ) && '' !== $a['frequency'] ) ? (int) $a['frequency'] : $default_freq;
 				if ( $freq <= 0 ) {
 					continue; // On-demand stop: never scheduled.
