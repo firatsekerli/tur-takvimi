@@ -28,6 +28,26 @@ class Calendar {
 	public function register(): void {
 		add_shortcode( 'tur_takvimi_calendar_month', array( $this, 'month' ) );
 		add_action( 'template_redirect', array( $this, 'maybe_output_ics' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		add_action( 'rest_api_init', array( $this, 'rest_routes' ) );
+	}
+
+	/**
+	 * Register the calendar navigation script.
+	 */
+	public function register_assets(): void {
+		wp_register_script(
+			'tur-takvimi-calendar',
+			TURTAKVIMI_URL . 'assets/js/frontend-calendar.js',
+			array(),
+			Plugin::asset_ver( 'assets/js/frontend-calendar.js' ),
+			true
+		);
+		wp_localize_script(
+			'tur-takvimi-calendar',
+			'TurTakvimiCal',
+			array( 'rest' => esc_url_raw( rest_url( Rest_Api::NS ) ) )
+		);
 	}
 
 	/* --------------------------------------------------------------------- *
@@ -52,6 +72,7 @@ class Calendar {
 		);
 
 		wp_enqueue_style( 'tur-takvimi' );
+		wp_enqueue_script( 'tur-takvimi-calendar' );
 
 		$country = strtoupper( (string) $atts['country'] );
 		$loc_id  = (int) $atts['id'];
@@ -61,8 +82,55 @@ class Calendar {
 		}
 		$months = max( 1, min( 3, (int) $atts['months'] ) );
 
-		// Which month to show first (Y-m), navigable via ?tt_month.
+		// Which month to show first (Y-m), navigable via ?tt_month / AJAX.
 		$cursor = $this->current_cursor();
+
+		$subscribe = $this->feed_url( $country, $loc_id, false );
+		$download  = $this->feed_url( $country, $loc_id, true );
+
+		ob_start();
+		?>
+		<section class="tt-month" data-tt-month-root
+			data-country="<?php echo esc_attr( $country ); ?>"
+			data-location="<?php echo esc_attr( (string) $loc_id ); ?>"
+			data-months="<?php echo esc_attr( (string) $months ); ?>"
+			data-month="<?php echo esc_attr( $cursor->format( 'Y-m' ) ); ?>"
+			aria-label="<?php esc_attr_e( 'Delivery calendar', 'tur-takvimi' ); ?>">
+			<div class="tt-month__bar">
+				<div class="tt-month__nav">
+					<a class="tt-month__navbtn" data-tt-month-prev href="<?php echo esc_url( $this->month_url( $cursor->modify( '-1 month' ) ) ); ?>" aria-label="<?php esc_attr_e( 'Previous month', 'tur-takvimi' ); ?>" rel="nofollow">‹</a>
+					<a class="tt-month__navbtn" data-tt-month-next href="<?php echo esc_url( $this->month_url( $cursor->modify( '+1 month' ) ) ); ?>" aria-label="<?php esc_attr_e( 'Next month', 'tur-takvimi' ); ?>" rel="nofollow">›</a>
+				</div>
+				<div class="tt-month__addcal">
+					<span class="tt-month__addcal-label"><?php esc_html_e( 'Add to calendar', 'tur-takvimi' ); ?></span>
+					<a class="tt-month__btn tt-month__btn--primary" href="<?php echo esc_url( $subscribe ); ?>" rel="nofollow">
+						<?php esc_html_e( 'Subscribe (auto-updates)', 'tur-takvimi' ); ?>
+					</a>
+					<a class="tt-month__btn" href="<?php echo esc_url( $download ); ?>" rel="nofollow" download>
+						<?php esc_html_e( 'Download (.ics)', 'tur-takvimi' ); ?>
+					</a>
+				</div>
+			</div>
+
+			<div class="tt-month__grids" data-tt-month-grids>
+				<?php echo $this->render_months_html( $cursor, $country, $loc_id, $months ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</div>
+		</section>
+		<?php
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Render the grid(s) for a span of months (the part swapped on navigation).
+	 *
+	 * @param \DateTimeImmutable $cursor  First month to render.
+	 * @param string             $country ISO-2 filter.
+	 * @param int                $loc_id  Optional location scope.
+	 * @param int                $months  Number of months (1–3).
+	 * @return string
+	 */
+	private function render_months_html( \DateTimeImmutable $cursor, string $country, int $loc_id, int $months ): string {
+		$months = max( 1, min( 3, $months ) );
 
 		$range_start = $cursor->format( 'Y-m-d' );
 		$range_end   = $cursor->modify( '+' . $months . ' months -1 day' )->format( 'Y-m-d' );
@@ -85,40 +153,81 @@ class Calendar {
 			}
 		}
 
-		$today     = current_time( 'Y-m-d' );
-		$subscribe = $this->feed_url( $country, $loc_id, false );
-		$download  = $this->feed_url( $country, $loc_id, true );
+		$today    = current_time( 'Y-m-d' );
+		$weekdays = $this->weekday_labels();
 
-		ob_start();
-		?>
-		<section class="tt-month" aria-label="<?php esc_attr_e( 'Delivery calendar', 'tur-takvimi' ); ?>">
-			<div class="tt-month__bar">
-				<div class="tt-month__nav">
-					<a class="tt-month__navbtn" href="<?php echo esc_url( $this->month_url( $cursor->modify( '-1 month' ) ) ); ?>" aria-label="<?php esc_attr_e( 'Previous month', 'tur-takvimi' ); ?>" rel="nofollow">‹</a>
-					<a class="tt-month__navbtn" href="<?php echo esc_url( $this->month_url( $cursor->modify( '+1 month' ) ) ); ?>" aria-label="<?php esc_attr_e( 'Next month', 'tur-takvimi' ); ?>" rel="nofollow">›</a>
-				</div>
-				<div class="tt-month__addcal">
-					<span class="tt-month__addcal-label"><?php esc_html_e( 'Add to calendar', 'tur-takvimi' ); ?></span>
-					<a class="tt-month__btn tt-month__btn--primary" href="<?php echo esc_url( $subscribe ); ?>" rel="nofollow">
-						<?php esc_html_e( 'Subscribe (auto-updates)', 'tur-takvimi' ); ?>
-					</a>
-					<a class="tt-month__btn" href="<?php echo esc_url( $download ); ?>" rel="nofollow" download>
-						<?php esc_html_e( 'Download (.ics)', 'tur-takvimi' ); ?>
-					</a>
-				</div>
-			</div>
+		$html = '';
+		$grid = $cursor;
+		for ( $m = 0; $m < $months; $m++ ) {
+			$html .= $this->render_grid( $grid, $by_date, $today, $weekdays );
+			$grid  = $grid->modify( '+1 month' );
+		}
+		return $html;
+	}
 
-			<?php
-			$weekdays = $this->weekday_labels();
-			$grid     = $cursor;
-			for ( $m = 0; $m < $months; $m++ ) :
-				echo $this->render_grid( $grid, $by_date, $today, $weekdays ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				$grid = $grid->modify( '+1 month' );
-			endfor;
-			?>
-		</section>
-		<?php
-		return (string) ob_get_clean();
+	/* --------------------------------------------------------------------- *
+	 * REST: month grid HTML (powers AJAX navigation)
+	 * --------------------------------------------------------------------- */
+
+	/**
+	 * Register the month-grid REST route.
+	 */
+	public function rest_routes(): void {
+		register_rest_route(
+			Rest_Api::NS,
+			'/calendar-month',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'permission_callback' => '__return_true',
+				'callback'            => array( $this, 'rest_month' ),
+				'args'                => array(
+					'month'    => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'country'  => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'location' => array(
+						'type'    => 'integer',
+						'default' => 0,
+					),
+					'months'   => array(
+						'type'    => 'integer',
+						'default' => 1,
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Return the grid HTML for a requested month (JSON: { month, html }).
+	 *
+	 * @param \WP_REST_Request $req Request.
+	 * @return \WP_REST_Response
+	 */
+	public function rest_month( \WP_REST_Request $req ): \WP_REST_Response {
+		$month = (string) $req->get_param( 'month' );
+		try {
+			$cursor = preg_match( '/^\d{4}-\d{2}$/', $month )
+				? new \DateTimeImmutable( $month . '-01' )
+				: new \DateTimeImmutable( current_time( 'Y-m-01' ) );
+		} catch ( \Exception $e ) {
+			$cursor = new \DateTimeImmutable( current_time( 'Y-m-01' ) );
+		}
+
+		$country  = strtoupper( (string) $req->get_param( 'country' ) );
+		$location = max( 0, (int) $req->get_param( 'location' ) );
+		$months   = max( 1, min( 3, (int) $req->get_param( 'months' ) ) );
+
+		return new \WP_REST_Response(
+			array(
+				'month' => $cursor->format( 'Y-m' ),
+				'html'  => $this->render_months_html( $cursor, $country, $location, $months ),
+			)
+		);
 	}
 
 	/**

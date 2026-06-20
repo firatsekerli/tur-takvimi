@@ -120,6 +120,15 @@
 	color: #fff;
 }
 
+.tt-month__grids {
+	transition: opacity 0.12s;
+}
+
+.tt-month__grids.is-loading {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
 .tt-month__cal + .tt-month__cal {
 	margin-top: 1.5rem;
 }

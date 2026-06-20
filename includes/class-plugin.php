@@ -94,7 +94,7 @@ final class Plugin {
 		if ( ! self::is_builder_preview() ) {
 			return;
 		}
-		foreach ( array( 'tur-takvimi', 'leaflet', 'tur-takvimi-explorer', 'tur-takvimi-map' ) as $handle ) {
+		foreach ( array( 'tur-takvimi', 'tur-takvimi-calendar', 'leaflet', 'tur-takvimi-explorer', 'tur-takvimi-map' ) as $handle ) {
 			if ( wp_style_is( $handle, 'registered' ) ) {
 				wp_enqueue_style( $handle );
 			}
