@@ -9,7 +9,48 @@
 	'use strict';
 
 	var cfg = window.TurTakvimiAdmin;
-	if ( ! cfg || typeof window.L === 'undefined' ) {
+	if ( ! cfg ) {
+		return;
+	}
+
+	// Filter the route checkboxes to the city's selected country (and uncheck
+	// any that no longer apply). Runs independently of the map below so it works
+	// even if Leaflet fails to load.
+	( function initRouteFilter() {
+		var sel = document.getElementById( 'tt_country_sel' );
+		var list = document.querySelector( '.tt-routes__list' );
+		var note = document.getElementById( 'tt-routes-empty' );
+		if ( ! list ) {
+			return;
+		}
+		function apply() {
+			var country = sel && sel.value ? sel.value : '';
+			var items = list.querySelectorAll( 'li' );
+			var visible = 0;
+			Array.prototype.forEach.call( items, function ( li ) {
+				var rc = li.getAttribute( 'data-country' ) || '';
+				var show = ! country || rc === country;
+				li.style.display = show ? '' : 'none';
+				if ( show ) {
+					visible++;
+				} else {
+					var cb = li.querySelector( 'input[type="checkbox"]' );
+					if ( cb ) {
+						cb.checked = false;
+					}
+				}
+			} );
+			if ( note ) {
+				note.style.display = visible ? 'none' : '';
+			}
+		}
+		if ( sel ) {
+			sel.addEventListener( 'change', apply );
+		}
+		apply();
+	}() );
+
+	if ( typeof window.L === 'undefined' ) {
 		return;
 	}
 
@@ -84,6 +125,15 @@
 			return;
 		}
 
+		// Column headers above the rows.
+		var head = el( 'div', 'tt-address-head' );
+		head.appendChild( el( 'span', 'tt-address-head__pin', '' ) );
+		head.appendChild( el( 'span', 'tt-address-head__street', cfg.i18n.street ) );
+		head.appendChild( el( 'span', 'tt-address-head__pc', cfg.i18n.postcode ) );
+		head.appendChild( el( 'span', 'tt-address-head__time', cfg.i18n.time ) );
+		head.appendChild( el( 'span', 'tt-address-head__freq', cfg.i18n.freq ) );
+		listEl.appendChild( head );
+
 		state.forEach( function ( item, index ) {
 			var row = el( 'div', 'tt-address-row' );
 
@@ -111,6 +161,18 @@
 				sync();
 			} );
 			row.appendChild( pc );
+
+			var time = document.createElement( 'input' );
+			time.type = 'text';
+			time.className = 'tt-address-row__time';
+			time.value = item.time || '';
+			time.placeholder = cfg.i18n.time;
+			time.title = cfg.i18n.timeTitle;
+			time.addEventListener( 'input', function () {
+				state[ index ].time = time.value;
+				sync();
+			} );
+			row.appendChild( time );
 
 			var freq = document.createElement( 'input' );
 			freq.type = 'number';

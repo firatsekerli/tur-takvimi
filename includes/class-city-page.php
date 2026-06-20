@@ -122,6 +122,9 @@ class City_Page {
 						<span class="tt-stops__pin" aria-hidden="true">📍</span>
 						<span class="tt-stops__pc"><?php echo esc_html( (string) ( $a['postcode'] ?? '' ) ); ?></span>
 						<span class="tt-stops__addr"><?php echo esc_html( (string) ( $a['address'] ?? '' ) ); ?></span>
+						<?php if ( ! empty( $a['time'] ) ) : ?>
+							<span class="tt-stops__time"><?php echo esc_html( (string) $a['time'] ); ?></span>
+						<?php endif; ?>
 					</li>
 				<?php endforeach; ?>
 			</ul>

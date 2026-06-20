@@ -518,3 +518,13 @@ msgstr "%d durak"
 
 msgid "Which country this city is in. Set this first so address searches are geocoded in the right country."
 msgstr "Bu şehrin bulunduğu ülke. Adres aramalarının doğru ülkede coğrafi konumlanması için önce bunu ayarlayın."
+
+#. Delivery stop hour + route country filter
+msgid "Hour"
+msgstr "Saat"
+
+msgid "Delivery time for this stop (e.g. 09:00 or 09:00–12:00)"
+msgstr "Bu durak için teslimat saati (örn. 09:00 veya 09:00–12:00)"
+
+msgid "No routes for this country yet. Create a route and set its country to match."
+msgstr "Bu ülke için henüz rota yok. Bir rota oluşturup ülkesini eşleşecek şekilde ayarlayın."

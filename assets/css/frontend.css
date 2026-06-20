@@ -440,6 +440,17 @@
 	flex: 1 1 auto;
 }
 
+.tt-stops__time {
+	flex: 0 0 auto;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--tt-accent);
+	background: rgba( 22, 163, 74, 0.1 );
+	border-radius: 999px;
+	padding: 0.15rem 0.6rem;
+	white-space: nowrap;
+}
+
 /* ------------------------------------------------------------------ *
  * Delivery-regions explorer — [tur_takvimi_map]
  * ------------------------------------------------------------------ */

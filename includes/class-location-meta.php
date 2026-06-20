@@ -70,6 +70,8 @@ class Location_Meta {
 				'i18n'        => array(
 					'street'   => __( 'Street address', 'tur-takvimi' ),
 					'postcode' => __( 'Postcode', 'tur-takvimi' ),
+					'time'     => __( 'Hour', 'tur-takvimi' ),
+					'timeTitle' => __( 'Delivery time for this stop (e.g. 09:00 or 09:00–12:00)', 'tur-takvimi' ),
 					'freq'     => __( 'Weeks', 'tur-takvimi' ),
 					'freqTitle' => __( 'Visit frequency in weeks (0 = on demand)', 'tur-takvimi' ),
 					'remove'   => __( 'Remove', 'tur-takvimi' ),
@@ -188,7 +190,7 @@ class Location_Meta {
 						$title = (string) $route->post_title;
 						$label = ( '' !== $code && 0 !== strpos( $title, $code ) ) ? $code . ' — ' . $title : $title;
 						?>
-						<li>
+						<li data-country="<?php echo esc_attr( Country::of_post( (int) $route->ID ) ); ?>">
 							<label>
 								<input type="checkbox" name="tt_route_ids[]" value="<?php echo esc_attr( $route->ID ); ?>" <?php checked( in_array( (int) $route->ID, $assigned, true ) ); ?>>
 								<?php echo esc_html( $label ); ?>
@@ -196,6 +198,7 @@ class Location_Meta {
 						</li>
 					<?php endforeach; ?>
 				</ul>
+				<p id="tt-routes-empty" class="description" style="display:none;"><?php esc_html_e( 'No routes for this country yet. Create a route and set its country to match.', 'tur-takvimi' ); ?></p>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -242,6 +245,12 @@ class Location_Meta {
 			// Visit frequency in weeks; 0 means on-demand (no fixed schedule).
 			if ( array_key_exists( 'frequency', $row ) && '' !== $row['frequency'] ) {
 				$entry['frequency'] = max( 0, (int) $row['frequency'] );
+			}
+
+			// Optional delivery time/hour for this stop (free text: "09:00").
+			$time = sanitize_text_field( (string) ( $row['time'] ?? '' ) );
+			if ( '' !== $time ) {
+				$entry['time'] = $time;
 			}
 
 			if ( isset( $row['lat'], $row['lng'] ) && is_numeric( $row['lat'] ) && is_numeric( $row['lng'] ) ) {

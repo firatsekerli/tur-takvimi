@@ -446,6 +446,13 @@ class Importer {
 		$lat  = $get( 'lat' );
 		$lng  = $get( 'lng' );
 		$freq = $get( 'frequency' );
+		$time = $get( 'time' );
+		if ( '' === $time ) {
+			$time = $get( 'saat' ); // Turkish header.
+		}
+		if ( '' === $time ) {
+			$time = $get( 'hour' );
+		}
 
 		$addresses = json_decode( (string) get_post_meta( $location_id, '_tt_addresses', true ), true );
 		$addresses = is_array( $addresses ) ? $addresses : array();
@@ -462,6 +469,9 @@ class Importer {
 			if ( '' !== $freq ) {
 				$entry['frequency'] = max( 0, (int) $freq );
 			}
+			if ( '' !== $time ) {
+				$entry['time'] = $time;
+			}
 
 			// Dedupe by street + postcode so re-imports update instead of append.
 			$matched = false;
@@ -474,6 +484,9 @@ class Importer {
 					}
 					if ( isset( $entry['frequency'] ) ) {
 						$existing['frequency'] = $entry['frequency'];
+					}
+					if ( isset( $entry['time'] ) ) {
+						$existing['time'] = $entry['time'];
 					}
 					$matched = true;
 					break;
