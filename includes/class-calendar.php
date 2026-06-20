@@ -4,11 +4,11 @@
  *
  * Two builder-agnostic pieces:
  *   - [tur_takvimi_calendar_month]: a real month grid that marks delivery days
- *     and links each city, with an "Add to calendar" toolbar (subscribe /
- *     download) and per-day Google Calendar links.
+ *     and links each city — a visual overview (add-to-calendar lives on the
+ *     per-address rows of a city page, not here).
  *   - An iCalendar feed at /?tt_ics=1 (optionally scoped by location / route /
- *     country) so visitors can subscribe (webcal, auto-updating) or download a
- *     one-off .ics that any calendar app can import.
+ *     country / address) so visitors can subscribe (webcal, auto-updating) or
+ *     download a one-off .ics that any calendar app can import.
  *
  * @package TurTakvimi
  */
@@ -85,9 +85,6 @@ class Calendar {
 		// Which month to show first (Y-m), navigable via ?tt_month / AJAX.
 		$cursor = $this->current_cursor();
 
-		$subscribe = $this->feed_url( $country, $loc_id, false, '', true );
-		$download  = $this->feed_url( $country, $loc_id, true );
-
 		ob_start();
 		?>
 		<section class="tt-month" data-tt-month-root
@@ -100,15 +97,6 @@ class Calendar {
 				<div class="tt-month__nav">
 					<a class="tt-month__navbtn" data-tt-month-prev href="<?php echo esc_url( $this->month_url( $cursor->modify( '-1 month' ) ) ); ?>" aria-label="<?php esc_attr_e( 'Previous month', 'tur-takvimi' ); ?>" rel="nofollow">‹</a>
 					<a class="tt-month__navbtn" data-tt-month-next href="<?php echo esc_url( $this->month_url( $cursor->modify( '+1 month' ) ) ); ?>" aria-label="<?php esc_attr_e( 'Next month', 'tur-takvimi' ); ?>" rel="nofollow">›</a>
-				</div>
-				<div class="tt-month__addcal">
-					<span class="tt-month__addcal-label"><?php esc_html_e( 'Add to calendar', 'tur-takvimi' ); ?></span>
-					<a class="tt-month__btn tt-month__btn--primary" href="<?php echo esc_url( $subscribe ); ?>" rel="nofollow">
-						<?php esc_html_e( 'Subscribe (auto-updates)', 'tur-takvimi' ); ?>
-					</a>
-					<a class="tt-month__btn" href="<?php echo esc_url( $download ); ?>" rel="nofollow" download>
-						<?php esc_html_e( 'Download (.ics)', 'tur-takvimi' ); ?>
-					</a>
 				</div>
 			</div>
 
@@ -295,13 +283,6 @@ class Calendar {
 									</div>
 								</details>
 							<?php endif; ?>
-							<details class="tt-month__add">
-								<summary class="tt-month__addbtn" title="<?php esc_attr_e( 'Add to calendar', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'Add to calendar', 'tur-takvimi' ); ?>">＋</summary>
-								<div class="tt-month__addmenu">
-									<a class="tt-month__addmenu-item" href="<?php echo esc_url( $this->feed_url( $country, $loc_id, false, $ymd ) ); ?>"><?php esc_html_e( 'Apple / Outlook (.ics)', 'tur-takvimi' ); ?></a>
-									<a class="tt-month__addmenu-item" href="<?php echo esc_url( $this->google_url( $date, $stops ) ); ?>" target="_blank" rel="noopener nofollow"><?php esc_html_e( 'Google Calendar', 'tur-takvimi' ); ?></a>
-								</div>
-							</details>
 						<?php endif; ?>
 					</div>
 				<?php endfor; ?>
@@ -658,70 +639,6 @@ class Calendar {
 	 */
 	private function month_url( \DateTimeImmutable $month ): string {
 		return add_query_arg( 'tt_month', $month->format( 'Y-m' ) );
-	}
-
-	/**
-	 * Build the .ics feed URL (webcal for subscribe, https for download).
-	 *
-	 * @param string $country   ISO-2 filter.
-	 * @param int    $location  Location scope.
-	 * @param bool   $download  Add the attachment hint (save as a file).
-	 * @param string $date      Optional single day (Y-m-d) to scope to.
-	 * @param bool   $subscribe Use the webcal:// scheme (live subscription).
-	 * @return string
-	 */
-	private function feed_url( string $country, int $location, bool $download, string $date = '', bool $subscribe = false ): string {
-		$args = array( 'tt_ics' => 1 );
-		if ( '' !== $country ) {
-			$args['country'] = $country;
-		}
-		if ( $location ) {
-			$args['location'] = $location;
-		}
-		if ( '' !== $date ) {
-			$args['date'] = $date;
-		}
-		if ( $download ) {
-			$args['download'] = 1;
-		}
-		$url = add_query_arg( $args, home_url( '/' ) );
-
-		// Subscribe links use the webcal scheme so calendar apps auto-update.
-		if ( $subscribe ) {
-			$url = preg_replace( '#^https?://#', 'webcal://', $url );
-		}
-		return $url;
-	}
-
-	/**
-	 * "Add to Google Calendar" URL for one all-day delivery date.
-	 *
-	 * @param \DateTimeImmutable $date  Delivery date.
-	 * @param array              $stops Cities delivered that day.
-	 * @return string
-	 */
-	private function google_url( \DateTimeImmutable $date, array $stops ): string {
-		$cities  = wp_list_pluck( $stops, 'title' );
-		$first   = $cities[0] ?? '';
-		$summary = sprintf( /* translators: %s: city name. */ __( 'Delivery — %s', 'tur-takvimi' ), $first );
-		if ( count( $cities ) > 1 ) {
-			$summary = sprintf(
-				/* translators: 1: first city, 2: number of additional cities. */
-				__( 'Delivery — %1$s +%2$d more', 'tur-takvimi' ),
-				$first,
-				count( $cities ) - 1
-			);
-		}
-
-		return add_query_arg(
-			array(
-				'action' => 'TEMPLATE',
-				'text'   => rawurlencode( $summary ),
-				'dates'  => $date->format( 'Ymd' ) . '/' . $date->modify( '+1 day' )->format( 'Ymd' ),
-				'details' => rawurlencode( implode( ', ', $cities ) ),
-			),
-			'https://calendar.google.com/calendar/render'
-		);
 	}
 
 	/**
