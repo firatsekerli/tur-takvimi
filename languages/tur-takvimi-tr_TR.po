@@ -552,3 +552,9 @@ msgstr "Talep üzerine"
 
 msgid "No stops match that postcode."
 msgstr "Bu posta koduna uygun durak yok."
+
+msgid "Service radius (km)"
+msgstr "Hizmet yarıçapı (km)"
+
+msgid "0 = no limit. When set, a postcode farther than this from every stop is treated as outside the delivery area."
+msgstr "0 = sınır yok. Belirlendiğinde, her duraktan bu mesafeden daha uzak bir posta kodu teslimat alanı dışında sayılır."

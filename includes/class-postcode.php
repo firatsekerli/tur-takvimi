@@ -87,6 +87,11 @@ class Postcode {
 				}
 			}
 			if ( null !== $best ) {
+				// Outside the configured service radius → genuinely not covered.
+				$radius = self::service_radius_km();
+				if ( $radius > 0 && $best_dist > $radius ) {
+					return null;
+				}
 				return self::decorate( $best, $best_dist, $best_addr, $best_time );
 			}
 		}
@@ -96,6 +101,17 @@ class Postcode {
 		//    digits, then numeric proximity — no network needed, so a nearby
 		//    village still resolves to its nearest stop.
 		return self::nearest_by_prefix( $norm, $country );
+	}
+
+	/**
+	 * Maximum distance (km) a postcode may be from a stop to count as covered.
+	 * 0 means no limit. Settable in Settings and filterable.
+	 *
+	 * @return float
+	 */
+	private static function service_radius_km(): float {
+		$radius = (float) Settings::get( 'service_radius_km', 0 );
+		return (float) apply_filters( 'tur_takvimi_service_radius_km', $radius );
 	}
 
 	/**

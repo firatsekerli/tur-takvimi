@@ -35,6 +35,7 @@ class Settings {
 			'default_frequency_weeks' => 4,
 			'discount_percent'       => 10,
 			'order_cutoff_days'      => 2,
+			'service_radius_km'      => 0, // 0 = no limit; otherwise the max km a postcode may be from a stop.
 			'geocoder_provider'      => 'photon', // 'photon' (free) or 'locationiq' (keyed).
 			'geocoder_api_key'       => '',
 			'geocoder_region'        => 'us1',    // LocationIQ region: us1 or eu1.
@@ -119,6 +120,7 @@ class Settings {
 		$out['default_frequency_weeks'] = max( 1, min( 52, absint( $in['default_frequency_weeks'] ?? 4 ) ) );
 		$out['discount_percent']   = max( 0, min( 100, absint( $in['discount_percent'] ?? 10 ) ) );
 		$out['order_cutoff_days']  = max( 0, absint( $in['order_cutoff_days'] ?? 2 ) );
+		$out['service_radius_km']  = max( 0, absint( $in['service_radius_km'] ?? 0 ) );
 
 		$provider                  = sanitize_key( $in['geocoder_provider'] ?? 'photon' );
 		$out['geocoder_provider']  = in_array( $provider, array( 'photon', 'locationiq' ), true ) ? $provider : 'photon';
@@ -211,6 +213,10 @@ class Settings {
 					<tr>
 						<th><label for="tt_cutoff"><?php esc_html_e( 'Order cutoff (days before visit)', 'tur-takvimi' ); ?></label></th>
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[order_cutoff_days]" id="tt_cutoff" type="number" min="0" value="<?php echo esc_attr( $s['order_cutoff_days'] ); ?>"></td>
+					</tr>
+					<tr>
+						<th><label for="tt_radius"><?php esc_html_e( 'Service radius (km)', 'tur-takvimi' ); ?></label></th>
+						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[service_radius_km]" id="tt_radius" type="number" min="0" value="<?php echo esc_attr( $s['service_radius_km'] ); ?>"> <span class="description"><?php esc_html_e( '0 = no limit. When set, a postcode farther than this from every stop is treated as outside the delivery area.', 'tur-takvimi' ); ?></span></td>
 					</tr>
 					<tr>
 						<th><label for="tt_geocoder"><?php esc_html_e( 'Geocoder', 'tur-takvimi' ); ?></label></th>
