@@ -159,7 +159,7 @@ class Calendar {
 		$html = '';
 		$grid = $cursor;
 		for ( $m = 0; $m < $months; $m++ ) {
-			$html .= $this->render_grid( $grid, $by_date, $today, $weekdays );
+			$html .= $this->render_grid( $grid, $by_date, $today, $weekdays, $country, $loc_id );
 			$grid  = $grid->modify( '+1 month' );
 		}
 		return $html;
@@ -237,9 +237,11 @@ class Calendar {
 	 * @param array              $by_date  Deliveries indexed by Y-m-d.
 	 * @param string             $today    Today's Y-m-d.
 	 * @param string[]           $weekdays Localized Mon..Sun labels.
+	 * @param string             $country  ISO-2 filter (for per-day .ics scope).
+	 * @param int                $loc_id   Location scope (for per-day .ics scope).
 	 * @return string
 	 */
-	private function render_grid( \DateTimeImmutable $first, array $by_date, string $today, array $weekdays ): string {
+	private function render_grid( \DateTimeImmutable $first, array $by_date, string $today, array $weekdays, string $country = '', int $loc_id = 0 ): string {
 		$days_in_month = (int) $first->format( 't' );
 		// Leading blanks: ISO weekday (Mon=1..Sun=7) minus 1.
 		$lead = (int) $first->format( 'N' ) - 1;
@@ -293,7 +295,13 @@ class Calendar {
 									</div>
 								</details>
 							<?php endif; ?>
-							<a class="tt-month__gcal" href="<?php echo esc_url( $this->google_url( $date, $stops ) ); ?>" target="_blank" rel="noopener nofollow" title="<?php esc_attr_e( 'Add to Google Calendar', 'tur-takvimi' ); ?>">＋</a>
+							<details class="tt-month__add">
+								<summary class="tt-month__addbtn" title="<?php esc_attr_e( 'Add to calendar', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'Add to calendar', 'tur-takvimi' ); ?>">＋</summary>
+								<div class="tt-month__addmenu">
+									<a class="tt-month__addmenu-item" href="<?php echo esc_url( $this->feed_url( $country, $loc_id, true, $ymd ) ); ?>" download><?php esc_html_e( 'Apple / Outlook (.ics)', 'tur-takvimi' ); ?></a>
+									<a class="tt-month__addmenu-item" href="<?php echo esc_url( $this->google_url( $date, $stops ) ); ?>" target="_blank" rel="noopener nofollow"><?php esc_html_e( 'Google Calendar', 'tur-takvimi' ); ?></a>
+								</div>
+							</details>
 						<?php endif; ?>
 					</div>
 				<?php endfor; ?>
@@ -328,10 +336,11 @@ class Calendar {
 		$location = isset( $_GET['location'] ) ? absint( $_GET['location'] ) : 0;
 		$route    = isset( $_GET['route'] ) ? absint( $_GET['route'] ) : 0;
 		$country  = isset( $_GET['country'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_GET['country'] ) ) ) : '';
+		$date     = isset( $_GET['date'] ) ? sanitize_text_field( wp_unslash( $_GET['date'] ) ) : '';
 		$download = isset( $_GET['download'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		$ics = $this->build_ics( $country, $location, $route );
+		$ics = $this->build_ics( $country, $location, $route, $date );
 
 		nocache_headers();
 		header( 'Content-Type: text/calendar; charset=utf-8' );
@@ -347,14 +356,20 @@ class Calendar {
 	 * @param string $country  Optional ISO-2 filter.
 	 * @param int    $location Optional location scope.
 	 * @param int    $route    Optional route scope.
+	 * @param string $date     Optional single day (Y-m-d) to scope to.
 	 * @return string
 	 */
-	private function build_ics( string $country, int $location, int $route ): string {
-		$start = current_time( 'Y-m-d' );
-		try {
-			$end = ( new \DateTimeImmutable( $start ) )->modify( '+' . Schedule::HORIZON_WEEKS . ' weeks' )->format( 'Y-m-d' );
-		} catch ( \Exception $e ) {
-			$end = $start;
+	private function build_ics( string $country, int $location, int $route, string $date = '' ): string {
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
+			$start = $date;
+			$end   = $date;
+		} else {
+			$start = current_time( 'Y-m-d' );
+			try {
+				$end = ( new \DateTimeImmutable( $start ) )->modify( '+' . Schedule::HORIZON_WEEKS . ' weeks' )->format( 'Y-m-d' );
+			} catch ( \Exception $e ) {
+				$end = $start;
+			}
 		}
 
 		$schedule = new Schedule();
@@ -457,15 +472,19 @@ class Calendar {
 	 * @param string $country  ISO-2 filter.
 	 * @param int    $location Location scope.
 	 * @param bool   $download Force download (attachment) vs. subscribe.
+	 * @param string $date     Optional single day (Y-m-d) to scope to.
 	 * @return string
 	 */
-	private function feed_url( string $country, int $location, bool $download ): string {
+	private function feed_url( string $country, int $location, bool $download, string $date = '' ): string {
 		$args = array( 'tt_ics' => 1 );
 		if ( '' !== $country ) {
 			$args['country'] = $country;
 		}
 		if ( $location ) {
 			$args['location'] = $location;
+		}
+		if ( '' !== $date ) {
+			$args['date'] = $date;
 		}
 		if ( $download ) {
 			$args['download'] = 1;

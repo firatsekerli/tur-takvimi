@@ -237,28 +237,66 @@
 	margin-bottom: 2px;
 }
 
-.tt-month__gcal {
+.tt-month__add {
 	position: absolute;
 	top: 0.25rem;
 	right: 0.3rem;
-	width: 1.25rem;
-	height: 1.25rem;
+	opacity: 0;
+	transition: opacity 0.12s;
+}
+
+.tt-month__cell.has-stops:hover .tt-month__add,
+.tt-month__add[open],
+.tt-month__add:focus-within {
+	opacity: 1;
+}
+
+.tt-month__addbtn {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	width: 1.25rem;
+	height: 1.25rem;
 	border-radius: 50%;
 	font-size: 0.95rem;
 	line-height: 1;
 	color: #fff;
 	background: var(--tt-accent);
-	text-decoration: none;
-	opacity: 0;
-	transition: opacity 0.12s;
+	cursor: pointer;
+	list-style: none;
 }
 
-.tt-month__cell.has-stops:hover .tt-month__gcal,
-.tt-month__gcal:focus {
-	opacity: 1;
+.tt-month__addbtn::-webkit-details-marker {
+	display: none;
+}
+
+.tt-month__addmenu {
+	position: absolute;
+	right: 0;
+	top: 1.6rem;
+	z-index: 6;
+	min-width: 11rem;
+	padding: 0.25rem;
+	background: #fff;
+	border: 1px solid var(--tt-border);
+	border-radius: 8px;
+	box-shadow: 0 6px 18px rgba( 0, 0, 0, 0.14 );
+	display: flex;
+	flex-direction: column;
+}
+
+.tt-month__addmenu-item {
+	padding: 0.4rem 0.55rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--tt-text);
+	text-decoration: none;
+	border-radius: 6px;
+	white-space: nowrap;
+}
+
+.tt-month__addmenu-item:hover {
+	background: var(--tt-bg);
 }
 
 @media ( max-width: 600px ) {
@@ -269,7 +307,7 @@
 	.tt-month__stop {
 		font-size: 0.68rem;
 	}
-	.tt-month__gcal {
+	.tt-month__add {
 		opacity: 1;
 	}
 }
