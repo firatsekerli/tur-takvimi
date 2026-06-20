@@ -99,10 +99,12 @@
 			}
 		}
 
+		var countrySelect = root.querySelector( '[data-tt-country]' );
 		var regionSelect = root.querySelector( '[data-tt-region]' );
+		var weekSelect = root.querySelector( '[data-tt-week]' );
 
 		// Limit the region dropdown to the chosen country and drop a now-invalid
-		// selection. Returns nothing; updates state.region.
+		// selection. Updates state.region.
 		function syncRegionOptions( country ) {
 			if ( ! regionSelect ) {
 				return;
@@ -125,29 +127,24 @@
 			state.region = regionSelect.value;
 		}
 
-		// Country / week chips.
-		Array.prototype.forEach.call( root.querySelectorAll( '.tt-explorer__chip' ), function ( chip ) {
-			chip.addEventListener( 'click', function () {
-				var type = chip.getAttribute( 'data-filter' );
-				var value = chip.getAttribute( 'data-value' ) || '';
-				state[ type ] = value;
-
-				// Highlight the active chip within its own group.
-				var group = chip.parentNode;
-				Array.prototype.forEach.call( group.querySelectorAll( '.tt-explorer__chip' ), function ( c ) {
-					c.classList.toggle( 'is-active', c === chip );
-				} );
-
-				if ( 'country' === type ) {
-					syncRegionOptions( value );
-				}
+		if ( countrySelect ) {
+			countrySelect.addEventListener( 'change', function () {
+				state.country = countrySelect.value;
+				syncRegionOptions( state.country );
 				apply();
 			} );
-		} );
+		}
 
 		if ( regionSelect ) {
 			regionSelect.addEventListener( 'change', function () {
 				state.region = regionSelect.value;
+				apply();
+			} );
+		}
+
+		if ( weekSelect ) {
+			weekSelect.addEventListener( 'change', function () {
+				state.week = weekSelect.value;
 				apply();
 			} );
 		}

@@ -460,23 +460,28 @@
 	color: var(--tt-text);
 }
 
+/* One row of equal-width dropdowns, with the city search as the last column. */
 .tt-explorer__filters {
 	display: flex;
-	flex-direction: column;
-	gap: 0.4rem;
+	flex-wrap: wrap;
+	align-items: end;
+	gap: 0.75rem;
 	margin-bottom: 0.85rem;
 }
 
-.tt-explorer__row {
+.tt-explorer__filter {
+	flex: 1 1 11rem;
+	min-width: 0;
 	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0.4rem 0.6rem;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
+.tt-explorer__filter--search {
+	flex: 1.4 1 13rem;
 }
 
 .tt-explorer__label {
-	flex: 0 0 auto;
-	width: 5rem;
 	font-size: 0.68rem;
 	font-weight: 800;
 	letter-spacing: 0.05em;
@@ -484,30 +489,11 @@
 	color: var(--tt-muted);
 }
 
-.tt-explorer__chips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.4rem;
-}
-
-.tt-explorer__chip {
-	background: var(--tt-card);
-	border: 1px solid var(--tt-border);
-	border-radius: 999px;
-	padding: 0.3rem 0.85rem;
-	font-size: 0.85rem;
-	font-weight: 600;
-	color: var(--tt-text);
-	cursor: pointer;
-	transition: background 0.12s, border-color 0.12s, color 0.12s;
-}
-
 .tt-explorer__select {
-	flex: 1 1 auto;
-	max-width: 22rem;
+	width: 100%;
 	border: 1px solid var(--tt-border);
 	border-radius: 10px;
-	padding: 0.4rem 2rem 0.4rem 0.85rem;
+	padding: 0.55rem 2rem 0.55rem 0.85rem;
 	font-size: 0.88rem;
 	font-weight: 600;
 	color: var(--tt-text);
@@ -525,25 +511,8 @@
 	outline-offset: 1px;
 }
 
-.tt-explorer__chip:hover {
-	border-color: var(--tt-accent);
-}
-
-.tt-explorer__chip.is-active {
-	background: var(--tt-accent);
-	border-color: var(--tt-accent);
-	color: #fff;
-}
-
-/* The week row's active chip uses the brand primary to distinguish it. */
-.tt-explorer__row [data-filter="week"].is-active {
-	background: var(--tt-primary);
-	border-color: var(--tt-primary);
-}
-
 .tt-explorer__search {
 	position: relative;
-	margin-left: auto;
 	display: flex;
 	align-items: center;
 }
@@ -557,11 +526,13 @@
 }
 
 .tt-explorer__search input {
+	width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
 	border: 1px solid var(--tt-border);
-	border-radius: 999px;
-	padding: 0.45rem 1rem 0.45rem 2.4rem;
+	border-radius: 10px;
+	padding: 0.55rem 1rem 0.55rem 2.4rem;
 	font-size: 0.88rem;
-	min-width: 15rem;
 	background: var(--tt-card);
 }
 

@@ -531,3 +531,6 @@ msgstr "Bu ülke için henüz rota yok. Bir rota oluşturup ülkesini eşleşece
 
 msgid "All regions"
 msgstr "Tüm bölgeler"
+
+msgid "All weeks"
+msgstr "Tüm haftalar"

@@ -116,19 +116,19 @@ class Map_Explorer {
 		<div class="tt-explorer" data-tt-explorer style="--tt-map-h:<?php echo (int) $height; ?>px">
 			<div class="tt-explorer__filters">
 				<?php if ( $show_country ) : ?>
-					<div class="tt-explorer__row">
-						<span class="tt-explorer__label"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></span>
-						<div class="tt-explorer__chips">
-							<button type="button" class="tt-explorer__chip is-active" data-filter="country" data-value=""><?php esc_html_e( 'All', 'tur-takvimi' ); ?></button>
+					<div class="tt-explorer__filter">
+						<label class="tt-explorer__label" for="tt-explorer-country"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></label>
+						<select id="tt-explorer-country" class="tt-explorer__select" data-tt-country>
+							<option value=""><?php esc_html_e( 'All countries', 'tur-takvimi' ); ?></option>
 							<?php foreach ( $countries as $code ) : ?>
-								<button type="button" class="tt-explorer__chip" data-filter="country" data-value="<?php echo esc_attr( $code ); ?>"><?php echo esc_html( Country::name( $code ) ); ?></button>
+								<option value="<?php echo esc_attr( $code ); ?>"><?php echo esc_html( Country::name( $code ) ); ?></option>
 							<?php endforeach; ?>
-						</div>
+						</select>
 					</div>
 				<?php endif; ?>
 
 				<?php if ( $region_names ) : ?>
-					<div class="tt-explorer__row">
+					<div class="tt-explorer__filter">
 						<label class="tt-explorer__label" for="tt-explorer-region"><?php esc_html_e( 'Region / Route', 'tur-takvimi' ); ?></label>
 						<select id="tt-explorer-region" class="tt-explorer__select" data-tt-region>
 							<option value=""><?php esc_html_e( 'All regions', 'tur-takvimi' ); ?></option>
@@ -139,19 +139,23 @@ class Map_Explorer {
 					</div>
 				<?php endif; ?>
 
-				<div class="tt-explorer__row">
-					<span class="tt-explorer__label"><?php esc_html_e( 'Week', 'tur-takvimi' ); ?></span>
-					<div class="tt-explorer__chips">
-						<button type="button" class="tt-explorer__chip is-active" data-filter="week" data-value=""><?php esc_html_e( 'All', 'tur-takvimi' ); ?></button>
-						<button type="button" class="tt-explorer__chip" data-filter="week" data-value="0"><?php esc_html_e( 'This week', 'tur-takvimi' ); ?></button>
-						<button type="button" class="tt-explorer__chip" data-filter="week" data-value="1"><?php esc_html_e( 'Next week', 'tur-takvimi' ); ?></button>
-						<button type="button" class="tt-explorer__chip" data-filter="week" data-value="2"><?php esc_html_e( '+2 weeks', 'tur-takvimi' ); ?></button>
-					</div>
+				<div class="tt-explorer__filter">
+					<label class="tt-explorer__label" for="tt-explorer-week"><?php esc_html_e( 'Week', 'tur-takvimi' ); ?></label>
+					<select id="tt-explorer-week" class="tt-explorer__select" data-tt-week>
+						<option value=""><?php esc_html_e( 'All weeks', 'tur-takvimi' ); ?></option>
+						<option value="0"><?php esc_html_e( 'This week', 'tur-takvimi' ); ?></option>
+						<option value="1"><?php esc_html_e( 'Next week', 'tur-takvimi' ); ?></option>
+						<option value="2"><?php esc_html_e( '+2 weeks', 'tur-takvimi' ); ?></option>
+					</select>
+				</div>
+
+				<div class="tt-explorer__filter tt-explorer__filter--search">
+					<label class="tt-explorer__label" for="tt-explorer-search"><?php esc_html_e( 'Search', 'tur-takvimi' ); ?></label>
 					<div class="tt-explorer__search">
 						<span class="tt-explorer__search-icon" aria-hidden="true">
 							<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
 						</span>
-						<input type="search" data-tt-stop-search placeholder="<?php esc_attr_e( 'Search a city…', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'Search a city', 'tur-takvimi' ); ?>">
+						<input id="tt-explorer-search" type="search" data-tt-stop-search placeholder="<?php esc_attr_e( 'Search a city…', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'Search a city', 'tur-takvimi' ); ?>">
 					</div>
 				</div>
 			</div>
