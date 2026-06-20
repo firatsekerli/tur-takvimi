@@ -45,7 +45,7 @@
  * Month-grid calendar — [tur_takvimi_calendar_month]
  * ------------------------------------------------------------------ */
 .tt-month {
-	max-width: 960px;
+	width: 100%;
 }
 
 .tt-month__bar {
