@@ -75,9 +75,16 @@ class Importer {
 
 		// Background pin geocoder: process one small batch per page load and
 		// auto-continue via a meta refresh, so no single request can time out.
-		if ( isset( $_GET['tt_geocode'] ) && 'run' === $_GET['tt_geocode'] ) {
-			$this->render_geocode();
-			return;
+		if ( isset( $_GET['tt_geocode'] ) ) {
+			$action = sanitize_key( (string) wp_unslash( $_GET['tt_geocode'] ) );
+			if ( 'batch' === $action ) {
+				$this->ajax_geocode_batch();
+				return;
+			}
+			if ( 'run' === $action ) {
+				$this->render_geocode();
+				return;
+			}
 		}
 
 		// "Dismiss" the could-not-pin banner: stop flagging the remaining
@@ -162,87 +169,137 @@ class Importer {
 	}
 
 	/**
-	 * Geocode one batch of pending pins, then auto-continue until none remain.
+	 * The geocoding screen: renders the progress bar instantly and drives the
+	 * batches with JavaScript (fetch), so the bar stays on screen and updates in
+	 * place instead of blanking out while each batch runs server-side.
 	 */
 	private function render_geocode(): void {
 		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'tt_geocode' ) ) {
 			wp_die( esc_html__( 'Invalid or expired link. Please return to the import screen.', 'tur-takvimi' ) );
 		}
-		if ( function_exists( 'set_time_limit' ) ) {
-			set_time_limit( 0 );
-		}
 
-		// "Retry" clears the could-not-geocode flags once, then geocodes again.
+		// "Retry" clears the could-not-geocode flags once before geocoding again.
 		if ( ! empty( $_GET['retry'] ) ) {
 			$this->clear_nogeo_flags();
 		}
 
-		$processed = $this->geocode_batch( self::GEOCODE_BATCH );
 		list( $total, $done ) = $this->geocode_stats();
-		$pending      = $total - $done;
-		$pct          = $total > 0 ? (int) round( $done * 100 / $total ) : 100;
-		$stalled      = $pending > 0 && 0 === $processed && '' !== $this->last_geo_error;
-		$continue_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run' ), 'tt_geocode' );
-		$back_url     = admin_url( 'admin.php?page=tur-takvimi-import' );
-		// A rate-limit pause is transient: wait out the window and auto-resume.
-		// Other failures (bad key, network) stay manual so we don't loop forever.
-		$rate_limited = $stalled && ( false !== stripos( $this->last_geo_error, '429' ) || false !== stripos( $this->last_geo_error, 'rate limit' ) );
-		$retry_secs   = 30;
+		$batch_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=batch' ), 'tt_geocode' );
+		$back_url  = admin_url( 'admin.php?page=tur-takvimi-import' );
+
+		$strings = array(
+			'working' => __( 'Pinned %1$d of %2$d addresses (%3$d%%). Working…', 'tur-takvimi' ),
+			'done'    => __( 'Done — %d addresses processed.', 'tur-takvimi' ),
+			'rate'    => __( 'Geocoder rate limit reached — retrying automatically in %d seconds…', 'tur-takvimi' ),
+			'stalled' => __( 'The geocoder is not responding, so it was paused. Check Tur Takvimi → Settings (geocoder provider / API key).', 'tur-takvimi' ),
+			'network' => __( 'Connection problem — retrying…', 'tur-takvimi' ),
+		);
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Geocoding map pins…', 'tur-takvimi' ); ?></h1>
-			<?php if ( $stalled ) : ?>
-				<?php if ( $rate_limited ) : ?>
-					<meta http-equiv="refresh" content="<?php echo esc_attr( (string) $retry_secs ); ?>;url=<?php echo esc_url( $continue_url ); ?>">
-					<div class="notice notice-warning">
-						<p><strong>
-							<?php
-							/* translators: %d: seconds until the next automatic attempt. */
-							echo esc_html( sprintf( __( 'Geocoder rate limit reached — pausing, then retrying automatically in %d seconds. Keep this tab open.', 'tur-takvimi' ), $retry_secs ) );
-							?>
-						</strong></p>
-						<p><code><?php echo esc_html( $this->last_geo_error ); ?></code></p>
-					</div>
-					<p>
-						<?php echo esc_html( sprintf( /* translators: 1: pinned, 2: total, 3: percent. */ __( 'Pinned %1$d of %2$d addresses (%3$d%%).', 'tur-takvimi' ), $done, $total, $pct ) ); ?>
-					</p>
-					<progress value="<?php echo esc_attr( $done ); ?>" max="<?php echo esc_attr( $total ); ?>" style="width:320px;height:18px;"></progress>
-					<p>
-						<a class="button button-primary" href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Retry now', 'tur-takvimi' ); ?></a>
-						<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Cancel', 'tur-takvimi' ); ?></a>
-					</p>
-				<?php else : ?>
-					<div class="notice notice-error">
-						<p><strong><?php esc_html_e( 'The geocoder is not responding, so it was paused.', 'tur-takvimi' ); ?></strong></p>
-						<p><code><?php echo esc_html( $this->last_geo_error ); ?></code></p>
-						<p class="description"><?php esc_html_e( 'Check Tur Takvimi → Settings (geocoder provider / API key), then continue.', 'tur-takvimi' ); ?></p>
-					</div>
-					<p>
-						<a class="button button-primary" href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a>
-						<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Back to import', 'tur-takvimi' ); ?></a>
-					</p>
-				<?php endif; ?>
-			<?php elseif ( $pending > 0 ) : ?>
-				<meta http-equiv="refresh" content="1;url=<?php echo esc_url( $continue_url ); ?>">
-				<p>
-					<?php
-					/* translators: 1: pinned count, 2: total, 3: percent. */
-					echo esc_html( sprintf( __( 'Pinned %1$d of %2$d addresses (%3$d%%). This continues automatically — keep this tab open.', 'tur-takvimi' ), $done, $total, $pct ) );
-					?>
-				</p>
-				<progress value="<?php echo esc_attr( $done ); ?>" max="<?php echo esc_attr( $total ); ?>" style="width:320px;height:18px;"></progress>
-				<p>
-					<a href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a>
-					&nbsp;·&nbsp;
-					<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Cancel', 'tur-takvimi' ); ?></a>
-				</p>
-			<?php else : ?>
-				<div class="notice notice-success"><p><?php echo esc_html( sprintf( /* translators: %d: total addresses. */ __( 'Done — %d addresses processed.', 'tur-takvimi' ), $total ) ); ?></p></div>
-				<p><a class="button button-primary" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Back to import', 'tur-takvimi' ); ?></a></p>
-			<?php endif; ?>
+			<p id="tt-geo-msg"><?php echo esc_html( sprintf( $strings['working'], $done, $total, $total > 0 ? (int) round( $done * 100 / $total ) : 100 ) ); ?></p>
+			<progress id="tt-geo-bar" value="<?php echo esc_attr( (string) $done ); ?>" max="<?php echo esc_attr( (string) $total ); ?>" style="width:320px;height:18px;"></progress>
+			<div id="tt-geo-stalled" class="notice notice-error" style="display:none;"><p id="tt-geo-stalled-msg"></p></div>
+			<p>
+				<a class="button button-primary" id="tt-geo-retry" href="<?php echo esc_url( $batch_url ); ?>" style="display:none;"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a>
+				<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Cancel', 'tur-takvimi' ); ?></a>
+			</p>
 		</div>
+		<script>
+		( function () {
+			var batchUrl = <?php echo wp_json_encode( $batch_url ); ?>;
+			var doneUrl  = <?php echo wp_json_encode( $back_url ); ?>;
+			var str      = <?php echo wp_json_encode( $strings ); ?>;
+			var bar     = document.getElementById( 'tt-geo-bar' );
+			var msg     = document.getElementById( 'tt-geo-msg' );
+			var stalled = document.getElementById( 'tt-geo-stalled' );
+			var sMsg    = document.getElementById( 'tt-geo-stalled-msg' );
+			var retry   = document.getElementById( 'tt-geo-retry' );
+
+			function fmt( tpl ) {
+				var a = arguments;
+				return tpl.replace( /%%|%(\d)\$d|%d/g, function ( m, n ) {
+					if ( m === '%%' ) { return '%'; }
+					return a[ n ? parseInt( n, 10 ) : 1 ];
+				} );
+			}
+			function pct( d, t ) { return t > 0 ? Math.round( d * 100 / t ) : 100; }
+
+			function step() {
+				stalled.style.display = 'none';
+				retry.style.display = 'none';
+				fetch( batchUrl, { credentials: 'same-origin' } )
+					.then( function ( r ) { return r.json(); } )
+					.then( function ( d ) {
+						if ( ! d || ! d.ok ) { showStalled( ( d && d.error ) || '' ); return; }
+						bar.value = d.done;
+						bar.max = d.total;
+						if ( d.done >= d.total ) {
+							msg.textContent = fmt( str.done, d.total );
+							bar.value = bar.max;
+							setTimeout( function () { window.location.href = doneUrl; }, 1200 );
+							return;
+						}
+						if ( d.rateLimited ) { countdown( 30 ); return; }
+						if ( d.stalled ) { showStalled( d.error || str.stalled ); return; }
+						msg.textContent = fmt( str.working, d.done, d.total, pct( d.done, d.total ) );
+						step();
+					} )
+					.catch( function () { msg.textContent = str.network; setTimeout( step, 3000 ); } );
+			}
+
+			function countdown( secs ) {
+				msg.textContent = fmt( str.rate, secs );
+				var iv = setInterval( function () {
+					secs -= 1;
+					if ( secs <= 0 ) { clearInterval( iv ); step(); } else { msg.textContent = fmt( str.rate, secs ); }
+				}, 1000 );
+			}
+
+			function showStalled( err ) {
+				sMsg.textContent = str.stalled + ( err ? ' (' + err + ')' : '' );
+				stalled.style.display = '';
+				retry.style.display = '';
+			}
+
+			retry.addEventListener( 'click', function ( e ) { e.preventDefault(); step(); } );
+			step();
+		}() );
+		</script>
 		<?php
+	}
+
+	/**
+	 * Process one batch and return JSON progress. Called repeatedly by the
+	 * geocoding screen's JavaScript (tt_geocode=batch).
+	 */
+	private function ajax_geocode_batch(): void {
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'tt_geocode' ) ) {
+			wp_send_json( array( 'ok' => false, 'error' => 'nonce' ), 403 );
+		}
+		if ( function_exists( 'set_time_limit' ) ) {
+			set_time_limit( 0 );
+		}
+
+		$processed            = $this->geocode_batch( self::GEOCODE_BATCH );
+		list( $total, $done ) = $this->geocode_stats();
+		$pending  = $total - $done;
+		$stalled  = $pending > 0 && 0 === $processed && '' !== $this->last_geo_error;
+		$rate     = $stalled && ( false !== stripos( $this->last_geo_error, '429' ) || false !== stripos( $this->last_geo_error, 'rate limit' ) );
+
+		wp_send_json(
+			array(
+				'ok'          => true,
+				'processed'   => $processed,
+				'total'       => $total,
+				'done'        => $done,
+				'stalled'     => $stalled && ! $rate,
+				'rateLimited' => $rate,
+				'error'       => $this->last_geo_error,
+			)
+		);
 	}
 
 	/**

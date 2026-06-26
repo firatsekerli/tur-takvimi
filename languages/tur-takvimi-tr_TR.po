@@ -681,3 +681,15 @@ msgstr "%2$d adresten %1$d tanesi iğnelendi (%%%3$d)."
 
 msgid "Retry now"
 msgstr "Şimdi yeniden dene"
+
+msgid "Pinned %1$d of %2$d addresses (%3$d%%). Working…"
+msgstr "%2$d adresten %1$d tanesi iğnelendi (%%%3$d). Çalışıyor…"
+
+msgid "Geocoder rate limit reached — retrying automatically in %d seconds…"
+msgstr "Coğrafi konumlama hız sınırına ulaşıldı — %d saniye içinde otomatik olarak yeniden denenecek…"
+
+msgid "The geocoder is not responding, so it was paused. Check Tur Takvimi → Settings (geocoder provider / API key)."
+msgstr "Coğrafi konumlama hizmeti yanıt vermediği için duraklatıldı. Tur Takvimi → Ayarlar bölümünü kontrol edin (sağlayıcı / API anahtarı)."
+
+msgid "Connection problem — retrying…"
+msgstr "Bağlantı sorunu — yeniden deneniyor…"
