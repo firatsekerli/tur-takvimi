@@ -49,6 +49,9 @@ class Importer {
 		add_action( 'admin_menu', array( $this, 'add_menu' ), 20 );
 		add_action( 'admin_post_tur_takvimi_import', array( $this, 'handle' ) );
 		add_action( 'admin_post_tur_takvimi_import_routes', array( $this, 'handle_routes' ) );
+		// Clean JSON endpoint for the geocoding progress bar (admin-ajax, so no
+		// admin-page HTML is prepended to the response).
+		add_action( 'wp_ajax_tur_takvimi_geocode_batch', array( $this, 'ajax_geocode_batch' ) );
 	}
 
 	/**
@@ -75,16 +78,9 @@ class Importer {
 
 		// Background pin geocoder: process one small batch per page load and
 		// auto-continue via a meta refresh, so no single request can time out.
-		if ( isset( $_GET['tt_geocode'] ) ) {
-			$action = sanitize_key( (string) wp_unslash( $_GET['tt_geocode'] ) );
-			if ( 'batch' === $action ) {
-				$this->ajax_geocode_batch();
-				return;
-			}
-			if ( 'run' === $action ) {
-				$this->render_geocode();
-				return;
-			}
+		if ( isset( $_GET['tt_geocode'] ) && 'run' === $_GET['tt_geocode'] ) {
+			$this->render_geocode();
+			return;
 		}
 
 		// "Dismiss" the could-not-pin banner: stop flagging the remaining
@@ -185,7 +181,7 @@ class Importer {
 		}
 
 		list( $total, $done ) = $this->geocode_stats();
-		$batch_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=batch' ), 'tt_geocode' );
+		$batch_url = wp_nonce_url( admin_url( 'admin-ajax.php?action=tur_takvimi_geocode_batch' ), 'tt_geocode' );
 		$back_url  = admin_url( 'admin.php?page=tur-takvimi-import' );
 
 		$strings = array(
@@ -274,10 +270,10 @@ class Importer {
 	 * Process one batch and return JSON progress. Called repeatedly by the
 	 * geocoding screen's JavaScript (tt_geocode=batch).
 	 */
-	private function ajax_geocode_batch(): void {
+	public function ajax_geocode_batch(): void {
 		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'tt_geocode' ) ) {
-			wp_send_json( array( 'ok' => false, 'error' => 'nonce' ), 403 );
+		if ( ! current_user_can( 'manage_options' ) || ! wp_verify_nonce( $nonce, 'tt_geocode' ) ) {
+			wp_send_json( array( 'ok' => false, 'error' => 'auth' ), 403 );
 		}
 		if ( function_exists( 'set_time_limit' ) ) {
 			set_time_limit( 0 );
