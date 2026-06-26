@@ -144,7 +144,7 @@ class City_Page {
 					<span class="tt-stops__col tt-stops__col--addr" role="columnheader"><?php esc_html_e( 'Street address', 'tur-takvimi' ); ?></span>
 					<span class="tt-stops__col tt-stops__col--pc" role="columnheader"><?php esc_html_e( 'Postcode', 'tur-takvimi' ); ?></span>
 					<span class="tt-stops__col tt-stops__col--time" role="columnheader"><?php esc_html_e( 'Hour', 'tur-takvimi' ); ?></span>
-					<span class="tt-stops__col tt-stops__col--freq" role="columnheader"><?php esc_html_e( 'Frequency', 'tur-takvimi' ); ?></span>
+					<span class="tt-stops__col tt-stops__col--wa" aria-hidden="true"></span>
 					<span class="tt-stops__col tt-stops__col--cal" aria-hidden="true"></span>
 				</div>
 				<?php
@@ -175,15 +175,14 @@ class City_Page {
 						<span class="tt-stops__col tt-stops__col--time" role="cell">
 							<?php echo '' !== $time ? esc_html( $time ) : '<span class="tt-stops__muted">—</span>'; ?>
 						</span>
-						<span class="tt-stops__col tt-stops__col--freq" role="cell">
+						<span class="tt-stops__col tt-stops__col--wa" role="cell">
 							<?php
-							if ( $freq > 0 ) {
-								/* translators: %d: number of weeks between deliveries. */
-								echo esc_html( sprintf( __( 'Every %d weeks', 'tur-takvimi' ), $freq ) );
-							} else {
-								esc_html_e( 'On demand', 'tur-takvimi' );
-							}
+							/* translators: %s: street address. */
+							$wa_label = sprintf( __( 'Contact us on WhatsApp about %s', 'tur-takvimi' ), '' !== $addr ? $addr : $city );
 							?>
+							<button type="button" class="tt-stops__wa" data-tt-wa data-address="<?php echo esc_attr( $addr ); ?>" data-postcode="<?php echo esc_attr( $pc ); ?>" title="<?php echo esc_attr( $wa_label ); ?>" aria-label="<?php echo esc_attr( $wa_label ); ?>">
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 1.82c2.16 0 4.18.84 5.71 2.37a8.05 8.05 0 0 1 2.37 5.72c0 4.46-3.63 8.09-8.09 8.09a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-3.12.82.83-3.04-.19-.31a8.04 8.04 0 0 1-1.24-4.29c0-4.46 3.63-8.09 8.09-8.09Zm-4.7 4.85c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.57.18 1.1.16 1.51.1.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.19-1.42-1.33-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.41h-.46Z"/></svg>
+							</button>
 						</span>
 						<span class="tt-stops__col tt-stops__col--cal" role="cell">
 							<?php if ( $freq > 0 ) : ?>

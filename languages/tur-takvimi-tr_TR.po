@@ -660,3 +660,6 @@ msgstr "Bir şehrin teslimat duraklarının haritası."
 
 msgid "The city shortcodes default to the current city on a single-city page, or take an explicit id=\"123\"."
 msgstr "Şehir kısa kodları, tekil şehir sayfasında geçerli şehri varsayar veya açık bir id=\"123\" alır."
+
+msgid "Contact us on WhatsApp about %s"
+msgstr "%s hakkında bize WhatsApp'tan ulaşın"
