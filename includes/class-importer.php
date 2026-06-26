@@ -24,7 +24,7 @@ class Importer {
 	 * Addresses geocoded per page load (kept small to stay well under the
 	 * web-server gateway timeout).
 	 */
-	const GEOCODE_BATCH = 25;
+	const GEOCODE_BATCH = 12;
 
 	/**
 	 * Locations whose addresses have already been reset in the current import
@@ -700,7 +700,6 @@ class Importer {
 	 */
 	private function geocode_batch( int $limit ): int {
 		$this->last_geo_error = '';
-		$interval             = Geocoder::min_interval_us();
 		$processed            = 0;
 		$stop                 = false;
 		foreach ( $this->all_location_ids() as $lid ) {
@@ -742,7 +741,8 @@ class Importer {
 				}
 				++$processed;
 				$changed = true;
-				usleep( $interval );
+				// Pacing is handled centrally inside the geocoder (throttle), so
+				// each address — including its postcode fallback — stays spaced.
 			}
 			unset( $a );
 			if ( $changed ) {

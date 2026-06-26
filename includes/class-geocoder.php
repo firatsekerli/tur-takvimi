@@ -29,6 +29,14 @@ class Geocoder {
 	);
 
 	/**
+	 * Microsecond timestamp of the last outbound request, used to space calls
+	 * under the provider's rate limit regardless of which caller fires them.
+	 *
+	 * @var float
+	 */
+	private static $last_request_us = 0.0;
+
+	/**
 	 * Default provider endpoint (filterable).
 	 */
 	private static function endpoint(): string {
@@ -68,6 +76,7 @@ class Geocoder {
 	 * @return string|null Response body on success, null on error.
 	 */
 	private static function remote_get( string $url, bool $allow_retry = true ): ?string {
+		self::throttle();
 		$response = wp_remote_get(
 			$url,
 			array(
@@ -221,7 +230,25 @@ class Geocoder {
 	 * @return int
 	 */
 	public static function min_interval_us(): int {
-		return 'locationiq' === (string) Settings::get( 'geocoder_provider', 'photon' ) ? 600000 : 150000;
+		// LocationIQ's free tier caps requests per minute (not just per second),
+		// so ~1.1s spacing keeps throughput under ~55/min. Photon is laxer.
+		return 'locationiq' === (string) Settings::get( 'geocoder_provider', 'photon' ) ? 1100000 : 150000;
+	}
+
+	/**
+	 * Sleep just long enough to keep consecutive outbound requests at least
+	 * min_interval_us apart. Centralised here so every caller (and the import
+	 * postcode fallback's second lookup) is paced consistently.
+	 */
+	private static function throttle(): void {
+		$interval = self::min_interval_us();
+		if ( self::$last_request_us > 0.0 ) {
+			$elapsed = ( microtime( true ) * 1e6 ) - self::$last_request_us;
+			if ( $elapsed > 0 && $elapsed < $interval ) {
+				usleep( (int) ( $interval - $elapsed ) );
+			}
+		}
+		self::$last_request_us = microtime( true ) * 1e6;
 	}
 
 	/**
