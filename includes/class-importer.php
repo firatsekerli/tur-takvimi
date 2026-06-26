@@ -346,7 +346,7 @@ class Importer {
 				continue;
 			}
 
-			$existing = $this->find_location( $city );
+			$existing = $this->find_location( $city, $this->row_country( $get ) );
 			$is_new   = ! $existing;
 
 			$location_id = $existing ?: wp_insert_post(
@@ -955,21 +955,32 @@ class Importer {
 	}
 
 	/**
-	 * Find an existing location by exact title.
+	 * Find an existing location by exact title, scoped to a country.
 	 *
-	 * @param string $city City name.
+	 * A city name can exist in more than one country, so matching on name alone
+	 * would let a Dutch city overwrite a same-named city in another country.
+	 *
+	 * @param string $city    City name.
+	 * @param string $country Optional ISO-2 country to scope to.
 	 * @return int|null
 	 */
-	private function find_location( string $city ): ?int {
-		$found = get_posts(
-			array(
-				'post_type'      => Post_Types::LOCATION,
-				'post_status'    => 'any',
-				'title'          => $city,
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-			)
+	private function find_location( string $city, string $country = '' ): ?int {
+		$args = array(
+			'post_type'      => Post_Types::LOCATION,
+			'post_status'    => 'any',
+			'title'          => $city,
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
 		);
+		if ( '' !== $country ) {
+			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery
+				array(
+					'key'   => '_tt_country',
+					'value' => strtoupper( $country ),
+				),
+			);
+		}
+		$found = get_posts( $args );
 		return $found ? (int) $found[0] : null;
 	}
 
