@@ -80,6 +80,12 @@ class Importer {
 			return;
 		}
 
+		// "Dismiss" the could-not-pin banner: stop flagging the remaining
+		// unmatched addresses (the admin will place them by hand, or accept it).
+		if ( isset( $_GET['tt_dismiss'] ) && wp_verify_nonce( isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '', 'tt_dismiss' ) ) {
+			$this->dismiss_unpinned();
+		}
+
 		$notice = get_transient( 'tur_takvimi_import_notice' );
 		delete_transient( 'tur_takvimi_import_notice' );
 		list( $total, $done ) = $this->geocode_stats();
@@ -106,7 +112,8 @@ class Importer {
 			$unpinned = $this->unpinned_addresses();
 			$unpinned_total = array_sum( array_map( static fn( $u ) => count( $u['addresses'] ), $unpinned ) );
 			if ( $unpinned_total > 0 ) :
-				$retry_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run&retry=1' ), 'tt_geocode' );
+				$retry_url   = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run&retry=1' ), 'tt_geocode' );
+				$dismiss_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_dismiss=1' ), 'tt_dismiss' );
 				?>
 				<div class="notice notice-error">
 					<p>
@@ -117,6 +124,7 @@ class Importer {
 							?>
 						</strong>
 						<a class="button" href="<?php echo esc_url( $retry_url ); ?>"><?php esc_html_e( 'Retry failed pins', 'tur-takvimi' ); ?></a>
+						<a class="button" href="<?php echo esc_url( $dismiss_url ); ?>"><?php esc_html_e( 'Dismiss', 'tur-takvimi' ); ?></a>
 					</p>
 					<p class="description"><?php esc_html_e( 'Open a city below and search the address to place its pin manually, or retry the lookups.', 'tur-takvimi' ); ?></p>
 					<ul style="margin:.25rem 0 .5rem 1rem;list-style:disc;max-height:260px;overflow:auto;">
@@ -199,7 +207,11 @@ class Importer {
 					?>
 				</p>
 				<progress value="<?php echo esc_attr( $done ); ?>" max="<?php echo esc_attr( $total ); ?>" style="width:320px;height:18px;"></progress>
-				<p><a href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a></p>
+				<p>
+					<a href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a>
+					&nbsp;·&nbsp;
+					<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Cancel', 'tur-takvimi' ); ?></a>
+				</p>
 			<?php else : ?>
 				<div class="notice notice-success"><p><?php echo esc_html( sprintf( /* translators: %d: total addresses. */ __( 'Done — %d addresses processed.', 'tur-takvimi' ), $total ) ); ?></p></div>
 				<p><a class="button button-primary" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Back to import', 'tur-takvimi' ); ?></a></p>
@@ -597,8 +609,9 @@ class Importer {
 		$results = Geocoder::search( $query, 1, $country );
 		if ( ! empty( $results ) ) {
 			$point = array(
-				'lat' => (float) $results[0]['lat'],
-				'lng' => (float) $results[0]['lng'],
+				'lat'    => (float) $results[0]['lat'],
+				'lng'    => (float) $results[0]['lng'],
+				'approx' => false,
 			);
 			set_transient( $key, $point, MONTH_IN_SECONDS );
 			return $point;
@@ -608,6 +621,26 @@ class Importer {
 		if ( Geocoder::last_was_transient_error() ) {
 			return null;
 		}
+
+		// Exact address not found: fall back to the postcode centroid so the
+		// pin still lands in the right neighbourhood (flagged approximate).
+		$pc = trim( $postcode );
+		if ( '' !== $pc ) {
+			$centroid = Geocoder::geocode_postcode( $pc, $country );
+			if ( is_array( $centroid ) ) {
+				$point = array(
+					'lat'    => (float) $centroid['lat'],
+					'lng'    => (float) $centroid['lng'],
+					'approx' => true,
+				);
+				set_transient( $key, $point, MONTH_IN_SECONDS );
+				return $point;
+			}
+			if ( Geocoder::last_was_transient_error() ) {
+				return null;
+			}
+		}
+
 		set_transient( $key, 'miss', WEEK_IN_SECONDS );
 		return false;
 	}
@@ -693,6 +726,11 @@ class Importer {
 				if ( is_array( $point ) ) {
 					$a['lat'] = $point['lat'];
 					$a['lng'] = $point['lng'];
+					if ( ! empty( $point['approx'] ) ) {
+						$a['approx'] = true;
+					} else {
+						unset( $a['approx'] );
+					}
 					unset( $a['nogeo'] );
 				} elseif ( false === $point ) {
 					$a['nogeo'] = true;
@@ -729,7 +767,7 @@ class Importer {
 			}
 			$fails = array();
 			foreach ( $addresses as $a ) {
-				if ( ! empty( $a['nogeo'] ) && ! isset( $a['lat'], $a['lng'] ) ) {
+				if ( ! empty( $a['nogeo'] ) && empty( $a['dismissed'] ) && ! isset( $a['lat'], $a['lng'] ) ) {
 					$fails[] = trim( (string) ( $a['address'] ?? '' ) . ' ' . (string) ( $a['postcode'] ?? '' ) );
 				}
 			}
@@ -747,6 +785,31 @@ class Importer {
 	/**
 	 * Clear the "could not geocode" flag so those addresses are tried again.
 	 */
+	/**
+	 * Mark every still-unpinned address as dismissed so the could-not-pin
+	 * banner clears. They keep their nogeo flag, so the geocoder skips them and
+	 * the progress counter stays complete; the admin can still pin them by hand.
+	 */
+	private function dismiss_unpinned(): void {
+		foreach ( $this->all_location_ids() as $lid ) {
+			$addresses = json_decode( (string) get_post_meta( $lid, '_tt_addresses', true ), true );
+			if ( ! is_array( $addresses ) ) {
+				continue;
+			}
+			$changed = false;
+			foreach ( $addresses as &$a ) {
+				if ( ! empty( $a['nogeo'] ) && ! isset( $a['lat'], $a['lng'] ) && empty( $a['dismissed'] ) ) {
+					$a['dismissed'] = true;
+					$changed        = true;
+				}
+			}
+			unset( $a );
+			if ( $changed ) {
+				update_post_meta( $lid, '_tt_addresses', wp_json_encode( $addresses, JSON_UNESCAPED_UNICODE ) );
+			}
+		}
+	}
+
 	private function clear_nogeo_flags(): void {
 		foreach ( $this->all_location_ids() as $lid ) {
 			$addresses = json_decode( (string) get_post_meta( $lid, '_tt_addresses', true ), true );
@@ -755,8 +818,8 @@ class Importer {
 			}
 			$changed = false;
 			foreach ( $addresses as &$a ) {
-				if ( ! empty( $a['nogeo'] ) ) {
-					unset( $a['nogeo'] );
+				if ( ! empty( $a['nogeo'] ) || ! empty( $a['dismissed'] ) ) {
+					unset( $a['nogeo'], $a['dismissed'] );
 					$changed = true;
 				}
 			}

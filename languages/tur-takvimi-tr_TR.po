@@ -663,3 +663,9 @@ msgstr "Şehir kısa kodları, tekil şehir sayfasında geçerli şehri varsayar
 
 msgid "Contact us on WhatsApp about %s"
 msgstr "%s hakkında bize WhatsApp'tan ulaşın"
+
+msgid "Dismiss"
+msgstr "Kapat"
+
+msgid "Cancel"
+msgstr "İptal"
