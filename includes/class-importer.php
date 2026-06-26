@@ -185,19 +185,44 @@ class Importer {
 		$stalled      = $pending > 0 && 0 === $processed && '' !== $this->last_geo_error;
 		$continue_url = wp_nonce_url( admin_url( 'admin.php?page=tur-takvimi-import&tt_geocode=run' ), 'tt_geocode' );
 		$back_url     = admin_url( 'admin.php?page=tur-takvimi-import' );
+		// A rate-limit pause is transient: wait out the window and auto-resume.
+		// Other failures (bad key, network) stay manual so we don't loop forever.
+		$rate_limited = $stalled && ( false !== stripos( $this->last_geo_error, '429' ) || false !== stripos( $this->last_geo_error, 'rate limit' ) );
+		$retry_secs   = 30;
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Geocoding map pins…', 'tur-takvimi' ); ?></h1>
 			<?php if ( $stalled ) : ?>
-				<div class="notice notice-error">
-					<p><strong><?php esc_html_e( 'The geocoder is not responding, so it was paused.', 'tur-takvimi' ); ?></strong></p>
-					<p><code><?php echo esc_html( $this->last_geo_error ); ?></code></p>
-					<p class="description"><?php esc_html_e( 'Check Tur Takvimi → Settings (geocoder provider / API key), then continue.', 'tur-takvimi' ); ?></p>
-				</div>
-				<p>
-					<a class="button button-primary" href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a>
-					<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Back to import', 'tur-takvimi' ); ?></a>
-				</p>
+				<?php if ( $rate_limited ) : ?>
+					<meta http-equiv="refresh" content="<?php echo esc_attr( (string) $retry_secs ); ?>;url=<?php echo esc_url( $continue_url ); ?>">
+					<div class="notice notice-warning">
+						<p><strong>
+							<?php
+							/* translators: %d: seconds until the next automatic attempt. */
+							echo esc_html( sprintf( __( 'Geocoder rate limit reached — pausing, then retrying automatically in %d seconds. Keep this tab open.', 'tur-takvimi' ), $retry_secs ) );
+							?>
+						</strong></p>
+						<p><code><?php echo esc_html( $this->last_geo_error ); ?></code></p>
+					</div>
+					<p>
+						<?php echo esc_html( sprintf( /* translators: 1: pinned, 2: total, 3: percent. */ __( 'Pinned %1$d of %2$d addresses (%3$d%%).', 'tur-takvimi' ), $done, $total, $pct ) ); ?>
+					</p>
+					<progress value="<?php echo esc_attr( $done ); ?>" max="<?php echo esc_attr( $total ); ?>" style="width:320px;height:18px;"></progress>
+					<p>
+						<a class="button button-primary" href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Retry now', 'tur-takvimi' ); ?></a>
+						<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Cancel', 'tur-takvimi' ); ?></a>
+					</p>
+				<?php else : ?>
+					<div class="notice notice-error">
+						<p><strong><?php esc_html_e( 'The geocoder is not responding, so it was paused.', 'tur-takvimi' ); ?></strong></p>
+						<p><code><?php echo esc_html( $this->last_geo_error ); ?></code></p>
+						<p class="description"><?php esc_html_e( 'Check Tur Takvimi → Settings (geocoder provider / API key), then continue.', 'tur-takvimi' ); ?></p>
+					</div>
+					<p>
+						<a class="button button-primary" href="<?php echo esc_url( $continue_url ); ?>"><?php esc_html_e( 'Continue now', 'tur-takvimi' ); ?></a>
+						<a class="button" href="<?php echo esc_url( $back_url ); ?>"><?php esc_html_e( 'Back to import', 'tur-takvimi' ); ?></a>
+					</p>
+				<?php endif; ?>
 			<?php elseif ( $pending > 0 ) : ?>
 				<meta http-equiv="refresh" content="1;url=<?php echo esc_url( $continue_url ); ?>">
 				<p>
