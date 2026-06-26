@@ -39,7 +39,6 @@ class Settings {
 			'geocoder_provider'      => 'photon', // 'photon' (free) or 'locationiq' (keyed).
 			'geocoder_api_key'       => '',
 			'geocoder_region'        => 'us1',    // LocationIQ region: us1 or eu1.
-			'whatsapp_channels'      => array(),  // ISO-2 => broadcast channel URL (country-wide fallback).
 		);
 	}
 
@@ -128,22 +127,6 @@ class Settings {
 		$out['geocoder_api_key']   = sanitize_text_field( $in['geocoder_api_key'] ?? '' );
 		$region                    = sanitize_key( $in['geocoder_region'] ?? 'us1' );
 		$out['geocoder_region']    = in_array( $region, array( 'us1', 'eu1' ), true ) ? $region : 'us1';
-
-		// Country-wide WhatsApp channels: one "CODE|URL" per line.
-		$channels = array();
-		foreach ( preg_split( '/\r\n|\r|\n/', (string) ( $in['whatsapp_channels'] ?? '' ) ) as $line ) {
-			$line = trim( $line );
-			if ( '' === $line ) {
-				continue;
-			}
-			$parts = explode( '|', $line, 2 );
-			$code  = strtoupper( trim( $parts[0] ) );
-			$url   = isset( $parts[1] ) ? esc_url_raw( trim( $parts[1] ) ) : '';
-			if ( preg_match( '/^[A-Z]{2}$/', $code ) && '' !== $url ) {
-				$channels[ $code ] = $url;
-			}
-		}
-		$out['whatsapp_channels'] = $channels;
 
 		$days = isset( $in['working_days'] ) && is_array( $in['working_days'] )
 			? array_map( 'absint', $in['working_days'] )
@@ -254,19 +237,6 @@ class Settings {
 						<td>
 							<input name="<?php echo esc_attr( self::OPTION ); ?>[geocoder_api_key]" id="tt_geocoder_key" type="password" autocomplete="off" class="regular-text" value="<?php echo esc_attr( $s['geocoder_api_key'] ); ?>">
 							<p class="description"><?php esc_html_e( 'From your LocationIQ dashboard → Access Tokens. Only used when the geocoder is set to LocationIQ.', 'tur-takvimi' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th><label for="tt_wa_channels"><?php esc_html_e( 'WhatsApp channels (per country)', 'tur-takvimi' ); ?></label></th>
-						<td>
-							<?php
-							$wa_lines = array();
-							foreach ( (array) $s['whatsapp_channels'] as $cc => $url ) {
-								$wa_lines[] = $cc . '|' . $url;
-							}
-							?>
-							<textarea name="<?php echo esc_attr( self::OPTION ); ?>[whatsapp_channels]" id="tt_wa_channels" rows="3" class="large-text code" placeholder="DE|https://whatsapp.com/channel/xxxx&#10;NL|https://whatsapp.com/channel/yyyy"><?php echo esc_textarea( implode( "\n", $wa_lines ) ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'One "CODE|URL" per line — the country-wide WhatsApp channel used as a fallback when a region has no group set. Per-region groups are set on each Bölge (Regions → edit a region).', 'tur-takvimi' ); ?></p>
 						</td>
 					</tr>
 				</table>

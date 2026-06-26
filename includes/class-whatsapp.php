@@ -19,10 +19,11 @@ defined( 'ABSPATH' ) || exit;
  */
 class Whatsapp {
 
-	const TERM_META = '_tt_whatsapp';
+	const TERM_META       = '_tt_whatsapp';
+	const CHANNELS_OPTION = 'tur_takvimi_wa_channels';
 
 	/**
-	 * Hook the term-meta UI and shortcodes.
+	 * Hook the admin page, term-meta UI and shortcodes.
 	 */
 	public function register(): void {
 		add_action( Post_Types::REGION . '_add_form_fields', array( $this, 'add_field' ) );
@@ -30,8 +31,139 @@ class Whatsapp {
 		add_action( 'created_' . Post_Types::REGION, array( $this, 'save_field' ) );
 		add_action( 'edited_' . Post_Types::REGION, array( $this, 'save_field' ) );
 
+		add_action( 'admin_menu', array( $this, 'add_menu' ), 30 );
+		add_action( 'admin_post_tur_takvimi_whatsapp_save', array( $this, 'save_page' ) );
+
 		add_shortcode( 'tur_takvimi_whatsapp', array( $this, 'picker' ) );
 		add_shortcode( 'tur_takvimi_whatsapp_join', array( $this, 'join_button' ) );
+	}
+
+	/* --------------------------------------------------------------------- *
+	 * Admin page: Tur Takvimi → WhatsApp
+	 * --------------------------------------------------------------------- */
+
+	/**
+	 * Register the WhatsApp submenu page.
+	 */
+	public function add_menu(): void {
+		add_submenu_page(
+			'tur-takvimi',
+			__( 'WhatsApp', 'tur-takvimi' ),
+			__( 'WhatsApp', 'tur-takvimi' ),
+			'manage_options',
+			'tur-takvimi-whatsapp',
+			array( $this, 'render_page' )
+		);
+	}
+
+	/**
+	 * One screen for every WhatsApp link: per-region groups + per-country
+	 * channel fallbacks, with each region's country shown.
+	 */
+	public function render_page(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		$channels = (array) get_option( self::CHANNELS_OPTION, array() );
+		$terms    = get_terms(
+			array(
+				'taxonomy'   => Post_Types::REGION,
+				'hide_empty' => false,
+			)
+		);
+		$terms = is_wp_error( $terms ) ? array() : $terms;
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'WhatsApp', 'tur-takvimi' ); ?></h1>
+			<?php if ( isset( $_GET['updated'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'WhatsApp links saved.', 'tur-takvimi' ); ?></p></div>
+			<?php endif; ?>
+			<p class="description" style="max-width:50rem">
+				<?php esc_html_e( 'Customers see their region\'s group. If a region has no group, they see that country\'s channel instead.', 'tur-takvimi' ); ?>
+			</p>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="tur_takvimi_whatsapp_save">
+				<?php wp_nonce_field( 'tt_wa_save' ); ?>
+
+				<h2><?php esc_html_e( 'Region groups', 'tur-takvimi' ); ?></h2>
+				<table class="widefat striped" style="max-width:60rem">
+					<thead>
+						<tr>
+							<th style="width:22%"><?php esc_html_e( 'Region', 'tur-takvimi' ); ?></th>
+							<th style="width:8%"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></th>
+							<th><?php esc_html_e( 'WhatsApp group link', 'tur-takvimi' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php if ( ! $terms ) : ?>
+							<tr><td colspan="3"><?php esc_html_e( 'No regions yet. Import routes/cities first.', 'tur-takvimi' ); ?></td></tr>
+						<?php endif; ?>
+						<?php foreach ( $terms as $term ) : ?>
+							<tr>
+								<td><strong><?php echo esc_html( $term->name ); ?></strong></td>
+								<td><?php echo esc_html( self::region_country( (int) $term->term_id ) ); ?></td>
+								<td><input type="url" class="large-text" name="wa_region[<?php echo (int) $term->term_id; ?>]" value="<?php echo esc_attr( (string) get_term_meta( (int) $term->term_id, self::TERM_META, true ) ); ?>" placeholder="https://chat.whatsapp.com/…"></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+
+				<h2 style="margin-top:2rem"><?php esc_html_e( 'Country channels (fallback)', 'tur-takvimi' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<?php foreach ( Country::supported() as $code ) : ?>
+						<tr>
+							<th scope="row">
+								<?php
+								$label = Country::name( $code );
+								echo esc_html( '' !== $label ? $label . ' (' . $code . ')' : $code );
+								?>
+							</th>
+							<td><input type="url" class="regular-text" name="wa_channel[<?php echo esc_attr( $code ); ?>]" value="<?php echo esc_attr( (string) ( $channels[ $code ] ?? '' ) ); ?>" placeholder="https://whatsapp.com/channel/…"></td>
+						</tr>
+					<?php endforeach; ?>
+				</table>
+
+				<?php submit_button(); ?>
+			</form>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Persist the WhatsApp page: region term metas + country channel option.
+	 */
+	public function save_page(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'tur-takvimi' ) );
+		}
+		check_admin_referer( 'tt_wa_save' );
+
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized per value below.
+		$regions = isset( $_POST['wa_region'] ) ? (array) wp_unslash( $_POST['wa_region'] ) : array();
+		foreach ( $regions as $tid => $url ) {
+			$url = esc_url_raw( trim( (string) $url ) );
+			if ( '' !== $url ) {
+				update_term_meta( (int) $tid, self::TERM_META, $url );
+			} else {
+				delete_term_meta( (int) $tid, self::TERM_META );
+			}
+		}
+
+		$channels = array();
+		$raw      = isset( $_POST['wa_channel'] ) ? (array) wp_unslash( $_POST['wa_channel'] ) : array();
+		foreach ( $raw as $code => $url ) {
+			$code = strtoupper( sanitize_text_field( (string) $code ) );
+			$url  = esc_url_raw( trim( (string) $url ) );
+			if ( preg_match( '/^[A-Z]{2}$/', $code ) && '' !== $url ) {
+				$channels[ $code ] = $url;
+			}
+		}
+		// phpcs:enable
+		update_option( self::CHANNELS_OPTION, $channels );
+
+		wp_safe_redirect( add_query_arg( 'updated', '1', admin_url( 'admin.php?page=tur-takvimi-whatsapp' ) ) );
+		exit;
 	}
 
 	/* --------------------------------------------------------------------- *
@@ -104,7 +236,7 @@ class Whatsapp {
 	 * @return string
 	 */
 	public static function channel( string $country ): string {
-		$channels = (array) Settings::get( 'whatsapp_channels', array() );
+		$channels = (array) get_option( self::CHANNELS_OPTION, array() );
 		return (string) ( $channels[ strtoupper( $country ) ] ?? '' );
 	}
 

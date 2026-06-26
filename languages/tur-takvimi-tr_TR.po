@@ -720,3 +720,21 @@ msgstr "WhatsApp grupları: bölge seçim listesi + ülke kanalı."
 
 msgid "A single \"join the WhatsApp group\" button for one city."
 msgstr "Bir şehir için tek bir \"WhatsApp grubuna katıl\" düğmesi."
+
+msgid "WhatsApp links saved."
+msgstr "WhatsApp bağlantıları kaydedildi."
+
+msgid "Customers see their region's group. If a region has no group, they see that country's channel instead."
+msgstr "Müşteriler bölgelerinin grubunu görür. Bir bölgenin grubu yoksa, onun yerine o ülkenin kanalını görürler."
+
+msgid "Region groups"
+msgstr "Bölge grupları"
+
+msgid "Country"
+msgstr "Ülke"
+
+msgid "No regions yet. Import routes/cities first."
+msgstr "Henüz bölge yok. Önce rotaları/şehirleri içe aktarın."
+
+msgid "Country channels (fallback)"
+msgstr "Ülke kanalları (yedek)"
