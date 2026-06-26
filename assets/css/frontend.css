@@ -1084,3 +1084,77 @@
 		width: 100%;
 	}
 }
+
+/* ------------------------------------------------------------------ *
+ * WhatsApp groups — [tur_takvimi_whatsapp] / [tur_takvimi_whatsapp_join]
+ * ------------------------------------------------------------------ */
+.tt-wa {
+	width: 100%;
+	max-width: 100%;
+	color: var(--tt-text);
+}
+
+.tt-wa__heading {
+	margin: 0 0 0.85rem;
+	font-size: 1.3rem;
+	font-weight: 800;
+}
+
+.tt-wa__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	gap: 0.4rem;
+}
+
+.tt-wa__link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--tt-border);
+	border-radius: 8px;
+	color: var(--tt-text);
+	text-decoration: none;
+	font-weight: 600;
+	transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.tt-wa__link:hover,
+.tt-wa__link:focus {
+	border-color: #25d366;
+	background: #f3fdf6;
+}
+
+.tt-wa__icon {
+	display: inline-flex;
+	color: #25d366;
+}
+
+.tt-wa__channel {
+	margin: 1rem 0 0;
+}
+
+.tt-wa__join {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.6rem 1rem;
+	border-radius: 999px;
+	background: #25d366;
+	color: #fff;
+	font-weight: 700;
+	text-decoration: none;
+	transition: background 0.15s ease;
+}
+
+.tt-wa__join:hover,
+.tt-wa__join:focus {
+	background: #1da851;
+	color: #fff;
+}
+
+.tt-wa__join .tt-wa__icon {
+	color: #fff;
+}
