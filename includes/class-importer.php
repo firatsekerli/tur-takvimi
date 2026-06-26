@@ -446,8 +446,8 @@ class Importer {
 				continue;
 			}
 
-			$group   = $get( 'group' );
-			$existing = $this->find_route( $code );
+			$group    = $get( 'group' );
+			$existing = $this->find_route( $code, $this->row_country( $get ) );
 			$is_new   = ! $existing;
 
 			$route_id = $existing ?: wp_insert_post(
@@ -494,24 +494,36 @@ class Importer {
 	}
 
 	/**
-	 * Find an existing route by its route code.
+	 * Find an existing route by its route code, scoped to a country.
 	 *
-	 * @param string $code Route code (e.g. R07).
+	 * Route codes (R01, R02…) are reused across countries, so the same code in a
+	 * different country is a different route. Matching without the country would
+	 * make a Dutch R01 overwrite a German R01.
+	 *
+	 * @param string $code    Route code (e.g. R07).
+	 * @param string $country Optional ISO-2 country to scope to.
 	 * @return int|null
 	 */
-	private function find_route( string $code ): ?int {
+	private function find_route( string $code, string $country = '' ): ?int {
+		$meta = array( // phpcs:ignore WordPress.DB.SlowDBQuery
+			array(
+				'key'   => '_tt_route_code',
+				'value' => $code,
+			),
+		);
+		if ( '' !== $country ) {
+			$meta[] = array(
+				'key'   => '_tt_country',
+				'value' => strtoupper( $country ),
+			);
+		}
 		$found = get_posts(
 			array(
 				'post_type'      => Post_Types::ROUTE,
 				'post_status'    => 'any',
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
-					array(
-						'key'   => '_tt_route_code',
-						'value' => $code,
-					),
-				),
+				'meta_query'     => $meta, // phpcs:ignore WordPress.DB.SlowDBQuery
 			)
 		);
 		return $found ? (int) $found[0] : null;
@@ -647,9 +659,12 @@ class Importer {
 			return; // No column / empty: leave existing assignments untouched.
 		}
 
+		// Link to routes in the city's own country, so a Dutch city's R01 finds
+		// the Dutch R01 rather than a same-coded route in another country.
+		$country  = (string) get_post_meta( $location_id, '_tt_country', true );
 		$existing = array_map( 'intval', (array) get_post_meta( $location_id, '_tt_route_id', false ) );
 		foreach ( preg_split( '/[;,|]+/', $raw, -1, PREG_SPLIT_NO_EMPTY ) as $code ) {
-			$route_id = $this->find_route( trim( $code ) );
+			$route_id = $this->find_route( trim( $code ), $country );
 			if ( $route_id && ! in_array( $route_id, $existing, true ) ) {
 				add_post_meta( $location_id, '_tt_route_id', $route_id );
 				$existing[] = $route_id;
