@@ -93,8 +93,12 @@
 			if ( ! hasCoords( item ) ) {
 				return;
 			}
-			var m = L.marker( [ item.lat, item.lng ] ).addTo( map );
-			m.bindPopup( ( item.address || '' ) + ( item.postcode ? '<br>' + item.postcode : '' ) );
+			var m = L.marker( [ item.lat, item.lng ], item.approx ? { opacity: 0.55 } : {} ).addTo( map );
+			m.bindPopup(
+				( item.address || '' ) +
+				( item.postcode ? '<br>' + item.postcode : '' ) +
+				( item.approx ? '<br><em>' + cfg.i18n.approxHint + '</em>' : '' )
+			);
 			markers.push( m );
 			pts.push( [ item.lat, item.lng ] );
 		} );
@@ -140,7 +144,11 @@
 		state.forEach( function ( item, index ) {
 			var row = el( 'div', 'tt-address-row' );
 
-			var streetWrap = el( 'span', 'tt-address-row__pin', hasCoords( item ) ? '📍' : '•' );
+			var isApprox = hasCoords( item ) && item.approx;
+			var streetWrap = el( 'span', 'tt-address-row__pin' + ( isApprox ? ' is-approx' : '' ), hasCoords( item ) ? '📍' : '•' );
+			if ( isApprox ) {
+				streetWrap.title = cfg.i18n.approxHint;
+			}
 			row.appendChild( streetWrap );
 
 			var street = document.createElement( 'input' );

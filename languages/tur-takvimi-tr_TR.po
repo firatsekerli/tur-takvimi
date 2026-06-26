@@ -669,3 +669,6 @@ msgstr "Kapat"
 
 msgid "Cancel"
 msgstr "İptal"
+
+msgid "Approximate — pinned to the postcode. Search the exact address to refine it."
+msgstr "Yaklaşık — posta koduna iğnelendi. Kesin adresi aratarak hassaslaştırın."

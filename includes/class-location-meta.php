@@ -77,6 +77,7 @@ class Location_Meta {
 					'remove'   => __( 'Remove', 'tur-takvimi' ),
 					'addRow'   => __( 'Add a stop manually', 'tur-takvimi' ),
 					'empty'    => __( 'No stops yet. Search an address above to add one.', 'tur-takvimi' ),
+					'approxHint' => __( 'Approximate — pinned to the postcode. Search the exact address to refine it.', 'tur-takvimi' ),
 				),
 			)
 		);
@@ -259,6 +260,10 @@ class Location_Meta {
 				$lat_sum     += $entry['lat'];
 				$lng_sum     += $entry['lng'];
 				++$geo_count;
+				// Preserve the "approximate" (postcode-level) marker from import.
+				if ( ! empty( $row['approx'] ) ) {
+					$entry['approx'] = true;
+				}
 			}
 
 			$addresses[] = $entry;
