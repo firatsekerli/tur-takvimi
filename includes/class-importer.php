@@ -181,7 +181,15 @@ class Importer {
 		}
 
 		list( $total, $done ) = $this->geocode_stats();
-		$batch_url = wp_nonce_url( admin_url( 'admin-ajax.php?action=tur_takvimi_geocode_batch' ), 'tt_geocode' );
+		// Raw URL (not wp_nonce_url, which esc_html-encodes & into &#038; — fine
+		// for an href but it mangles the query string when used in fetch()).
+		$batch_url = add_query_arg(
+			array(
+				'action'   => 'tur_takvimi_geocode_batch',
+				'_wpnonce' => wp_create_nonce( 'tt_geocode' ),
+			),
+			admin_url( 'admin-ajax.php' )
+		);
 		$back_url  = admin_url( 'admin.php?page=tur-takvimi-import' );
 
 		$strings = array(
