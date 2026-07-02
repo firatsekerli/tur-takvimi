@@ -724,7 +724,7 @@
 }
 
 /* Header + rows share one grid template so columns line up:
-   pin · street · postcode · hour · frequency. */
+   pin · street · postcode · hour · whatsapp · calendar. */
 .tt-stops__head,
 .tt-stops__row {
 	display: grid;
@@ -732,6 +732,12 @@
 	align-items: center;
 	column-gap: 0.75rem;
 	padding: 0.6rem 0.9rem;
+}
+
+/* No WhatsApp group for this city: the WhatsApp column is not rendered. */
+.tt-stops--no-wa .tt-stops__head,
+.tt-stops--no-wa .tt-stops__row {
+	grid-template-columns: 1.5rem minmax( 0, 1fr ) 6rem 5rem 2.5rem;
 }
 
 .tt-stops__head {
@@ -807,12 +813,14 @@
 	color: #fff;
 	background: #25d366;
 	cursor: pointer;
+	text-decoration: none;
 	transition: background 0.15s ease, transform 0.1s ease;
 }
 
 .tt-stops__wa:hover,
 .tt-stops__wa:focus {
 	background: #1da851;
+	color: #fff;
 }
 
 .tt-stops__wa:active {
@@ -857,6 +865,12 @@
 	}
 	.tt-stops__col--cal {
 		grid-column: 4;
+	}
+	.tt-stops--no-wa .tt-stops__row {
+		grid-template-columns: 1.5rem minmax( 0, 1fr ) 2.5rem;
+	}
+	.tt-stops--no-wa .tt-stops__col--cal {
+		grid-column: 3;
 	}
 }
 
