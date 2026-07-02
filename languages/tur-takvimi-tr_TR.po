@@ -792,3 +792,6 @@ msgstr "Bu şehir için yaklaşan bir teslimat tarihi yok — lütfen başka bir
 
 msgid "Delivery time"
 msgstr "Teslimat saati"
+
+msgid "Pre-order pickup point"
+msgstr "Ön Sipariş Teslim Noktası"

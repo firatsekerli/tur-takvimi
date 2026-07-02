@@ -257,7 +257,7 @@ class City_Page {
 			<?php endif; ?>
 			<?php if ( '' !== $pickup ) : ?>
 				<div class="tt-citysched__pickup">
-					<span class="tt-citysched__label"><?php esc_html_e( 'Pickup point', 'tur-takvimi' ); ?></span>
+					<span class="tt-citysched__label"><?php esc_html_e( 'Pre-order pickup point', 'tur-takvimi' ); ?></span>
 					<span><?php echo esc_html( $pickup ); ?></span>
 				</div>
 			<?php endif; ?>
