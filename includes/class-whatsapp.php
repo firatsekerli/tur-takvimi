@@ -26,6 +26,13 @@ class Whatsapp {
 	const CHANNELS_OPTION = 'tur_takvimi_wa_channels';
 
 	/**
+	 * Inferred region => countries map for the admin page (term_id => ISO-2[]).
+	 *
+	 * @var array<int,string[]>
+	 */
+	private $region_countries = array();
+
+	/**
 	 * Hook the admin page and shortcodes.
 	 */
 	public function register(): void {
@@ -97,6 +104,10 @@ class Whatsapp {
 			)
 		);
 		$regions  = is_wp_error( $regions ) ? array() : $regions;
+
+		// Regions carry no country of their own; infer each region's countries
+		// from the cities using it, so the row's country can filter the list.
+		$this->region_countries = Post_Types::region_countries( Post_Types::LOCATION );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'WhatsApp', 'tur-takvimi' ); ?></h1>
@@ -175,6 +186,38 @@ class Whatsapp {
 			var add  = document.getElementById( 'tt-wa-add' );
 			var i    = <?php echo (int) count( $groups ); ?>;
 
+			// Region options carry the countries they are used in (inferred from
+			// the cities); keep each row's region list scoped to its country.
+			function filterRow( tr ) {
+				if ( ! tr ) {
+					return;
+				}
+				var country = tr.querySelector( 'select[name$="[country]"]' );
+				var region = tr.querySelector( 'select[name$="[region]"]' );
+				if ( ! country || ! region ) {
+					return;
+				}
+				if ( ! region.dataset.ttAll ) {
+					region.dataset.ttAll = JSON.stringify(
+						Array.prototype.map.call( region.options, function ( o ) {
+							return { v: o.value, t: o.text, c: o.getAttribute( 'data-countries' ) || '' };
+						} )
+					);
+				}
+				var keep = region.value;
+				var co = country.value;
+				region.length = 0;
+				JSON.parse( region.dataset.ttAll ).forEach( function ( o ) {
+					// '0' = country-wide; regions with no cities yet stay visible.
+					if ( '0' !== o.v && co && o.c && o.c.split( ',' ).indexOf( co ) === -1 ) {
+						return;
+					}
+					var opt = new Option( o.t, o.v, false, o.v === keep );
+					opt.setAttribute( 'data-countries', o.c );
+					region.add( opt );
+				} );
+			}
+
 			add.addEventListener( 'click', function () {
 				var empty = body.querySelector( '[data-tt-wa-empty]' );
 				if ( empty ) {
@@ -185,6 +228,7 @@ class Whatsapp {
 				var row = holder.querySelector( 'tr' );
 				if ( row ) {
 					body.appendChild( row );
+					filterRow( row );
 					var first = row.querySelector( 'input' );
 					if ( first ) {
 						first.focus();
@@ -198,6 +242,14 @@ class Whatsapp {
 					btn.closest( 'tr' ).remove();
 				}
 			} );
+
+			body.addEventListener( 'change', function ( e ) {
+				if ( e.target && /\[country\]$/.test( e.target.name || '' ) ) {
+					filterRow( e.target.closest( 'tr' ) );
+				}
+			} );
+
+			Array.prototype.forEach.call( body.querySelectorAll( 'tr' ), filterRow );
 		}() );
 		</script>
 		<?php
@@ -220,7 +272,7 @@ class Whatsapp {
 				<select name="<?php echo esc_attr( $name ); ?>[region]" style="width:100%">
 					<option value="0"><?php esc_html_e( 'Country-wide (no region)', 'tur-takvimi' ); ?></option>
 					<?php foreach ( $regions as $term ) : ?>
-						<option value="<?php echo (int) $term->term_id; ?>" <?php selected( (int) $g['region'], (int) $term->term_id ); ?>><?php echo esc_html( $term->name ); ?></option>
+						<option value="<?php echo (int) $term->term_id; ?>" data-countries="<?php echo esc_attr( implode( ',', $this->region_countries[ (int) $term->term_id ] ?? array() ) ); ?>" <?php selected( (int) $g['region'], (int) $term->term_id ); ?>><?php echo esc_html( $term->name ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</td>

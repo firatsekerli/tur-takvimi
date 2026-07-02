@@ -220,7 +220,7 @@ class Post_Types {
 			return;
 		}
 
-		$term_countries = $this->region_countries( $post_type );
+		$term_countries = self::region_countries( $post_type );
 		$region         = isset( $_GET[ self::REGION ] ) ? sanitize_title( wp_unslash( $_GET[ self::REGION ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 		echo '<select name="' . esc_attr( self::REGION ) . '" id="tt_region_filter">';
 		echo '<option value="">' . esc_html__( 'All regions', 'tur-takvimi' ) . '</option>';
@@ -278,7 +278,7 @@ class Post_Types {
 	 * @param string $post_type Post type to inspect.
 	 * @return array<int,string[]> term_id => ISO-2 codes.
 	 */
-	private function region_countries( string $post_type ): array {
+	public static function region_countries( string $post_type ): array {
 		$ids = get_posts(
 			array(
 				'post_type'      => $post_type,
