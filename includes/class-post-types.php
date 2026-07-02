@@ -219,18 +219,92 @@ class Post_Types {
 		if ( ! $terms || is_wp_error( $terms ) ) {
 			return;
 		}
-		$region = isset( $_GET[ self::REGION ] ) ? sanitize_title( wp_unslash( $_GET[ self::REGION ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-		echo '<select name="' . esc_attr( self::REGION ) . '">';
+
+		$term_countries = $this->region_countries( $post_type );
+		$region         = isset( $_GET[ self::REGION ] ) ? sanitize_title( wp_unslash( $_GET[ self::REGION ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		echo '<select name="' . esc_attr( self::REGION ) . '" id="tt_region_filter">';
 		echo '<option value="">' . esc_html__( 'All regions', 'tur-takvimi' ) . '</option>';
 		foreach ( $terms as $term ) {
 			printf(
-				'<option value="%s"%s>%s</option>',
+				'<option value="%s" data-countries="%s"%s>%s</option>',
 				esc_attr( $term->slug ),
+				esc_attr( implode( ',', $term_countries[ (int) $term->term_id ] ?? array() ) ),
 				selected( $region, $term->slug, false ),
 				esc_html( $term->name )
 			);
 		}
 		echo '</select>';
+
+		// Narrow the region list to the chosen country without a round-trip.
+		?>
+		<script>
+		( function () {
+			var country = document.querySelector( 'select[name="tt_country"]' );
+			var region = document.getElementById( 'tt_region_filter' );
+			if ( ! country || ! region ) {
+				return;
+			}
+			var all = Array.prototype.slice.call( region.options ).map( function ( o ) {
+				return {
+					value: o.value,
+					text: o.text,
+					countries: ( o.getAttribute( 'data-countries' ) || '' ).split( ',' ),
+					selected: o.selected
+				};
+			} );
+			function apply() {
+				var co = country.value;
+				var keep = region.value;
+				region.length = 0;
+				all.forEach( function ( o ) {
+					if ( o.value && co && o.countries.indexOf( co ) === -1 ) {
+						return;
+					}
+					region.add( new Option( o.text, o.value, false, o.value === keep ) );
+				} );
+			}
+			country.addEventListener( 'change', apply );
+			apply();
+		}() );
+		</script>
+		<?php
+	}
+
+	/**
+	 * Which countries each region term is used in, for the given post type
+	 * (inferred from the posts carrying the term — regions have no country
+	 * of their own).
+	 *
+	 * @param string $post_type Post type to inspect.
+	 * @return array<int,string[]> term_id => ISO-2 codes.
+	 */
+	private function region_countries( string $post_type ): array {
+		$ids = get_posts(
+			array(
+				'post_type'      => $post_type,
+				'post_status'    => 'any',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+			)
+		);
+		if ( ! $ids ) {
+			return array();
+		}
+		update_postmeta_cache( $ids );
+
+		$assignments = wp_get_object_terms( $ids, self::REGION, array( 'fields' => 'all_with_object_id' ) );
+		if ( is_wp_error( $assignments ) ) {
+			return array();
+		}
+
+		$map = array();
+		foreach ( $assignments as $term ) {
+			$code = Country::of_post( (int) $term->object_id );
+			if ( ! in_array( $code, $map[ (int) $term->term_id ] ?? array(), true ) ) {
+				$map[ (int) $term->term_id ][] = $code;
+			}
+		}
+		return $map;
 	}
 
 	/**
