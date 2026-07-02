@@ -198,6 +198,35 @@ class Commerce {
 				}
 				root.dataset.ttBound = '1';
 
+				/* Optional relocation: themes with a custom order-summary
+				   sidebar (no Woo hooks) can host the section by providing a
+				   [data-tt-checkout-slot] element; a Phox sidebar is detected
+				   as a fallback. The submitted value keeps living inside the
+				   checkout form via a synced hidden input. */
+				var slot = document.querySelector( '[data-tt-checkout-slot]' ) || document.querySelector( '.pchk-sidebar' );
+				if ( slot && ! slot.querySelector( '[data-tt-checkout]' ) ) {
+					var form = root.closest( 'form.checkout' );
+					if ( form ) {
+						var hidden = form.querySelector( 'input[type="hidden"][name="tt_checkout_city"]' );
+						if ( ! hidden ) {
+							hidden = document.createElement( 'input' );
+							hidden.type = 'hidden';
+							hidden.name = 'tt_checkout_city';
+							form.appendChild( hidden );
+						}
+						city.name = 'tt_checkout_city_view';
+						hidden.value = city.value;
+						city.addEventListener( 'change', function () {
+							hidden.value = city.value;
+						} );
+					}
+					if ( slot.hasAttribute( 'data-tt-checkout-slot' ) ) {
+						slot.appendChild( root );
+					} else {
+						slot.insertBefore( root, slot.firstChild );
+					}
+				}
+
 				function currentCountry() {
 					return country ? country.value : '';
 				}
