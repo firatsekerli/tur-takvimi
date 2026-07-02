@@ -169,14 +169,14 @@ msgstr "Rota ID"
 msgid "e.g. R07"
 msgstr "örn. R07"
 
-msgid "Route group"
-msgstr "Rota Grubu"
+msgid "Route region"
+msgstr "Rota Bölgesi"
 
 msgid "e.g. Köln-Bonn-Aachen / Rheinland"
 msgstr "örn. Köln-Bonn-Aachen / Rheinland"
 
-msgid "On first save, the title is set to \"Route ID - Route group\"."
-msgstr "İlk kayıtta başlık \"Rota ID - Rota Grubu\" olarak ayarlanır."
+msgid "This assigns the route to a Region: pick an existing one or type a new name to create it. Regions drive the map filters and WhatsApp groups. On first save, the title is set to \"Route ID - Region\"."
+msgstr "Bu alan rotayı bir Bölgeye atar: mevcut bir bölgeyi seçin veya yeni bir ad yazarak oluşturun. Bölgeler harita filtrelerini ve WhatsApp gruplarını belirler. İlk kayıtta başlık \"Rota ID - Bölge\" olarak ayarlanır."
 
 msgid "e.g. Vehicle 1"
 msgstr "örn. Araç 1"

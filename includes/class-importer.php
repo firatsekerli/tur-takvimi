@@ -418,7 +418,7 @@ class Importer {
 		// Map header aliases (English + Turkish) to canonical keys.
 		$aliases = array(
 			'code'    => array( 'route_id', 'route id', 'rota id', 'rota_id', 'paket id', 'code', 'id' ),
-			'group'   => array( 'route_group', 'route group', 'rota grubu', 'rota_grubu', 'group', 'grup' ),
+			'group'   => array( 'route_group', 'route group', 'rota grubu', 'rota_grubu', 'rota bölgesi', 'rota bolgesi', 'group', 'grup' ),
 			'vehicle' => array( 'vehicle', 'araç', 'arac', 'araba' ),
 			'date'    => array( 'first_visit_date', 'first visit date', 'ilk ziyaret tarihi', 'i̇lk ziyaret tarihi', 'anchor', 'anchor_date', 'date', 'tarih' ),
 			'country' => array( 'country', 'ülke', 'ulke', 'land' ),

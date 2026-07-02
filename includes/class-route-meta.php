@@ -102,7 +102,7 @@ class Route_Meta {
 			<input type="text" id="tt_route_code" name="tt_route_code" value="<?php echo esc_attr( $code ); ?>" placeholder="<?php esc_attr_e( 'e.g. R07', 'tur-takvimi' ); ?>">
 		</div>
 		<div class="tt-field">
-			<label for="tt_rota_grubu"><?php esc_html_e( 'Route group', 'tur-takvimi' ); ?></label>
+			<label for="tt_rota_grubu"><?php esc_html_e( 'Route region', 'tur-takvimi' ); ?></label>
 			<input type="text" id="tt_rota_grubu" name="tt_rota_grubu" class="regular-text" list="tt_region_options" value="<?php echo esc_attr( $group ); ?>" placeholder="<?php esc_attr_e( 'e.g. Köln-Bonn-Aachen / Rheinland', 'tur-takvimi' ); ?>">
 			<datalist id="tt_region_options">
 				<?php
@@ -113,7 +113,7 @@ class Route_Meta {
 				}
 				?>
 			</datalist>
-			<p class="description"><?php esc_html_e( 'On first save, the title is set to "Route ID - Route group".', 'tur-takvimi' ); ?></p>
+			<p class="description"><?php esc_html_e( 'This assigns the route to a Region: pick an existing one or type a new name to create it. Regions drive the map filters and WhatsApp groups. On first save, the title is set to "Route ID - Region".', 'tur-takvimi' ); ?></p>
 		</div>
 		<div class="tt-field">
 			<label for="tt_country_sel"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></label>
@@ -222,7 +222,7 @@ class Route_Meta {
 			update_post_meta( $post_id, '_tt_country', $ccode );
 		}
 
-		// Route group maps to the shared region taxonomy (created if new).
+		// The route-region field maps to the shared region taxonomy (created if new).
 		$group = sanitize_text_field( wp_unslash( $_POST['tt_rota_grubu'] ?? '' ) );
 		wp_set_object_terms( $post_id, '' !== $group ? $group : array(), Post_Types::REGION, false );
 
