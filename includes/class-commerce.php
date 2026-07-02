@@ -40,7 +40,6 @@ class Commerce {
 	public function register(): void {
 		add_action( 'woocommerce_cart_calculate_fees', array( $this, 'apply_discount' ) );
 
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 		add_action( 'woocommerce_before_order_notes', array( $this, 'checkout_fields' ) );
 		add_action( 'woocommerce_checkout_process', array( $this, 'validate' ) );
 		add_action( 'woocommerce_checkout_create_order', array( $this, 'save_order_meta' ), 10, 2 );
@@ -93,20 +92,11 @@ class Commerce {
 	 * --------------------------------------------------------------------- */
 
 	/**
-	 * Register the checkout script (enqueued only when the section renders).
-	 */
-	public function register_assets(): void {
-		wp_register_script(
-			'tur-takvimi-commerce',
-			TURTAKVIMI_URL . 'assets/js/commerce.js',
-			array(),
-			Plugin::asset_ver( 'assets/js/commerce.js' ),
-			true
-		);
-	}
-
-	/**
 	 * Render the Teslimat section on the classic checkout.
+	 *
+	 * The dataset ships as inline JSON and the behaviour as an inline script,
+	 * so the section keeps working regardless of theme/optimizer script
+	 * handling (no external file, no load-order dependency).
 	 */
 	public function checkout_fields(): void {
 		$payload = $this->payload();
@@ -115,8 +105,6 @@ class Commerce {
 		}
 
 		wp_enqueue_style( 'tur-takvimi' );
-		wp_enqueue_script( 'tur-takvimi-commerce' );
-		wp_localize_script( 'tur-takvimi-commerce', 'TurTakvimiCommerce', $payload );
 
 		// Preselect posted values so a validation error keeps the choice.
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Woo checkout re-render.
@@ -175,7 +163,131 @@ class Commerce {
 				<p data-tt-row="time"><strong><?php esc_html_e( 'Hour', 'tur-takvimi' ); ?>:</strong> <span data-tt-value></span></p>
 				<p data-tt-row="address"><strong><?php esc_html_e( 'Delivery address', 'tur-takvimi' ); ?>:</strong> <span data-tt-value></span></p>
 			</div>
+
+			<script type="application/json" data-tt-data><?php echo wp_json_encode( array( 'cities' => $payload['cities'], 'regions' => $payload['regions'] ), JSON_HEX_TAG | JSON_HEX_AMP ); ?></script>
 		</div>
+		<script>
+		( function () {
+			'use strict';
+
+			function bind( root ) {
+				if ( root.dataset.ttBound ) {
+					return;
+				}
+				var holder = root.querySelector( '[data-tt-data]' );
+				var country = root.querySelector( 'select[name="tt_checkout_country"]' );
+				var region = root.querySelector( 'select[name="tt_checkout_region"]' );
+				var city = root.querySelector( 'select[name="tt_checkout_city"]' );
+				var info = root.querySelector( '[data-tt-info]' );
+				if ( ! holder || ! city ) {
+					return;
+				}
+				var cfg;
+				try {
+					cfg = JSON.parse( holder.textContent );
+				} catch ( e ) {
+					return;
+				}
+				root.dataset.ttBound = '1';
+
+				function currentCountry() {
+					return country ? country.value : '';
+				}
+				function currentRegion() {
+					return region ? region.value : '';
+				}
+
+				function rebuildRegions() {
+					if ( ! region ) {
+						return;
+					}
+					var keep = region.value;
+					var co = currentCountry();
+					region.length = 1; /* keep the "all" placeholder */
+					cfg.regions.forEach( function ( r ) {
+						if ( co && r.countries.indexOf( co ) === -1 ) {
+							return;
+						}
+						region.add( new Option( r.name, r.slug, false, r.slug === keep ) );
+					} );
+				}
+
+				function rebuildCities() {
+					var keep = city.value;
+					var co = currentCountry();
+					var reg = currentRegion();
+					city.length = 1; /* keep the "select a city" placeholder */
+					cfg.cities.forEach( function ( c ) {
+						if ( co && c.country !== co ) {
+							return;
+						}
+						if ( reg && c.regions.indexOf( reg ) === -1 ) {
+							return;
+						}
+						city.add( new Option( c.name, String( c.id ), false, String( c.id ) === keep ) );
+					} );
+					updateInfo();
+				}
+
+				function setRow( key, value ) {
+					var row = info.querySelector( '[data-tt-row="' + key + '"]' );
+					if ( ! row ) {
+						return;
+					}
+					row.style.display = value ? '' : 'none';
+					var v = row.querySelector( '[data-tt-value]' );
+					if ( v ) {
+						v.textContent = value || '';
+					}
+				}
+
+				function updateInfo() {
+					if ( ! info ) {
+						return;
+					}
+					var picked = null;
+					cfg.cities.forEach( function ( c ) {
+						if ( String( c.id ) === city.value ) {
+							picked = c;
+						}
+					} );
+					if ( ! picked ) {
+						info.style.display = 'none';
+						return;
+					}
+					setRow( 'date', picked.dateLabel );
+					setRow( 'time', picked.time );
+					setRow( 'address', picked.address );
+					info.style.display = '';
+				}
+
+				if ( country ) {
+					country.addEventListener( 'change', function () {
+						rebuildRegions();
+						rebuildCities();
+					} );
+				}
+				if ( region ) {
+					region.addEventListener( 'change', rebuildCities );
+				}
+				city.addEventListener( 'change', updateInfo );
+
+				rebuildRegions();
+				rebuildCities();
+			}
+
+			function bindAll() {
+				Array.prototype.forEach.call( document.querySelectorAll( '[data-tt-checkout]' ), bind );
+			}
+
+			bindAll();
+			document.addEventListener( 'DOMContentLoaded', bindAll );
+			/* Woo re-renders checkout fragments; re-bind fresh copies. */
+			if ( window.jQuery ) {
+				window.jQuery( document.body ).on( 'updated_checkout', bindAll );
+			}
+		}() );
+		</script>
 		<?php
 	}
 
@@ -352,7 +464,7 @@ class Commerce {
 	 * The checkout dataset: every orderable city with its next eligible date,
 	 * regions and pickup details, plus the region list for the filter.
 	 *
-	 * @return array{cities:array,regions:array,i18n:array}
+	 * @return array{cities:array,regions:array}
 	 */
 	private function payload(): array {
 		$next  = ( new Schedule() )->next_tour_dates( $this->order_from_date() );
@@ -424,10 +536,6 @@ class Commerce {
 		return array(
 			'cities'  => $cities,
 			'regions' => $regions,
-			'i18n'    => array(
-				'allRegions' => __( 'All regions', 'tur-takvimi' ),
-				'selectCity' => __( 'Select a city…', 'tur-takvimi' ),
-			),
 		);
 	}
 }
