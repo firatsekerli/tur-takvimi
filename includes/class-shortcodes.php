@@ -95,6 +95,17 @@ class Shortcodes {
 	}
 
 	/**
+	 * Whether a shortcode attribute value is an explicit "off" keyword
+	 * (used by the per-block toggles; an absent/empty attribute stays on).
+	 *
+	 * @param mixed $value Raw attribute value.
+	 * @return bool
+	 */
+	public static function is_off( $value ): bool {
+		return in_array( strtolower( trim( (string) $value ) ), array( 'no', 'false', 'none', '0', 'hide', 'off' ), true );
+	}
+
+	/**
 	 * Sanitize a `class` shortcode attribute into a leading-spaced class string
 	 * ready to append to a root element's class list (or '' when empty).
 	 *

@@ -795,3 +795,9 @@ msgstr "Teslimat saati"
 
 msgid "Pre-order pickup point"
 msgstr "Ön Sipariş Teslim Noktası"
+
+msgid "hides the address list's postcode search box (city panel and address list)."
+msgstr "adres listesinin posta kodu arama kutusunu gizler (şehir paneli ve adres listesi)."
+
+msgid "removes that block from the full city panel."
+msgstr "ilgili bölümü tam şehir panelinden kaldırır."

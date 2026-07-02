@@ -116,7 +116,7 @@ class City_Page {
 		wp_enqueue_style( 'tur-takvimi' );
 		wp_enqueue_script( 'tur-takvimi' );
 
-		$opts    = shortcode_atts( array( 'id' => 0, 'heading' => null, 'class' => '', 'align' => '' ), $atts, 'tur_takvimi_city_stops' );
+		$opts    = shortcode_atts( array( 'id' => 0, 'heading' => null, 'filter' => '', 'class' => '', 'align' => '' ), $atts, 'tur_takvimi_city_stops' );
 		$heading = Shortcodes::heading_attr( $opts['heading'], __( 'Delivery addresses', 'tur-takvimi' ) );
 		$align   = Shortcodes::align_value( $opts['align'] );
 
@@ -144,7 +144,7 @@ class City_Page {
 				<?php if ( '' !== $heading ) : ?>
 					<h2 class="tt-stops__heading"><?php echo esc_html( $heading ); ?></h2>
 				<?php endif; ?>
-				<?php if ( count( $stops ) > 1 ) : ?>
+				<?php if ( count( $stops ) > 1 && ! Shortcodes::is_off( $opts['filter'] ) ) : ?>
 					<div class="tt-stops__filter">
 						<span class="tt-stops__filter-icon" aria-hidden="true">
 							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -310,6 +310,8 @@ class City_Page {
 
 	/**
 	 * All-in-one city panel (schedule + map + stops) for quick placement.
+	 * Each block can be switched off: schedule="no", map="no", stops="no";
+	 * heading and filter flow through to the address list.
 	 *
 	 * @param array $atts Shortcode attributes (id).
 	 * @return string
@@ -319,16 +321,41 @@ class City_Page {
 		if ( ! $id ) {
 			return '';
 		}
-		$opts  = shortcode_atts( array( 'id' => 0, 'class' => '', 'align' => '' ), $atts, 'tur_takvimi_city' );
+		$opts  = shortcode_atts(
+			array(
+				'id'       => 0,
+				'class'    => '',
+				'align'    => '',
+				'heading'  => null,
+				'filter'   => '',
+				'schedule' => '',
+				'map'      => '',
+				'stops'    => '',
+			),
+			$atts,
+			'tur_takvimi_city'
+		);
 		$class = Shortcodes::extra_class( $opts['class'] );
 		// Custom class goes on the wrapper only; align flows to the inner stops
 		// list (the one part with a filter row).
 		$child = array( 'id' => $id, 'align' => $opts['align'] );
-		return '<div class="tt-city' . esc_attr( $class ) . '">'
-			. $this->schedule( $child )
-			. $this->map( $child )
-			. $this->stops( $child )
-			. '</div>';
+
+		$html = '';
+		if ( ! Shortcodes::is_off( $opts['schedule'] ) ) {
+			$html .= $this->schedule( $child );
+		}
+		if ( ! Shortcodes::is_off( $opts['map'] ) ) {
+			$html .= $this->map( $child );
+		}
+		if ( ! Shortcodes::is_off( $opts['stops'] ) ) {
+			$html .= $this->stops(
+				$child + array(
+					'heading' => $opts['heading'],
+					'filter'  => $opts['filter'],
+				)
+			);
+		}
+		return '<div class="tt-city' . esc_attr( $class ) . '">' . $html . '</div>';
 	}
 
 	/* --------------------------------------------------------------------- *

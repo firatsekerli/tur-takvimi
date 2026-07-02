@@ -271,6 +271,14 @@ class Settings {
 				<code>heading="no"</code> <?php esc_html_e( 'or', 'tur-takvimi' ); ?> <code>heading="Custom title"</code> —
 				<?php esc_html_e( 'hides or overrides the built-in heading (calendar and address-list only). Use "no" when your page already has a title.', 'tur-takvimi' ); ?>
 			</li>
+			<li>
+				<code>filter="no"</code> —
+				<?php esc_html_e( 'hides the address list\'s postcode search box (city panel and address list).', 'tur-takvimi' ); ?>
+			</li>
+			<li>
+				<code>schedule="no"</code>, <code>map="no"</code>, <code>stops="no"</code> —
+				<?php esc_html_e( 'removes that block from the full city panel.', 'tur-takvimi' ); ?>
+			</li>
 		</ul>
 
 		<table class="widefat striped" style="max-width:60rem;margin-top:1rem">
@@ -305,7 +313,7 @@ class Settings {
 				<tr>
 					<td><code>[tur_takvimi_city]</code></td>
 					<td><?php esc_html_e( 'Full city panel: schedule + map + address list, combined.', 'tur-takvimi' ); ?></td>
-					<td><code>id</code>, <code>align</code>, <code>class</code></td>
+					<td><code>id</code>, <code>heading</code>, <code>filter</code>, <code>schedule</code>, <code>map</code>, <code>stops</code>, <code>align</code>, <code>class</code></td>
 				</tr>
 				<tr>
 					<td><code>[tur_takvimi_city_schedule]</code></td>
@@ -320,7 +328,7 @@ class Settings {
 				<tr>
 					<td><code>[tur_takvimi_city_stops]</code></td>
 					<td><?php esc_html_e( 'A city\'s delivery addresses (with per-address calendar links).', 'tur-takvimi' ); ?></td>
-					<td><code>id</code>, <code>heading</code>, <code>align</code>, <code>class</code></td>
+					<td><code>id</code>, <code>heading</code>, <code>filter</code>, <code>align</code>, <code>class</code></td>
 				</tr>
 				<tr>
 					<td><code>[tur_takvimi_whatsapp]</code></td>
