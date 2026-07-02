@@ -1078,8 +1078,8 @@
 	flex: 0 0 auto;
 	font-size: 0.75rem;
 	font-weight: 700;
-	color: var(--tt-accent);
-	background: rgba( 22, 163, 74, 0.1 );
+	color: #fff;
+	background: #388e3c;
 	border-radius: 999px;
 	padding: 0.2rem 0.55rem;
 	white-space: nowrap;
