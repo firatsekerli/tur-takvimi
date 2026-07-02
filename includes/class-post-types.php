@@ -185,7 +185,8 @@ class Post_Types {
 	}
 
 	/**
-	 * Add a "Country" filter dropdown above the Şehir/Rota list tables.
+	 * Add "Country" and "Region" filter dropdowns above the Şehir/Rota
+	 * list tables.
 	 *
 	 * @param string $post_type Current screen post type.
 	 */
@@ -202,6 +203,31 @@ class Post_Types {
 				esc_attr( $code ),
 				selected( $current, $code, false ),
 				esc_html( $code )
+			);
+		}
+		echo '</select>';
+
+		// Region (Bölge) filter: a select on the taxonomy's own query var, so
+		// WordPress applies it to the list query natively — no extra hook.
+		$terms = get_terms(
+			array(
+				'taxonomy'   => self::REGION,
+				'hide_empty' => false,
+				'orderby'    => 'name',
+			)
+		);
+		if ( ! $terms || is_wp_error( $terms ) ) {
+			return;
+		}
+		$region = isset( $_GET[ self::REGION ] ) ? sanitize_title( wp_unslash( $_GET[ self::REGION ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		echo '<select name="' . esc_attr( self::REGION ) . '">';
+		echo '<option value="">' . esc_html__( 'All regions', 'tur-takvimi' ) . '</option>';
+		foreach ( $terms as $term ) {
+			printf(
+				'<option value="%s"%s>%s</option>',
+				esc_attr( $term->slug ),
+				selected( $region, $term->slug, false ),
+				esc_html( $term->name )
 			);
 		}
 		echo '</select>';
