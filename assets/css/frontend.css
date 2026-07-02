@@ -1221,15 +1221,16 @@
 	display: block;
 	margin-top: 1rem;
 	padding: 0.9rem 1.1rem;
-	border: 1px solid var(--tt-accent);
+	border: 1px solid var(--tt-primary);
 	border-radius: 10px;
 	background: rgba( 22, 163, 74, 0.07 );
+	background: color-mix( in srgb, var(--tt-primary) 8%, #fff );
 }
 
 .tt-checkout__info-title {
 	display: block;
 	margin-bottom: 0.35rem;
-	color: var(--tt-accent);
+	color: var(--tt-primary);
 }
 
 .tt-checkout__info p {

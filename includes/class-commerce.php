@@ -160,7 +160,7 @@ class Commerce {
 			<div class="tt-checkout__info" data-tt-info style="display:none;">
 				<strong class="tt-checkout__info-title"><?php esc_html_e( 'Delivery details', 'tur-takvimi' ); ?></strong>
 				<p data-tt-row="date"><strong><?php esc_html_e( 'Delivery date', 'tur-takvimi' ); ?>:</strong> <span data-tt-value></span></p>
-				<p data-tt-row="time"><strong><?php esc_html_e( 'Hour', 'tur-takvimi' ); ?>:</strong> <span data-tt-value></span></p>
+				<p data-tt-row="time"><strong><?php esc_html_e( 'Delivery time', 'tur-takvimi' ); ?>:</strong> <span data-tt-value></span></p>
 				<p data-tt-row="address"><strong><?php esc_html_e( 'Delivery address', 'tur-takvimi' ); ?>:</strong> <span data-tt-value></span></p>
 			</div>
 
@@ -424,7 +424,7 @@ class Commerce {
 		}
 		$time = (string) $order->get_meta( self::META_TIME );
 		if ( '' !== $time ) {
-			$rows[ __( 'Hour', 'tur-takvimi' ) ] = $time;
+			$rows[ __( 'Delivery time', 'tur-takvimi' ) ] = $time;
 		}
 		$address = (string) $order->get_meta( self::META_ADDRESS );
 		if ( '' !== $address ) {

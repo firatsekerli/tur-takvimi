@@ -789,3 +789,6 @@ msgstr "Lütfen teslimat şehrinizi seçin."
 
 msgid "This city has no upcoming delivery date — please pick another."
 msgstr "Bu şehir için yaklaşan bir teslimat tarihi yok — lütfen başka bir şehir seçin."
+
+msgid "Delivery time"
+msgstr "Teslimat saati"
