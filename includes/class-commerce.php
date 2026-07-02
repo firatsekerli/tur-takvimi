@@ -40,15 +40,7 @@ class Commerce {
 	public function register(): void {
 		add_action( 'woocommerce_cart_calculate_fees', array( $this, 'apply_discount' ) );
 
-		/**
-		 * Where the Teslimat section renders on the classic checkout.
-		 * Default: just above the "Your order" heading. Return another
-		 * checkout hook (e.g. 'woocommerce_before_order_notes') to move it.
-		 *
-		 * @param string $hook Action name to render the section on.
-		 */
-		$hook = (string) apply_filters( 'tur_takvimi_checkout_section_hook', 'woocommerce_checkout_before_order_review_heading' );
-		add_action( $hook, array( $this, 'checkout_fields' ) );
+		add_action( 'woocommerce_before_order_notes', array( $this, 'checkout_fields' ) );
 		add_action( 'woocommerce_checkout_process', array( $this, 'validate' ) );
 		add_action( 'woocommerce_checkout_create_order', array( $this, 'save_order_meta' ), 10, 2 );
 
