@@ -75,9 +75,11 @@
 	column-gap: 0.5rem;
 }
 
-/* Pickup-point radio: centered under its header label. */
+/* Pickup-point radio: centered under its header label. Explicit size —
+   core styles radios with appearance:none, so width:auto collapses them. */
 .tt-address-row > input.tt-address-row__pickup {
-	width: auto;
+	width: 1rem;
+	height: 1rem;
 	justify-self: center;
 }
 
