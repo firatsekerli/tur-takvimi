@@ -113,10 +113,20 @@
 	text-align: center;
 }
 
-/* Postcode-level (approximate) pin: faded so exact matches stand out. */
+/* Postcode-level (approximate) pin: orange dot + explanatory tooltip. */
 .tt-address-row__pin.is-approx {
-	opacity: 0.4;
 	cursor: help;
+	font-size: 0.8em;
+}
+
+/* Leaflet divIcon wrapper for the orange approximate marker. */
+.tt-approx-pin {
+	background: none;
+	border: 0;
+}
+
+.tt-map-legend {
+	margin-top: 0.35rem;
 }
 
 .tt-address-row__freq-label {

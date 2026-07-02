@@ -78,6 +78,16 @@
 		return item && item.lat != null && item.lng != null && ! isNaN( item.lat ) && ! isNaN( item.lng );
 	}
 
+	// Approximate (postcode-level) pins get an orange marker so they stand
+	// out from exact (blue) ones.
+	var approxIcon = L.divIcon( {
+		className: 'tt-approx-pin',
+		html: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 41" width="25" height="41"><path d="M12.5 0C5.6 0 0 5.6 0 12.5c0 9.4 12.5 28.5 12.5 28.5S25 21.9 25 12.5C25 5.6 19.4 0 12.5 0z" fill="#f59e0b" stroke="#b45309" stroke-width="1"/><circle cx="12.5" cy="12.5" r="4.5" fill="#fff"/></svg>',
+		iconSize: [ 25, 41 ],
+		iconAnchor: [ 12, 41 ],
+		popupAnchor: [ 1, -34 ]
+	} );
+
 	function sync() {
 		hidden.value = JSON.stringify( state );
 	}
@@ -93,7 +103,7 @@
 			if ( ! hasCoords( item ) ) {
 				return;
 			}
-			var m = L.marker( [ item.lat, item.lng ], item.approx ? { opacity: 0.55 } : {} ).addTo( map );
+			var m = L.marker( [ item.lat, item.lng ], item.approx ? { icon: approxIcon } : {} ).addTo( map );
 			m.bindPopup(
 				( item.address || '' ) +
 				( item.postcode ? '<br>' + item.postcode : '' ) +
@@ -146,7 +156,7 @@
 			var row = el( 'div', 'tt-address-row' );
 
 			var isApprox = hasCoords( item ) && item.approx;
-			var streetWrap = el( 'span', 'tt-address-row__pin' + ( isApprox ? ' is-approx' : '' ), hasCoords( item ) ? '📍' : '•' );
+			var streetWrap = el( 'span', 'tt-address-row__pin' + ( isApprox ? ' is-approx' : '' ), hasCoords( item ) ? ( isApprox ? '🟠' : '📍' ) : '•' );
 			if ( isApprox ) {
 				streetWrap.title = cfg.i18n.approxHint;
 			}

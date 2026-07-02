@@ -807,3 +807,6 @@ msgstr "Rota / Rotalar"
 
 msgid "The routes this city belongs to. Pick one or more; a city can be served by several routes."
 msgstr "Bu şehrin ait olduğu rotalar. Bir veya daha fazla rota seçin. Bir şehir birden fazla rotayla hizmet alabilir."
+
+msgid "Blue pin: exact address. Orange pin (🟠 in the list): approximate — placed at the postcode area because the exact address was not found. Search the exact address to refine it."
+msgstr "Mavi iğne: tam adres. Turuncu iğne (listede 🟠): yaklaşık — tam adres bulunamadığı için posta kodu bölgesine yerleştirildi. Netleştirmek için tam adresi arayın."

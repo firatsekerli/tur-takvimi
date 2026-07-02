@@ -127,6 +127,9 @@ class Location_Meta {
 		</div>
 
 		<div id="tt-map"></div>
+		<p class="description tt-map-legend">
+			<?php esc_html_e( 'Blue pin: exact address. Orange pin (🟠 in the list): approximate — placed at the postcode area because the exact address was not found. Search the exact address to refine it.', 'tur-takvimi' ); ?>
+		</p>
 
 		<div class="tt-field">
 			<label><?php esc_html_e( 'Delivery stops', 'tur-takvimi' ); ?></label>
