@@ -694,17 +694,8 @@ msgstr "Coğrafi konumlama hizmeti yanıt vermediği için duraklatıldı. Tur T
 msgid "Connection problem — retrying…"
 msgstr "Bağlantı sorunu — yeniden deneniyor…"
 
-msgid "WhatsApp channels (per country)"
-msgstr "WhatsApp kanalları (ülke başına)"
-
-msgid "One \"CODE|URL\" per line — the country-wide WhatsApp channel used as a fallback when a region has no group set. Per-region groups are set on each Bölge (Regions → edit a region)."
-msgstr "Her satıra bir \"KOD|URL\" — bir bölgenin grubu ayarlı değilken yedek olarak kullanılan ülke geneli WhatsApp kanalı. Bölge başına gruplar her Bölge için ayarlanır (Bölgeler → bir bölgeyi düzenle)."
-
 msgid "WhatsApp group link"
 msgstr "WhatsApp grup bağlantısı"
-
-msgid "Invite link to this region's WhatsApp group. Shown to customers in this region."
-msgstr "Bu bölgenin WhatsApp grubuna davet bağlantısı. Bu bölgedeki müşterilere gösterilir."
 
 msgid "Choose your region to follow us on WhatsApp"
 msgstr "WhatsApp'ta bizi takip etmek için bölgenizi seçin"
@@ -724,17 +715,29 @@ msgstr "Bir şehir için tek bir \"WhatsApp grubuna katıl\" düğmesi."
 msgid "WhatsApp links saved."
 msgstr "WhatsApp bağlantıları kaydedildi."
 
-msgid "Customers see their region's group. If a region has no group, they see that country's channel instead."
-msgstr "Müşteriler bölgelerinin grubunu görür. Bir bölgenin grubu yoksa, onun yerine o ülkenin kanalını görürler."
+msgid "Add group links and assign each to a region and a country. A city shows its region's group; a link without a region acts as the country-wide group. If nothing matches, the country channel below is shown."
+msgstr "Grup bağlantıları ekleyin ve her birini bir bölgeye ve ülkeye atayın. Bir şehir, bölgesinin grubunu gösterir; bölgesi olmayan bağlantı ülke geneli grup olarak kullanılır. Hiçbiri eşleşmezse aşağıdaki ülke kanalı gösterilir."
 
-msgid "Region groups"
-msgstr "Bölge grupları"
+msgid "Group links"
+msgstr "Grup bağlantıları"
+
+msgid "Name (optional)"
+msgstr "Ad (isteğe bağlı)"
+
+msgid "Shown name (optional)"
+msgstr "Görünen ad (isteğe bağlı)"
+
+msgid "Country-wide (no region)"
+msgstr "Ülke geneli (bölgesiz)"
+
+msgid "Add group link"
+msgstr "Grup bağlantısı ekle"
+
+msgid "No group links yet. Add the first one below."
+msgstr "Henüz grup bağlantısı yok. İlkini aşağıdan ekleyin."
 
 msgid "Country"
 msgstr "Ülke"
-
-msgid "No regions yet. Import routes/cities first."
-msgstr "Henüz bölge yok. Önce rotaları/şehirleri içe aktarın."
 
 msgid "Country channels (fallback)"
 msgstr "Ülke kanalları (yedek)"

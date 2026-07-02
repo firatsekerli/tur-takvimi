@@ -58,9 +58,86 @@ class Activator {
 			self::migrate_country();
 		}
 
+		// v5: WhatsApp group links moved from region term meta to a single
+		// option of {label, url, region, country} rows (any number of links).
+		if ( version_compare( $stored ?: '0', '5', '<' ) ) {
+			self::migrate_whatsapp_groups();
+		}
+
 		self::create_tables();
 		( new Schedule() )->regenerate_all();
 		update_option( 'tur_takvimi_db_version', TURTAKVIMI_DB_VERSION );
+	}
+
+	/**
+	 * Convert legacy per-region WhatsApp term metas into group-link rows on
+	 * the new option, inferring each region's country from its locations.
+	 */
+	private static function migrate_whatsapp_groups(): void {
+		$terms = get_terms(
+			array(
+				'taxonomy'   => Post_Types::REGION,
+				'hide_empty' => false,
+			)
+		);
+		if ( is_wp_error( $terms ) ) {
+			return;
+		}
+
+		$rows    = (array) get_option( Whatsapp::GROUPS_OPTION, array() );
+		$changed = false;
+		foreach ( $terms as $term ) {
+			$url = (string) get_term_meta( (int) $term->term_id, Whatsapp::TERM_META, true );
+			if ( '' === $url ) {
+				continue;
+			}
+			$exists = false;
+			foreach ( $rows as $row ) {
+				if ( is_array( $row ) && (int) ( $row['region'] ?? 0 ) === (int) $term->term_id ) {
+					$exists = true;
+					break;
+				}
+			}
+			if ( ! $exists ) {
+				$rows[]  = array(
+					'label'   => '',
+					'url'     => $url,
+					'region'  => (int) $term->term_id,
+					'country' => self::region_country( (int) $term->term_id ),
+				);
+				$changed = true;
+			}
+			delete_term_meta( (int) $term->term_id, Whatsapp::TERM_META );
+		}
+		if ( $changed ) {
+			update_option( Whatsapp::GROUPS_OPTION, $rows );
+		}
+	}
+
+	/**
+	 * Country a region belongs to, inferred from one of its locations
+	 * (falls back to the site default).
+	 *
+	 * @param int $term_id Region term ID.
+	 * @return string ISO-2.
+	 */
+	private static function region_country( int $term_id ): string {
+		$ids = get_posts(
+			array(
+				'post_type'      => Post_Types::LOCATION,
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery
+					array(
+						'taxonomy' => Post_Types::REGION,
+						'field'    => 'term_id',
+						'terms'    => $term_id,
+					),
+				),
+			)
+		);
+		return $ids ? Country::of_post( (int) $ids[0] ) : Country::default_code();
 	}
 
 	/**
