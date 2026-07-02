@@ -118,7 +118,7 @@ msgid "e.g. Frankenstr. 290 Essen"
 msgstr "örn. Frankenstr. 290 Essen"
 
 msgid "Delivery stops"
-msgstr "Teslimat adresleri"
+msgstr "Duraklar"
 
 msgid "Street address"
 msgstr "Sokak adresi"
@@ -420,7 +420,7 @@ msgid "Delivery stops in %s"
 msgstr "%s teslimat noktaları"
 
 msgid "Delivery addresses"
-msgstr "Teslimat adresleri"
+msgstr "Duraklar"
 
 msgid "Delivery schedule"
 msgstr "Teslimat takvimi"
