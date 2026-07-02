@@ -787,14 +787,10 @@
 	white-space: nowrap;
 }
 
+/* Cells share the address cell's plain styling; postcodes only keep
+   tabular digits so the numbers align. */
 .tt-stops__col--pc {
 	font-variant-numeric: tabular-nums;
-	font-weight: 700;
-}
-
-.tt-stops__col--time {
-	font-size: 0.85rem;
-	color: var(--tt-muted);
 }
 
 /* Icons sit together, flush right; a lone WhatsApp icon (on-demand stop,
@@ -806,6 +802,8 @@
 	gap: 0.5rem;
 }
 
+/* Same filled-circle treatment as the WhatsApp button so the two icons
+   read as one set. */
 .tt-stops__cal {
 	display: inline-flex;
 	align-items: center;
@@ -813,14 +811,24 @@
 	width: 2rem;
 	height: 2rem;
 	border-radius: 999px;
-	color: var(--tt-muted);
-	transition: background 0.15s ease, color 0.15s ease;
+	color: #fff;
+	background: var(--tt-primary);
+	text-decoration: none;
+	transition: filter 0.15s ease, transform 0.1s ease;
 }
 
 .tt-stops__cal:hover,
 .tt-stops__cal:focus {
-	background: var(--tt-bg);
-	color: var(--tt-text);
+	color: #fff;
+	filter: brightness( 0.9 );
+}
+
+.tt-stops__cal:active {
+	transform: scale( 0.94 );
+}
+
+.tt-stops__cal svg {
+	stroke: #fff;
 }
 
 .tt-stops__wa {
