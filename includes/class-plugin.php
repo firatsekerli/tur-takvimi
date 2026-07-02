@@ -69,10 +69,11 @@ final class Plugin {
 		}
 
 		/**
-		 * Commerce layer hook point. The WooCommerce-dependent add-on registers
-		 * here only when Woo is active, keeping the core builder/payment-agnostic.
+		 * Commerce layer: loaded only when WooCommerce is active, keeping the
+		 * core builder/payment-agnostic. The action lets add-ons extend it.
 		 */
 		if ( $this->has_woocommerce ) {
+			( new Commerce() )->register();
 			do_action( 'tur_takvimi_load_commerce' );
 		}
 

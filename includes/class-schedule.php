@@ -317,6 +317,31 @@ class Schedule {
 	}
 
 	/**
+	 * The next upcoming visit date for every location, in one query.
+	 *
+	 * @param string $from Y-m-d (defaults to today).
+	 * @return array<int,string> location_id => Y-m-d.
+	 */
+	public function next_tour_dates( string $from = '' ): array {
+		global $wpdb;
+		$from = $from ?: current_time( 'Y-m-d' );
+
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT location_id, MIN(tour_date) AS next_date FROM {$this->table()} WHERE tour_date >= %s GROUP BY location_id", // phpcs:ignore WordPress.DB.PreparedSQL
+				$from
+			),
+			ARRAY_A
+		);
+
+		$out = array();
+		foreach ( (array) $rows as $row ) {
+			$out[ (int) $row['location_id'] ] = (string) $row['next_date'];
+		}
+		return $out;
+	}
+
+	/**
 	 * The next upcoming visit dates for a location (distinct, ascending).
 	 *
 	 * @param int    $location_id Location post ID.

@@ -756,3 +756,36 @@ msgstr "Ülke"
 
 msgid "Country channels (fallback)"
 msgstr "Ülke kanalları (yedek)"
+
+msgid "Pre-order discount (%s%%)"
+msgstr "Ön sipariş indirimi (%%%s)"
+
+msgid "Delivery"
+msgstr "Teslimat"
+
+msgid "Choose your delivery city to see the delivery date and pickup address."
+msgstr "Teslimat tarihini ve teslim noktasını görmek için teslimat şehrinizi seçin."
+
+msgid "City"
+msgstr "Şehir"
+
+msgid "Select a city…"
+msgstr "Şehir seçin…"
+
+msgid "required"
+msgstr "zorunlu"
+
+msgid "Delivery details"
+msgstr "Teslimat bilgileri"
+
+msgid "Delivery date"
+msgstr "Teslimat tarihi"
+
+msgid "Delivery address"
+msgstr "Teslimat adresi"
+
+msgid "Please choose your delivery city."
+msgstr "Lütfen teslimat şehrinizi seçin."
+
+msgid "This city has no upcoming delivery date — please pick another."
+msgstr "Bu şehir için yaklaşan bir teslimat tarihi yok — lütfen başka bir şehir seçin."

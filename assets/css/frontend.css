@@ -1190,3 +1190,48 @@
 .tt-wa__join .tt-wa__icon {
 	color: #fff;
 }
+
+/* ------------------------------------------------------------------ *
+ * Checkout delivery picker (WooCommerce commerce layer)
+ * ------------------------------------------------------------------ */
+.tt-checkout {
+	margin: 1.25rem 0;
+}
+
+.tt-checkout__hint {
+	color: var(--tt-muted);
+	font-size: 0.9rem;
+}
+
+.tt-checkout__row {
+	margin-bottom: 0.85rem;
+}
+
+.tt-checkout__row label {
+	display: block;
+	margin-bottom: 0.25rem;
+	font-weight: 600;
+}
+
+.tt-checkout__row select {
+	width: 100%;
+}
+
+.tt-checkout__info {
+	display: block;
+	margin-top: 1rem;
+	padding: 0.9rem 1.1rem;
+	border: 1px solid var(--tt-accent);
+	border-radius: 10px;
+	background: rgba( 22, 163, 74, 0.07 );
+}
+
+.tt-checkout__info-title {
+	display: block;
+	margin-bottom: 0.35rem;
+	color: var(--tt-accent);
+}
+
+.tt-checkout__info p {
+	margin: 0.2rem 0;
+}
