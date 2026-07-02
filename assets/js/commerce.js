@@ -4,15 +4,17 @@
  * The selects are fully server-rendered (so the form works without JS); this
  * script narrows the region/city options to the chosen country/region and
  * fills the delivery-details box for the picked city.
+ *
+ * Themes sometimes render the checkout form twice (or replace parts of it via
+ * Woo's AJAX), so every [data-tt-checkout] instance is bound, and binding is
+ * re-run on Woo's updated_checkout event.
  */
 ( function () {
 	'use strict';
 
-	var cfg = window.TurTakvimiCommerce;
-
-	function init() {
-		var root = document.querySelector( '[data-tt-checkout]' );
-		if ( ! cfg || ! root ) {
+	function bind( root ) {
+		var cfg = window.TurTakvimiCommerce;
+		if ( ! cfg || root.dataset.ttBound ) {
 			return;
 		}
 		var country = root.querySelector( 'select[name="tt_checkout_country"]' );
@@ -22,6 +24,7 @@
 		if ( ! city ) {
 			return;
 		}
+		root.dataset.ttBound = '1';
 
 		function currentCountry() {
 			return country ? country.value : '';
@@ -42,8 +45,7 @@
 				if ( co && r.countries.indexOf( co ) === -1 ) {
 					return;
 				}
-				var opt = new Option( r.name, r.slug, false, r.slug === keep );
-				region.add( opt );
+				region.add( new Option( r.name, r.slug, false, r.slug === keep ) );
 			} );
 		}
 
@@ -59,8 +61,7 @@
 				if ( reg && c.regions.indexOf( reg ) === -1 ) {
 					return;
 				}
-				var opt = new Option( c.name, String( c.id ), false, String( c.id ) === keep );
-				city.add( opt );
+				city.add( new Option( c.name, String( c.id ), false, String( c.id ) === keep ) );
 			} );
 			updateInfo();
 		}
@@ -112,9 +113,19 @@
 		rebuildCities();
 	}
 
+	function initAll() {
+		Array.prototype.forEach.call( document.querySelectorAll( '[data-tt-checkout]' ), bind );
+	}
+
 	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', init );
+		document.addEventListener( 'DOMContentLoaded', initAll );
 	} else {
-		init();
+		initAll();
+	}
+
+	// WooCommerce re-renders checkout fragments; re-bind any fresh copies of
+	// the section (updated_checkout is a jQuery event, so guard for jQuery).
+	if ( window.jQuery ) {
+		window.jQuery( document.body ).on( 'updated_checkout', initAll );
 	}
 }() );
