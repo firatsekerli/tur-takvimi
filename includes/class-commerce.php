@@ -47,6 +47,9 @@ class Commerce {
 		add_action( 'woocommerce_admin_order_data_after_shipping_address', array( $this, 'admin_order_box' ) );
 		add_action( 'woocommerce_order_details_after_order_table', array( $this, 'order_details' ) );
 		add_action( 'woocommerce_email_order_meta', array( $this, 'email_meta' ), 10, 3 );
+
+		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'minicart_fragment' ) );
+		add_shortcode( 'tur_takvimi_minicart_discount', array( $this, 'minicart_discount_html' ) );
 	}
 
 	/* --------------------------------------------------------------------- *
@@ -337,6 +340,50 @@ class Commerce {
 			$order->update_meta_data( self::META_ADDRESS, trim( $street . ( '' !== $pc ? ', ' . $pc : '' ), ', ' ) );
 			$order->update_meta_data( self::META_TIME, trim( (string) ( $pickup['time'] ?? '' ) ) );
 		}
+	}
+
+	/* --------------------------------------------------------------------- *
+	 * Mini cart
+	 * --------------------------------------------------------------------- */
+
+	/**
+	 * Keep a mini-cart discount row current via Woo's cart fragments. A theme
+	 * (or custom mini cart) places <div data-tt-minicart-discount></div> in
+	 * its markup — or the [tur_takvimi_minicart_discount] shortcode — and the
+	 * row is filled/refreshed whenever the cart updates.
+	 *
+	 * @param array $fragments Fragment selector => replacement HTML.
+	 * @return array
+	 */
+	public function minicart_fragment( $fragments ): array {
+		$fragments['div[data-tt-minicart-discount]'] = $this->minicart_discount_html();
+		return (array) $fragments;
+	}
+
+	/**
+	 * The discount row markup (hidden container when no discount applies, so
+	 * the fragment always has an element to replace).
+	 *
+	 * @return string
+	 */
+	public function minicart_discount_html(): string {
+		$rows = '';
+		if ( function_exists( 'WC' ) && WC()->cart && ! WC()->cart->is_empty() ) {
+			if ( ! WC()->cart->get_fees() ) {
+				WC()->cart->calculate_totals();
+			}
+			foreach ( WC()->cart->get_fees() as $fee ) {
+				if ( (float) $fee->total >= 0 ) {
+					continue; // Only discount (negative) fees belong here.
+				}
+				$rows .= sprintf(
+					'<div class="tt-minicart-discount__row" style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline;"><span class="tt-minicart-discount__label">%s</span><span class="tt-minicart-discount__amount" style="white-space:nowrap;">%s</span></div>',
+					esc_html( (string) $fee->name ),
+					wp_kses_post( wc_price( (float) $fee->total ) )
+				);
+			}
+		}
+		return '<div data-tt-minicart-discount class="tt-minicart-discount"' . ( '' === $rows ? ' style="display:none"' : '' ) . '>' . $rows . '</div>';
 	}
 
 	/* --------------------------------------------------------------------- *
