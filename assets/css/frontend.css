@@ -1198,20 +1198,6 @@
 	margin: 1.25rem 0;
 }
 
-/* When relocated into a summary sidebar, present the section as a card. */
-[data-tt-checkout-slot] .tt-checkout,
-.pchk-sidebar > .tt-checkout {
-	margin: 0 0 1rem;
-	padding: 1.25rem 1.4rem;
-	background: #fff;
-	border-radius: 12px;
-}
-
-[data-tt-checkout-slot] .tt-checkout h3,
-.pchk-sidebar > .tt-checkout h3 {
-	margin-top: 0;
-}
-
 .tt-checkout__hint {
 	color: var(--tt-muted);
 	font-size: 0.9rem;
