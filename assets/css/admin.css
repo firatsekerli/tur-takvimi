@@ -66,13 +66,24 @@
 
 /* Header and rows share one explicit grid template, so columns line up
    exactly regardless of the inputs' box model: pin · street · postcode ·
-   hour · weeks · "weeks" word · remove. */
+   hour · weeks · "weeks" word · pickup · remove. */
 .tt-address-head,
 .tt-address-row {
 	display: grid;
-	grid-template-columns: 1.25rem minmax( 0, 1fr ) 100px 80px 64px 3rem 4rem;
+	grid-template-columns: 1.25rem minmax( 0, 1fr ) 100px 80px 64px 3rem 5rem 4rem;
 	align-items: center;
 	column-gap: 0.5rem;
+}
+
+/* Pickup-point radio: centered under its header label. */
+.tt-address-row > input.tt-address-row__pickup {
+	width: auto;
+	justify-self: center;
+}
+
+.tt-address-head .tt-address-row__pickup {
+	text-align: center;
+	line-height: 1.15;
 }
 
 .tt-address-head {

@@ -138,6 +138,7 @@
 		head.appendChild( el( 'span', 'tt-address-row__time', cfg.i18n.time ) );
 		head.appendChild( el( 'span', 'tt-address-row__freq', cfg.i18n.freq ) );
 		head.appendChild( el( 'span', 'tt-address-row__freq-label', '' ) );
+		head.appendChild( el( 'span', 'tt-address-row__pickup', cfg.i18n.pickup ) );
 		head.appendChild( el( 'span', 'tt-address-row__remove', '' ) );
 		listEl.appendChild( head );
 
@@ -200,6 +201,27 @@
 
 			var freqLabel = el( 'span', 'tt-address-row__freq-label', cfg.i18n.freq.toLowerCase() );
 			row.appendChild( freqLabel );
+
+			// Pickup point: radio-like (one per city), click again to clear.
+			var pickup = document.createElement( 'input' );
+			pickup.type = 'radio';
+			pickup.name = 'tt-pickup-choice';
+			pickup.className = 'tt-address-row__pickup';
+			pickup.checked = !! item.pickup;
+			pickup.title = cfg.i18n.pickupTitle;
+			pickup.addEventListener( 'click', function () {
+				var was = !! state[ index ].pickup;
+				state.forEach( function ( s ) {
+					delete s.pickup;
+				} );
+				if ( was ) {
+					pickup.checked = false;
+				} else {
+					state[ index ].pickup = true;
+				}
+				sync();
+			} );
+			row.appendChild( pickup );
 
 			var rm = el( 'button', 'button-link tt-address-row__remove', cfg.i18n.remove );
 			rm.type = 'button';

@@ -232,10 +232,11 @@ class City_Page {
 		$schedule = new Schedule();
 		$dates    = $schedule->upcoming_tours_for_location( $id, 4 );
 		$groups   = $this->route_groups( $schedule->routes_for_location( $id ) );
+		$pickup   = self::pickup_label( $id );
 
 		ob_start();
 		?>
-		<section class="tt-citysched<?php echo esc_attr( Shortcodes::extra_class( $opts['class'] ) ); ?>" aria-label="<?php esc_attr_e( 'Delivery schedule', 'tur-takvimi' ); ?>">
+		<section class="tt-citysched<?php echo esc_attr( ( '' !== $pickup ? ' tt-citysched--pickup' : '' ) . Shortcodes::extra_class( $opts['class'] ) ); ?>" aria-label="<?php esc_attr_e( 'Delivery schedule', 'tur-takvimi' ); ?>">
 			<div class="tt-citysched__next">
 				<span class="tt-citysched__label"><?php esc_html_e( 'Next deliveries', 'tur-takvimi' ); ?></span>
 				<?php if ( $dates ) : ?>
@@ -254,9 +255,57 @@ class City_Page {
 					<span><?php echo esc_html( implode( ', ', $groups ) ); ?></span>
 				</div>
 			<?php endif; ?>
+			<?php if ( '' !== $pickup ) : ?>
+				<div class="tt-citysched__pickup">
+					<span class="tt-citysched__label"><?php esc_html_e( 'Pickup point', 'tur-takvimi' ); ?></span>
+					<span><?php echo esc_html( $pickup ); ?></span>
+				</div>
+			<?php endif; ?>
 		</section>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * The address marked as a city's pickup point, or null. Public so the
+	 * checkout/commerce layer can show per-city delivery details from it.
+	 *
+	 * @param int $id Location ID.
+	 * @return array<string,mixed>|null The raw address entry {address, postcode, time, …}.
+	 */
+	public static function pickup_address( int $id ): ?array {
+		$addresses = json_decode( (string) get_post_meta( $id, '_tt_addresses', true ), true );
+		if ( is_array( $addresses ) ) {
+			foreach ( $addresses as $a ) {
+				if ( is_array( $a ) && ! empty( $a['pickup'] ) ) {
+					return $a;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Display string for a city's pickup point: "Street, Postcode · Hour".
+	 *
+	 * @param int $id Location ID.
+	 * @return string '' when no pickup point is marked.
+	 */
+	private static function pickup_label( int $id ): string {
+		$pickup = self::pickup_address( $id );
+		if ( null === $pickup ) {
+			return '';
+		}
+		$text = trim( (string) ( $pickup['address'] ?? '' ) );
+		$pc   = trim( (string) ( $pickup['postcode'] ?? '' ) );
+		if ( '' !== $pc ) {
+			$text .= ( '' !== $text ? ', ' : '' ) . $pc;
+		}
+		$time = trim( (string) ( $pickup['time'] ?? '' ) );
+		if ( '' !== $time ) {
+			$text .= ( '' !== $text ? ' · ' : '' ) . $time;
+		}
+		return $text;
 	}
 
 	/**

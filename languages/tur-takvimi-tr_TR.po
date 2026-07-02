@@ -144,6 +144,12 @@ msgstr "Her durak bu tarihten itibaren kendi sıklığında tekrarlanır (sıkl�
 msgid "Remove"
 msgstr "Kaldır"
 
+msgid "Pickup point"
+msgstr "Teslim noktası"
+
+msgid "Mark this stop as the pickup point. It is shown on the city page next to the route."
+msgstr "Bu durağı teslim noktası olarak işaretleyin. Şehir sayfasında rotanın yanında gösterilir."
+
 msgid "Add a stop manually"
 msgstr "Elle durak ekle"
 

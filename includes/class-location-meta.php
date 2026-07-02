@@ -75,6 +75,8 @@ class Location_Meta {
 					'freq'     => __( 'Weeks', 'tur-takvimi' ),
 					'freqTitle' => __( 'Visit frequency in weeks (0 = on demand)', 'tur-takvimi' ),
 					'remove'   => __( 'Remove', 'tur-takvimi' ),
+					'pickup'   => __( 'Pickup point', 'tur-takvimi' ),
+					'pickupTitle' => __( 'Mark this stop as the pickup point. It is shown on the city page next to the route.', 'tur-takvimi' ),
 					'addRow'   => __( 'Add a stop manually', 'tur-takvimi' ),
 					'empty'    => __( 'No stops yet. Search an address above to add one.', 'tur-takvimi' ),
 					'approxHint' => __( 'Approximate — pinned to the postcode. Search the exact address to refine it.', 'tur-takvimi' ),
@@ -225,11 +227,12 @@ class Location_Meta {
 		$rows = json_decode( $raw, true );
 		$rows = is_array( $rows ) ? $rows : array();
 
-		$addresses = array();
-		$postcodes = array();
-		$lat_sum   = 0.0;
-		$lng_sum   = 0.0;
-		$geo_count = 0;
+		$addresses  = array();
+		$postcodes  = array();
+		$lat_sum    = 0.0;
+		$lng_sum    = 0.0;
+		$geo_count  = 0;
+		$has_pickup = false;
 
 		foreach ( $rows as $row ) {
 			$street   = sanitize_text_field( (string) ( $row['address'] ?? '' ) );
@@ -252,6 +255,13 @@ class Location_Meta {
 			$time = sanitize_text_field( (string) ( $row['time'] ?? '' ) );
 			if ( '' !== $time ) {
 				$entry['time'] = $time;
+			}
+
+			// The city's pickup point (at most one; shown on the city page and
+			// used by the checkout to display delivery details per city).
+			if ( ! empty( $row['pickup'] ) && ! $has_pickup ) {
+				$entry['pickup'] = true;
+				$has_pickup      = true;
 			}
 
 			if ( isset( $row['lat'], $row['lng'] ) && is_numeric( $row['lat'] ) && is_numeric( $row['lng'] ) ) {
