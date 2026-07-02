@@ -34,6 +34,10 @@ class Post_Types {
 			add_filter( "manage_{$type}_posts_columns", array( $this, 'country_column' ) );
 			add_action( "manage_{$type}_posts_custom_column", array( $this, 'country_column_value' ), 10, 2 );
 		}
+
+		// Şehir list: stop count (flagging approximate / unpinned stops).
+		add_filter( 'manage_' . self::LOCATION . '_posts_columns', array( $this, 'stops_column' ), 11 );
+		add_action( 'manage_' . self::LOCATION . '_posts_custom_column', array( $this, 'stops_column_value' ), 10, 2 );
 	}
 
 	/**
@@ -361,6 +365,61 @@ class Post_Types {
 	public function country_column_value( $column, $post_id ): void {
 		if ( 'tt_country' === $column ) {
 			echo esc_html( Country::of_post( (int) $post_id ) );
+		}
+	}
+
+	/**
+	 * Add a "Stops" count column after the country column (Şehir list only).
+	 *
+	 * @param array $columns Existing columns.
+	 * @return array
+	 */
+	public function stops_column( $columns ): array {
+		$out = array();
+		foreach ( $columns as $key => $label ) {
+			$out[ $key ] = $label;
+			if ( 'tt_country' === $key ) {
+				$out['tt_stops'] = __( 'Stops', 'tur-takvimi' );
+			}
+		}
+		if ( ! isset( $out['tt_stops'] ) ) {
+			$out['tt_stops'] = __( 'Stops', 'tur-takvimi' );
+		}
+		return $out;
+	}
+
+	/**
+	 * Render the stop count, flagging approximate (🟠) and unpinned (•) stops.
+	 *
+	 * @param string $column  Column key.
+	 * @param int    $post_id Post ID.
+	 */
+	public function stops_column_value( $column, $post_id ): void {
+		if ( 'tt_stops' !== $column ) {
+			return;
+		}
+		$addresses = json_decode( (string) get_post_meta( (int) $post_id, '_tt_addresses', true ), true );
+		$addresses = is_array( $addresses ) ? $addresses : array();
+
+		$approx   = 0;
+		$unpinned = 0;
+		foreach ( $addresses as $a ) {
+			if ( ! is_array( $a ) ) {
+				continue;
+			}
+			if ( ! isset( $a['lat'], $a['lng'] ) ) {
+				++$unpinned;
+			} elseif ( ! empty( $a['approx'] ) ) {
+				++$approx;
+			}
+		}
+
+		echo (int) count( $addresses );
+		if ( $approx > 0 ) {
+			printf( ' <span title="%s">🟠 %d</span>', esc_attr__( 'Approximately pinned stops (postcode area)', 'tur-takvimi' ), (int) $approx );
+		}
+		if ( $unpinned > 0 ) {
+			printf( ' <span title="%s">• %d</span>', esc_attr__( 'Stops without a map pin', 'tur-takvimi' ), (int) $unpinned );
 		}
 	}
 }
