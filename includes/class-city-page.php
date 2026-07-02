@@ -123,12 +123,23 @@ class City_Page {
 		$default_freq = (int) Settings::get( 'default_frequency_weeks', 4 );
 
 		// The city's WhatsApp group (region group → country group → channel).
-		// Without one, the WhatsApp column is omitted entirely.
 		$wa_url = Whatsapp::for_location( $id );
+
+		// Calendar links exist only for scheduled stops (frequency > 0). When
+		// neither icon can render anywhere, the actions column is omitted.
+		$has_cal = false;
+		foreach ( $stops as $a ) {
+			$f = array_key_exists( 'frequency', $a ) && '' !== $a['frequency'] ? (int) $a['frequency'] : $default_freq;
+			if ( $f > 0 ) {
+				$has_cal = true;
+				break;
+			}
+		}
+		$show_actions = '' !== $wa_url || $has_cal;
 
 		ob_start();
 		?>
-		<section class="tt-stops<?php echo esc_attr( ( '' === $wa_url ? ' tt-stops--no-wa' : '' ) . Shortcodes::extra_class( $opts['class'] ) ); ?>" aria-label="<?php esc_attr_e( 'Delivery addresses', 'tur-takvimi' ); ?>"<?php echo '' !== $align ? ' data-tt-align="' . esc_attr( $align ) . '"' : ''; ?> data-tt-stops>
+		<section class="tt-stops<?php echo esc_attr( ( $show_actions ? '' : ' tt-stops--no-actions' ) . Shortcodes::extra_class( $opts['class'] ) ); ?>" aria-label="<?php esc_attr_e( 'Delivery addresses', 'tur-takvimi' ); ?>"<?php echo '' !== $align ? ' data-tt-align="' . esc_attr( $align ) . '"' : ''; ?> data-tt-stops>
 			<div class="tt-stops__bar">
 				<?php if ( '' !== $heading ) : ?>
 					<h2 class="tt-stops__heading"><?php echo esc_html( $heading ); ?></h2>
@@ -148,10 +159,9 @@ class City_Page {
 					<span class="tt-stops__col tt-stops__col--addr" role="columnheader"><?php esc_html_e( 'Street address', 'tur-takvimi' ); ?></span>
 					<span class="tt-stops__col tt-stops__col--pc" role="columnheader"><?php esc_html_e( 'Postcode', 'tur-takvimi' ); ?></span>
 					<span class="tt-stops__col tt-stops__col--time" role="columnheader"><?php esc_html_e( 'Hour', 'tur-takvimi' ); ?></span>
-					<?php if ( '' !== $wa_url ) : ?>
-						<span class="tt-stops__col tt-stops__col--wa" aria-hidden="true"></span>
+					<?php if ( $show_actions ) : ?>
+						<span class="tt-stops__col tt-stops__col--actions" aria-hidden="true"></span>
 					<?php endif; ?>
-					<span class="tt-stops__col tt-stops__col--cal" aria-hidden="true"></span>
 				</div>
 				<?php
 				foreach ( $stops as $a ) :
@@ -181,20 +191,20 @@ class City_Page {
 						<span class="tt-stops__col tt-stops__col--time" role="cell">
 							<?php echo '' !== $time ? esc_html( $time ) : '<span class="tt-stops__muted">—</span>'; ?>
 						</span>
-						<?php if ( '' !== $wa_url ) : ?>
-							<span class="tt-stops__col tt-stops__col--wa" role="cell">
-								<a class="tt-stops__wa" href="<?php echo esc_url( $wa_url ); ?>" target="_blank" rel="noopener nofollow" title="<?php esc_attr_e( 'Join our WhatsApp group', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'Join our WhatsApp group', 'tur-takvimi' ); ?>">
-									<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 1.82c2.16 0 4.18.84 5.71 2.37a8.05 8.05 0 0 1 2.37 5.72c0 4.46-3.63 8.09-8.09 8.09a8.1 8.1 0 0 1-4.13-1.13l-.3-.18-3.12.82.83-3.04-.19-.31a8.04 8.04 0 0 1-1.24-4.29c0-4.46 3.63-8.09 8.09-8.09Zm-4.7 4.85c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.57.18 1.1.16 1.51.1.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.19-1.42-1.33-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.41h-.46Z"/></svg>
-								</a>
+						<?php if ( $show_actions ) : ?>
+							<span class="tt-stops__col tt-stops__col--actions" role="cell">
+								<?php if ( '' !== $wa_url ) : ?>
+									<a class="tt-stops__wa" href="<?php echo esc_url( $wa_url ); ?>" target="_blank" rel="noopener nofollow" title="<?php esc_attr_e( 'Join our WhatsApp group', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'Join our WhatsApp group', 'tur-takvimi' ); ?>">
+										<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+									</a>
+								<?php endif; ?>
+								<?php if ( $freq > 0 ) : ?>
+									<a class="tt-stops__cal" href="<?php echo esc_url( $cal_url ); ?>" title="<?php echo esc_attr( $cal_label ); ?>" aria-label="<?php echo esc_attr( $cal_label ); ?>">
+										<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/></svg>
+									</a>
+								<?php endif; ?>
 							</span>
 						<?php endif; ?>
-						<span class="tt-stops__col tt-stops__col--cal" role="cell">
-							<?php if ( $freq > 0 ) : ?>
-								<a class="tt-stops__cal" href="<?php echo esc_url( $cal_url ); ?>" title="<?php echo esc_attr( $cal_label ); ?>" aria-label="<?php echo esc_attr( $cal_label ); ?>">
-									<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/></svg>
-								</a>
-							<?php endif; ?>
-						</span>
 					</div>
 				<?php endforeach; ?>
 			</div>

@@ -724,20 +724,20 @@
 }
 
 /* Header + rows share one grid template so columns line up:
-   pin · street · postcode · hour · whatsapp · calendar. */
+   pin · street · postcode · hour · actions (whatsapp + calendar). */
 .tt-stops__head,
 .tt-stops__row {
 	display: grid;
-	grid-template-columns: 1.5rem minmax( 0, 1fr ) 6rem 5rem 2.75rem 2.5rem;
+	grid-template-columns: 1.5rem minmax( 0, 1fr ) 6rem 5rem 4.5rem;
 	align-items: center;
 	column-gap: 0.75rem;
 	padding: 0.6rem 0.9rem;
 }
 
-/* No WhatsApp group for this city: the WhatsApp column is not rendered. */
-.tt-stops--no-wa .tt-stops__head,
-.tt-stops--no-wa .tt-stops__row {
-	grid-template-columns: 1.5rem minmax( 0, 1fr ) 6rem 5rem 2.5rem;
+/* No WhatsApp group and no scheduled stop anywhere: no actions column. */
+.tt-stops--no-actions .tt-stops__head,
+.tt-stops--no-actions .tt-stops__row {
+	grid-template-columns: 1.5rem minmax( 0, 1fr ) 6rem 5rem;
 }
 
 .tt-stops__head {
@@ -779,9 +779,13 @@
 	color: var(--tt-muted);
 }
 
-.tt-stops__col--cal,
-.tt-stops__col--wa {
-	text-align: center;
+/* Icons sit together, flush right; a lone WhatsApp icon (on-demand stop,
+   no calendar link) right-aligns on its own. */
+.tt-stops__col--actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
 }
 
 .tt-stops__cal {
@@ -845,7 +849,7 @@
 		display: none;
 	}
 	.tt-stops__row {
-		grid-template-columns: 1.5rem minmax( 0, 1fr ) 2.5rem 2.5rem;
+		grid-template-columns: 1.5rem minmax( 0, 1fr ) 4.5rem;
 		row-gap: 0.1rem;
 	}
 	.tt-stops__col--addr {
@@ -855,22 +859,13 @@
 	.tt-stops__col--time {
 		grid-column: 2 / 3;
 	}
-	.tt-stops__col--wa,
-	.tt-stops__col--cal {
+	.tt-stops__col--actions {
+		grid-column: 3;
 		grid-row: 1 / span 3;
 		align-self: center;
 	}
-	.tt-stops__col--wa {
-		grid-column: 3;
-	}
-	.tt-stops__col--cal {
-		grid-column: 4;
-	}
-	.tt-stops--no-wa .tt-stops__row {
-		grid-template-columns: 1.5rem minmax( 0, 1fr ) 2.5rem;
-	}
-	.tt-stops--no-wa .tt-stops__col--cal {
-		grid-column: 3;
+	.tt-stops--no-actions .tt-stops__row {
+		grid-template-columns: 1.5rem minmax( 0, 1fr );
 	}
 }
 
