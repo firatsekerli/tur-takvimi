@@ -64,9 +64,33 @@ class Activator {
 			self::migrate_whatsapp_groups();
 		}
 
+		// v6: a city's Bölge is derived from its routes (the manual taxonomy
+		// box was removed). One-time re-sync so existing cities line up.
+		if ( version_compare( $stored ?: '0', '6', '<' ) ) {
+			self::sync_city_regions();
+		}
+
 		self::create_tables();
 		( new Schedule() )->regenerate_all();
 		update_option( 'tur_takvimi_db_version', TURTAKVIMI_DB_VERSION );
+	}
+
+	/**
+	 * Re-derive every city's Bölge terms from its assigned routes. Cities
+	 * without routes keep their existing terms (sync_regions is a no-op).
+	 */
+	private static function sync_city_regions(): void {
+		$ids = get_posts(
+			array(
+				'post_type'      => Post_Types::LOCATION,
+				'post_status'    => 'any',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+			)
+		);
+		foreach ( $ids as $id ) {
+			Location_Meta::sync_regions( (int) $id );
+		}
 	}
 
 	/**
