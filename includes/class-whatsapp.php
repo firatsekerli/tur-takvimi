@@ -1,11 +1,13 @@
 <?php
 /**
- * WhatsApp groups — a join link per Bölge (region), with a country-wide channel
- * as the fallback.
+ * WhatsApp groups — a manageable list of group links, each assigned to a
+ * Bölge (region) and Ülke (country), plus a per-country channel fallback.
  *
- * Region groups are stored as term meta on the region taxonomy; the country
- * channel lives in Settings. A location resolves to its region's group, else
- * its country's channel.
+ * Group links live in one option (rows of {label, url, region, country})
+ * managed on the Tur Takvimi → WhatsApp page, where any number of links can
+ * be added. A location resolves to the first group assigned to one of its
+ * regions, else the country-wide group (no region) for its country, else the
+ * country's channel.
  *
  * @package TurTakvimi
  */
@@ -15,27 +17,49 @@ namespace TurTakvimi;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Region WhatsApp groups + the picker / join shortcodes.
+ * WhatsApp group links admin page + the picker / join shortcodes.
  */
 class Whatsapp {
 
-	const TERM_META       = '_tt_whatsapp';
+	const TERM_META       = '_tt_whatsapp'; // Legacy (pre-v5) per-region storage; migrated into GROUPS_OPTION.
+	const GROUPS_OPTION   = 'tur_takvimi_wa_groups';
 	const CHANNELS_OPTION = 'tur_takvimi_wa_channels';
 
 	/**
-	 * Hook the admin page, term-meta UI and shortcodes.
+	 * Hook the admin page and shortcodes.
 	 */
 	public function register(): void {
-		add_action( Post_Types::REGION . '_add_form_fields', array( $this, 'add_field' ) );
-		add_action( Post_Types::REGION . '_edit_form_fields', array( $this, 'edit_field' ) );
-		add_action( 'created_' . Post_Types::REGION, array( $this, 'save_field' ) );
-		add_action( 'edited_' . Post_Types::REGION, array( $this, 'save_field' ) );
-
 		add_action( 'admin_menu', array( $this, 'add_menu' ), 30 );
 		add_action( 'admin_post_tur_takvimi_whatsapp_save', array( $this, 'save_page' ) );
 
 		add_shortcode( 'tur_takvimi_whatsapp', array( $this, 'picker' ) );
 		add_shortcode( 'tur_takvimi_whatsapp_join', array( $this, 'join_button' ) );
+	}
+
+	/**
+	 * The configured group links, normalized.
+	 *
+	 * @return array<int,array{label:string,url:string,region:int,country:string}>
+	 */
+	public static function groups(): array {
+		$out = array();
+		foreach ( (array) get_option( self::GROUPS_OPTION, array() ) as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			$url = (string) ( $row['url'] ?? '' );
+			if ( '' === $url ) {
+				continue;
+			}
+			$country = strtoupper( (string) ( $row['country'] ?? '' ) );
+			$out[]   = array(
+				'label'   => (string) ( $row['label'] ?? '' ),
+				'url'     => $url,
+				'region'  => (int) ( $row['region'] ?? 0 ),
+				'country' => preg_match( '/^[A-Z]{2}$/', $country ) ? $country : Country::default_code(),
+			);
+		}
+		return $out;
 	}
 
 	/* --------------------------------------------------------------------- *
@@ -57,21 +81,22 @@ class Whatsapp {
 	}
 
 	/**
-	 * One screen for every WhatsApp link: per-region groups + per-country
-	 * channel fallbacks, with each region's country shown.
+	 * One screen for every WhatsApp link: a dynamic list of group links (each
+	 * assigned to a region + country) and the per-country channel fallbacks.
 	 */
 	public function render_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
+		$groups   = self::groups();
 		$channels = (array) get_option( self::CHANNELS_OPTION, array() );
-		$terms    = get_terms(
+		$regions  = get_terms(
 			array(
 				'taxonomy'   => Post_Types::REGION,
 				'hide_empty' => false,
 			)
 		);
-		$terms = is_wp_error( $terms ) ? array() : $terms;
+		$regions  = is_wp_error( $regions ) ? array() : $regions;
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'WhatsApp', 'tur-takvimi' ); ?></h1>
@@ -79,35 +104,51 @@ class Whatsapp {
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'WhatsApp links saved.', 'tur-takvimi' ); ?></p></div>
 			<?php endif; ?>
 			<p class="description" style="max-width:50rem">
-				<?php esc_html_e( 'Customers see their region\'s group. If a region has no group, they see that country\'s channel instead.', 'tur-takvimi' ); ?>
+				<?php esc_html_e( 'Add group links and assign each to a region and a country. A city shows its region\'s group; a link without a region acts as the country-wide group. If nothing matches, the country channel below is shown.', 'tur-takvimi' ); ?>
 			</p>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="tur_takvimi_whatsapp_save">
 				<?php wp_nonce_field( 'tt_wa_save' ); ?>
 
-				<h2><?php esc_html_e( 'Region groups', 'tur-takvimi' ); ?></h2>
-				<table class="widefat striped" style="max-width:60rem">
+				<h2><?php esc_html_e( 'Group links', 'tur-takvimi' ); ?></h2>
+				<table class="widefat striped" style="max-width:70rem" id="tt-wa-groups">
 					<thead>
 						<tr>
-							<th style="width:22%"><?php esc_html_e( 'Region', 'tur-takvimi' ); ?></th>
-							<th style="width:8%"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></th>
+							<th style="width:18%"><?php esc_html_e( 'Name (optional)', 'tur-takvimi' ); ?></th>
 							<th><?php esc_html_e( 'WhatsApp group link', 'tur-takvimi' ); ?></th>
+							<th style="width:20%"><?php esc_html_e( 'Region', 'tur-takvimi' ); ?></th>
+							<th style="width:15%"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></th>
+							<th style="width:6%"></th>
 						</tr>
 					</thead>
-					<tbody>
-						<?php if ( ! $terms ) : ?>
-							<tr><td colspan="3"><?php esc_html_e( 'No regions yet. Import routes/cities first.', 'tur-takvimi' ); ?></td></tr>
+					<tbody data-tt-wa-body>
+						<?php if ( ! $groups ) : ?>
+							<tr data-tt-wa-empty><td colspan="5"><?php esc_html_e( 'No group links yet. Add the first one below.', 'tur-takvimi' ); ?></td></tr>
 						<?php endif; ?>
-						<?php foreach ( $terms as $term ) : ?>
-							<tr>
-								<td><strong><?php echo esc_html( $term->name ); ?></strong></td>
-								<td><?php echo esc_html( self::region_country( (int) $term->term_id ) ); ?></td>
-								<td><input type="url" class="large-text" name="wa_region[<?php echo (int) $term->term_id; ?>]" value="<?php echo esc_attr( (string) get_term_meta( (int) $term->term_id, self::TERM_META, true ) ); ?>" placeholder="https://chat.whatsapp.com/…"></td>
-							</tr>
-						<?php endforeach; ?>
+						<?php
+						foreach ( $groups as $i => $g ) {
+							$this->group_row( (string) $i, $g, $regions );
+						}
+						?>
 					</tbody>
 				</table>
+				<p><button type="button" class="button" id="tt-wa-add"><?php esc_html_e( 'Add group link', 'tur-takvimi' ); ?></button></p>
+
+				<template id="tt-wa-row-tpl">
+					<?php
+					$this->group_row(
+						'__i__',
+						array(
+							'label'   => '',
+							'url'     => '',
+							'region'  => 0,
+							'country' => Country::default_code(),
+						),
+						$regions
+					);
+					?>
+				</template>
 
 				<h2 style="margin-top:2rem"><?php esc_html_e( 'Country channels (fallback)', 'tur-takvimi' ); ?></h2>
 				<table class="form-table" role="presentation">
@@ -127,11 +168,76 @@ class Whatsapp {
 				<?php submit_button(); ?>
 			</form>
 		</div>
+		<script>
+		( function () {
+			var body = document.querySelector( '[data-tt-wa-body]' );
+			var tpl  = document.getElementById( 'tt-wa-row-tpl' );
+			var add  = document.getElementById( 'tt-wa-add' );
+			var i    = <?php echo (int) count( $groups ); ?>;
+
+			add.addEventListener( 'click', function () {
+				var empty = body.querySelector( '[data-tt-wa-empty]' );
+				if ( empty ) {
+					empty.remove();
+				}
+				var holder = document.createElement( 'table' );
+				holder.innerHTML = '<tbody>' + tpl.innerHTML.replace( /__i__/g, String( i++ ) ) + '</tbody>';
+				var row = holder.querySelector( 'tr' );
+				if ( row ) {
+					body.appendChild( row );
+					var first = row.querySelector( 'input' );
+					if ( first ) {
+						first.focus();
+					}
+				}
+			} );
+
+			body.addEventListener( 'click', function ( e ) {
+				var btn = e.target.closest( '[data-tt-wa-remove]' );
+				if ( btn ) {
+					btn.closest( 'tr' ).remove();
+				}
+			} );
+		}() );
+		</script>
 		<?php
 	}
 
 	/**
-	 * Persist the WhatsApp page: region term metas + country channel option.
+	 * Render one editable group-link row.
+	 *
+	 * @param string   $i       Row index (or the '__i__' template placeholder).
+	 * @param array    $g       Group row {label, url, region, country}.
+	 * @param \WP_Term[] $regions All region terms.
+	 */
+	private function group_row( string $i, array $g, array $regions ): void {
+		$name = 'wa_groups[' . $i . ']';
+		?>
+		<tr>
+			<td><input type="text" class="regular-text" style="width:100%" name="<?php echo esc_attr( $name ); ?>[label]" value="<?php echo esc_attr( $g['label'] ); ?>" placeholder="<?php esc_attr_e( 'Shown name (optional)', 'tur-takvimi' ); ?>"></td>
+			<td><input type="url" class="large-text" name="<?php echo esc_attr( $name ); ?>[url]" value="<?php echo esc_attr( $g['url'] ); ?>" placeholder="https://chat.whatsapp.com/…"></td>
+			<td>
+				<select name="<?php echo esc_attr( $name ); ?>[region]" style="width:100%">
+					<option value="0"><?php esc_html_e( 'Country-wide (no region)', 'tur-takvimi' ); ?></option>
+					<?php foreach ( $regions as $term ) : ?>
+						<option value="<?php echo (int) $term->term_id; ?>" <?php selected( (int) $g['region'], (int) $term->term_id ); ?>><?php echo esc_html( $term->name ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
+			<td>
+				<select name="<?php echo esc_attr( $name ); ?>[country]" style="width:100%">
+					<?php foreach ( Country::supported() as $code ) : ?>
+						<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $g['country'], $code ); ?>><?php echo esc_html( Country::name( $code ) . ' (' . $code . ')' ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</td>
+			<td><button type="button" class="button-link button-link-delete" data-tt-wa-remove><?php esc_html_e( 'Remove', 'tur-takvimi' ); ?></button></td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Persist the WhatsApp page: the group-link rows + country channel option.
 	 */
 	public function save_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -140,15 +246,35 @@ class Whatsapp {
 		check_admin_referer( 'tt_wa_save' );
 
 		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized per value below.
-		$regions = isset( $_POST['wa_region'] ) ? (array) wp_unslash( $_POST['wa_region'] ) : array();
-		foreach ( $regions as $tid => $url ) {
-			$url = esc_url_raw( trim( (string) $url ) );
-			if ( '' !== $url ) {
-				update_term_meta( (int) $tid, self::TERM_META, $url );
-			} else {
-				delete_term_meta( (int) $tid, self::TERM_META );
+		$groups = array();
+		$rows   = isset( $_POST['wa_groups'] ) && is_array( $_POST['wa_groups'] ) ? wp_unslash( $_POST['wa_groups'] ) : array();
+		foreach ( $rows as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
 			}
+			$url = esc_url_raw( trim( (string) ( $row['url'] ?? '' ) ) );
+			if ( '' === $url ) {
+				continue; // A row without a link is dropped.
+			}
+			$region = absint( $row['region'] ?? 0 );
+			if ( $region ) {
+				$term = get_term( $region, Post_Types::REGION );
+				if ( ! $term || is_wp_error( $term ) ) {
+					$region = 0; // Deleted region: keep the link as country-wide.
+				}
+			}
+			$country = strtoupper( sanitize_text_field( (string) ( $row['country'] ?? '' ) ) );
+			if ( ! preg_match( '/^[A-Z]{2}$/', $country ) ) {
+				$country = Country::default_code();
+			}
+			$groups[] = array(
+				'label'   => sanitize_text_field( (string) ( $row['label'] ?? '' ) ),
+				'url'     => $url,
+				'region'  => $region,
+				'country' => $country,
+			);
 		}
+		update_option( self::GROUPS_OPTION, $groups );
 
 		$channels = array();
 		$raw      = isset( $_POST['wa_channel'] ) ? (array) wp_unslash( $_POST['wa_channel'] ) : array();
@@ -167,65 +293,6 @@ class Whatsapp {
 	}
 
 	/* --------------------------------------------------------------------- *
-	 * Region term meta (Regions → add / edit)
-	 * --------------------------------------------------------------------- */
-
-	/**
-	 * Field on the "add region" screen.
-	 *
-	 * @param string $taxonomy Taxonomy slug.
-	 */
-	public function add_field( $taxonomy ): void {
-		wp_nonce_field( 'tt_wa_term', 'tt_wa_nonce' );
-		?>
-		<div class="form-field">
-			<label for="tt_wa_url"><?php esc_html_e( 'WhatsApp group link', 'tur-takvimi' ); ?></label>
-			<input type="url" name="tt_wa_url" id="tt_wa_url" value="" placeholder="https://chat.whatsapp.com/…">
-			<p><?php esc_html_e( 'Invite link to this region\'s WhatsApp group. Shown to customers in this region.', 'tur-takvimi' ); ?></p>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Field on the "edit region" screen.
-	 *
-	 * @param \WP_Term $term Region term.
-	 */
-	public function edit_field( $term ): void {
-		$val = (string) get_term_meta( (int) $term->term_id, self::TERM_META, true );
-		wp_nonce_field( 'tt_wa_term', 'tt_wa_nonce' );
-		?>
-		<tr class="form-field">
-			<th scope="row"><label for="tt_wa_url"><?php esc_html_e( 'WhatsApp group link', 'tur-takvimi' ); ?></label></th>
-			<td>
-				<input type="url" name="tt_wa_url" id="tt_wa_url" class="regular-text" value="<?php echo esc_attr( $val ); ?>" placeholder="https://chat.whatsapp.com/…">
-				<p class="description"><?php esc_html_e( 'Invite link to this region\'s WhatsApp group. Shown to customers in this region.', 'tur-takvimi' ); ?></p>
-			</td>
-		</tr>
-		<?php
-	}
-
-	/**
-	 * Persist the region's WhatsApp link.
-	 *
-	 * @param int $term_id Region term ID.
-	 */
-	public function save_field( $term_id ): void {
-		if ( ! current_user_can( 'manage_categories' ) ) {
-			return;
-		}
-		if ( ! isset( $_POST['tt_wa_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tt_wa_nonce'] ) ), 'tt_wa_term' ) ) {
-			return;
-		}
-		$url = isset( $_POST['tt_wa_url'] ) ? esc_url_raw( trim( (string) wp_unslash( $_POST['tt_wa_url'] ) ) ) : '';
-		if ( '' !== $url ) {
-			update_term_meta( (int) $term_id, self::TERM_META, $url );
-		} else {
-			delete_term_meta( (int) $term_id, self::TERM_META );
-		}
-	}
-
-	/* --------------------------------------------------------------------- *
 	 * Resolution helpers
 	 * --------------------------------------------------------------------- */
 
@@ -241,48 +308,52 @@ class Whatsapp {
 	}
 
 	/**
-	 * The best WhatsApp link for a location: its region's group, else the
+	 * The best WhatsApp link for a location: the first group assigned to one of
+	 * its regions, else the country-wide group for its country, else the
 	 * country channel.
 	 *
 	 * @param int $location_id Location ID.
 	 * @return string
 	 */
 	public static function for_location( int $location_id ): string {
-		$terms = wp_get_object_terms( $location_id, Post_Types::REGION, array( 'fields' => 'ids' ) );
-		if ( ! is_wp_error( $terms ) ) {
-			foreach ( $terms as $tid ) {
-				$url = (string) get_term_meta( (int) $tid, self::TERM_META, true );
-				if ( '' !== $url ) {
-					return $url;
+		$groups  = self::groups();
+		$country = Country::of_post( $location_id );
+
+		if ( $groups ) {
+			$terms    = wp_get_object_terms( $location_id, Post_Types::REGION, array( 'fields' => 'ids' ) );
+			$term_ids = is_wp_error( $terms ) ? array() : array_map( 'intval', $terms );
+			foreach ( $groups as $g ) {
+				if ( $g['region'] && in_array( $g['region'], $term_ids, true ) ) {
+					return $g['url'];
+				}
+			}
+			foreach ( $groups as $g ) {
+				if ( ! $g['region'] && $g['country'] === $country ) {
+					return $g['url'];
 				}
 			}
 		}
-		return self::channel( Country::of_post( $location_id ) );
+		return self::channel( $country );
 	}
 
 	/**
-	 * Country a region belongs to, inferred from one of its locations.
+	 * Display name for a group link: its label, else its region's name, else
+	 * the country name.
 	 *
-	 * @param int $term_id Region term ID.
-	 * @return string ISO-2 or ''.
+	 * @param array $g Group row.
+	 * @return string
 	 */
-	private static function region_country( int $term_id ): string {
-		$ids = get_posts(
-			array(
-				'post_type'      => Post_Types::LOCATION,
-				'post_status'    => 'publish',
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery
-					array(
-						'taxonomy' => Post_Types::REGION,
-						'field'    => 'term_id',
-						'terms'    => $term_id,
-					),
-				),
-			)
-		);
-		return $ids ? Country::of_post( (int) $ids[0] ) : '';
+	private static function group_name( array $g ): string {
+		if ( '' !== $g['label'] ) {
+			return $g['label'];
+		}
+		if ( $g['region'] ) {
+			$term = get_term( $g['region'], Post_Types::REGION );
+			if ( $term && ! is_wp_error( $term ) ) {
+				return $term->name;
+			}
+		}
+		return Country::name( $g['country'] );
 	}
 
 	/* --------------------------------------------------------------------- *
@@ -312,27 +383,15 @@ class Whatsapp {
 			$country = Country::default_code();
 		}
 
-		$terms = get_terms(
-			array(
-				'taxonomy'   => Post_Types::REGION,
-				'hide_empty' => true,
-			)
-		);
 		$rows = array();
-		if ( ! is_wp_error( $terms ) ) {
-			foreach ( $terms as $term ) {
-				$url = (string) get_term_meta( (int) $term->term_id, self::TERM_META, true );
-				if ( '' === $url ) {
-					continue;
-				}
-				if ( self::region_country( (int) $term->term_id ) !== $country ) {
-					continue;
-				}
-				$rows[] = array(
-					'name' => $term->name,
-					'url'  => $url,
-				);
+		foreach ( self::groups() as $g ) {
+			if ( $g['country'] !== $country ) {
+				continue;
 			}
+			$rows[] = array(
+				'name' => self::group_name( $g ),
+				'url'  => $g['url'],
+			);
 		}
 		usort( $rows, static fn( $a, $b ) => strcmp( $a['name'], $b['name'] ) );
 
@@ -376,7 +435,7 @@ class Whatsapp {
 
 	/**
 	 * [tur_takvimi_whatsapp_join] — a single button to join the WhatsApp group
-	 * for a city (its region's group, or the country channel).
+	 * for a city (its region's group, the country-wide group, or the channel).
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string
