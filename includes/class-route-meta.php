@@ -103,17 +103,42 @@ class Route_Meta {
 		</div>
 		<div class="tt-field">
 			<label for="tt_rota_grubu"><?php esc_html_e( 'Route region', 'tur-takvimi' ); ?></label>
-			<input type="text" id="tt_rota_grubu" name="tt_rota_grubu" class="regular-text" list="tt_region_options" value="<?php echo esc_attr( $group ); ?>" placeholder="<?php esc_attr_e( 'e.g. Köln-Bonn-Aachen / Rheinland', 'tur-takvimi' ); ?>">
-			<datalist id="tt_region_options">
+			<select id="tt_rota_grubu" name="tt_rota_grubu" class="regular-text">
+				<option value=""><?php esc_html_e( 'No region', 'tur-takvimi' ); ?></option>
 				<?php
 				if ( $region_terms && ! is_wp_error( $region_terms ) ) {
 					foreach ( $region_terms as $term ) {
-						echo '<option value="' . esc_attr( $term->name ) . '"></option>';
+						printf(
+							'<option value="%s"%s>%s</option>',
+							esc_attr( $term->name ),
+							selected( $group, $term->name, false ),
+							esc_html( $term->name )
+						);
 					}
 				}
 				?>
-			</datalist>
-			<p class="description"><?php esc_html_e( 'This assigns the route to a Region: pick an existing one or type a new name to create it. Regions drive the map filters and WhatsApp groups. On first save, the title is set to "Route ID - Region".', 'tur-takvimi' ); ?></p>
+				<option value="__new__"><?php esc_html_e( '+ Add a new region…', 'tur-takvimi' ); ?></option>
+			</select>
+			<input type="text" id="tt_rota_grubu_new" name="tt_rota_grubu_new" class="regular-text" style="display:none;margin-top:4px;" placeholder="<?php esc_attr_e( 'e.g. Köln-Bonn-Aachen / Rheinland', 'tur-takvimi' ); ?>" aria-label="<?php esc_attr_e( 'New region name', 'tur-takvimi' ); ?>">
+			<p class="description"><?php esc_html_e( 'This assigns the route to a Region: pick an existing one, or add a new one. Regions drive the map filters and WhatsApp groups. On first save, the title is set to "Route ID - Region".', 'tur-takvimi' ); ?></p>
+			<script>
+			( function () {
+				var sel = document.getElementById( 'tt_rota_grubu' );
+				var input = document.getElementById( 'tt_rota_grubu_new' );
+				if ( ! sel || ! input ) {
+					return;
+				}
+				function toggle( focus ) {
+					var isNew = '__new__' === sel.value;
+					input.style.display = isNew ? '' : 'none';
+					if ( isNew && focus ) {
+						input.focus();
+					}
+				}
+				sel.addEventListener( 'change', function () { toggle( true ); } );
+				toggle( false );
+			}() );
+			</script>
 		</div>
 		<div class="tt-field">
 			<label for="tt_country_sel"><?php esc_html_e( 'Country', 'tur-takvimi' ); ?></label>
@@ -222,8 +247,12 @@ class Route_Meta {
 			update_post_meta( $post_id, '_tt_country', $ccode );
 		}
 
-		// The route-region field maps to the shared region taxonomy (created if new).
+		// The route-region field maps to the shared region taxonomy. Picking
+		// "__new__" in the select means: use the typed name (term created below).
 		$group = sanitize_text_field( wp_unslash( $_POST['tt_rota_grubu'] ?? '' ) );
+		if ( '__new__' === $group ) {
+			$group = sanitize_text_field( wp_unslash( $_POST['tt_rota_grubu_new'] ?? '' ) );
+		}
 		wp_set_object_terms( $post_id, '' !== $group ? $group : array(), Post_Types::REGION, false );
 
 		// On first save (no manual title yet), build the title from ID + group.
