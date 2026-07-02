@@ -827,6 +827,11 @@
 	color: #fff;
 }
 
+/* The glyph must stay white whatever the theme's link/svg colors are. */
+.tt-stops__wa svg {
+	fill: #fff;
+}
+
 .tt-stops__wa:active {
 	transform: scale( 0.94 );
 }
