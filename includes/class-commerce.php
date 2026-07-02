@@ -50,6 +50,18 @@ class Commerce {
 
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'minicart_fragment' ) );
 		add_shortcode( 'tur_takvimi_minicart_discount', array( $this, 'minicart_discount_html' ) );
+
+		// Standard mini-cart widget: print the row between the subtotal and
+		// the buttons. Builder mini carts that wrap woocommerce_mini_cart()
+		// pick this up (and refresh it via fragments) automatically.
+		add_action( 'woocommerce_widget_shopping_cart_before_buttons', array( $this, 'minicart_widget_row' ), 5 );
+	}
+
+	/**
+	 * Echo the discount row inside the standard mini-cart widget.
+	 */
+	public function minicart_widget_row(): void {
+		echo $this->minicart_discount_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 	}
 
 	/* --------------------------------------------------------------------- *
