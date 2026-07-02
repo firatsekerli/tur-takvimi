@@ -70,7 +70,7 @@
 .tt-address-head,
 .tt-address-row {
 	display: grid;
-	grid-template-columns: 1.25rem minmax( 0, 1fr ) 100px 80px 64px 3rem 5rem 4rem;
+	grid-template-columns: 1.25rem minmax( 0, 1fr ) 100px 80px 64px 3rem 7.5rem 4rem;
 	align-items: center;
 	column-gap: 0.5rem;
 }
@@ -85,7 +85,7 @@
 
 .tt-address-head .tt-address-row__pickup {
 	text-align: center;
-	line-height: 1.15;
+	white-space: nowrap;
 }
 
 .tt-address-head {

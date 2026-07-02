@@ -97,6 +97,10 @@ class Location_Meta {
 			'normal',
 			'high'
 		);
+
+		// The city's Bölge is derived from its routes on save, so hide the
+		// manual taxonomy box.
+		remove_meta_box( Post_Types::REGION . 'div', Post_Types::LOCATION, 'side' );
 	}
 
 	/**
@@ -111,15 +115,15 @@ class Location_Meta {
 		$addresses = is_array( $addresses ) ? $addresses : array();
 		?>
 		<?php $this->render_country_field( $post ); ?>
-
-		<p class="description">
-			<?php esc_html_e( 'Search an address to add a delivery stop. The postcode and map pin are filled in automatically.', 'tur-takvimi' ); ?>
-		</p>
+		<?php $this->render_routes_field( $post ); ?>
 
 		<div class="tt-field tt-geocode">
 			<label for="tt-geocode-search"><?php esc_html_e( 'Search an address', 'tur-takvimi' ); ?></label>
 			<input type="text" id="tt-geocode-search" class="large-text tt-geocode__input" autocomplete="off" placeholder="<?php esc_attr_e( 'e.g. Frankenstr. 290 Essen', 'tur-takvimi' ); ?>">
 			<ul id="tt-geocode-results" class="tt-geocode__results"></ul>
+			<p class="description">
+				<?php esc_html_e( 'Search an address to add a delivery stop. The postcode and map pin are filled in automatically.', 'tur-takvimi' ); ?>
+			</p>
 		</div>
 
 		<div id="tt-map"></div>
@@ -130,8 +134,6 @@ class Location_Meta {
 			<button type="button" class="button" id="tt-add-address"><?php esc_html_e( 'Add a stop manually', 'tur-takvimi' ); ?></button>
 			<input type="hidden" id="tt_addresses_json" name="tt_addresses_json" value="<?php echo esc_attr( wp_json_encode( array_values( $addresses ) ) ); ?>">
 		</div>
-
-		<?php $this->render_routes_field( $post ); ?>
 		<?php
 	}
 
@@ -175,14 +177,14 @@ class Location_Meta {
 		$assigned = array_map( 'intval', (array) get_post_meta( $post->ID, '_tt_route_id', false ) );
 		?>
 		<div class="tt-field tt-routes">
-			<label><?php esc_html_e( 'Routes this location belongs to', 'tur-takvimi' ); ?></label>
+			<label><?php esc_html_e( 'Route(s)', 'tur-takvimi' ); ?></label>
 			<?php if ( empty( $routes ) ) : ?>
 				<p class="description">
 					<?php esc_html_e( 'No routes yet. Create a route first, then assign this location to it.', 'tur-takvimi' ); ?>
 				</p>
 			<?php else : ?>
 				<p class="description">
-					<?php esc_html_e( 'Pick one or more routes. A location can be served by several routes.', 'tur-takvimi' ); ?>
+					<?php esc_html_e( 'The routes this city belongs to. Pick one or more; a city can be served by several routes.', 'tur-takvimi' ); ?>
 				</p>
 				<ul class="tt-routes__list">
 					<?php foreach ( $routes as $route ) : ?>
@@ -295,12 +297,39 @@ class Location_Meta {
 		}
 
 		$this->save_routes( $post_id );
+		self::sync_regions( $post_id );
 
 		if ( isset( $_POST['tt_country'] ) ) {
 			$code = strtoupper( sanitize_text_field( wp_unslash( $_POST['tt_country'] ) ) );
 			if ( preg_match( '/^[A-Z]{2}$/', $code ) ) {
 				update_post_meta( $post_id, '_tt_country', $code );
 			}
+		}
+	}
+
+	/**
+	 * Derive the city's Bölge terms from its assigned routes (the manual
+	 * taxonomy box is hidden). A city with no routes keeps whatever terms it
+	 * has — e.g. from an import — instead of being wiped.
+	 *
+	 * @param int $location_id Location post ID.
+	 */
+	public static function sync_regions( int $location_id ): void {
+		$route_ids = array_map( 'intval', (array) get_post_meta( $location_id, '_tt_route_id', false ) );
+		if ( ! $route_ids ) {
+			return;
+		}
+		$term_ids = array();
+		foreach ( $route_ids as $route_id ) {
+			$terms = get_the_terms( $route_id, Post_Types::REGION );
+			if ( $terms && ! is_wp_error( $terms ) ) {
+				foreach ( $terms as $term ) {
+					$term_ids[ (int) $term->term_id ] = true;
+				}
+			}
+		}
+		if ( $term_ids ) {
+			wp_set_object_terms( $location_id, array_keys( $term_ids ), Post_Types::REGION, false );
 		}
 	}
 

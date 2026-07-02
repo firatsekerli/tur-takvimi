@@ -255,6 +255,12 @@ class Route_Meta {
 		}
 		wp_set_object_terms( $post_id, '' !== $group ? $group : array(), Post_Types::REGION, false );
 
+		// Member cities derive their Bölge from their routes (no manual box on
+		// the city screen), so a region change here flows to them immediately.
+		foreach ( ( new Schedule() )->member_location_ids( $post_id ) as $location_id ) {
+			Location_Meta::sync_regions( (int) $location_id );
+		}
+
 		// On first save (no manual title yet), build the title from ID + group.
 		$post  = get_post( $post_id );
 		$title = $post ? trim( (string) $post->post_title ) : '';

@@ -56,7 +56,7 @@ class Post_Types {
 				'has_archive'         => true,
 				'show_in_rest'        => true,
 				'menu_icon'           => 'dashicons-location',
-				'supports'            => array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields' ),
+				'supports'            => array( 'title', 'thumbnail', 'excerpt', 'custom-fields' ),
 				'rewrite'             => array(
 					'slug'       => sanitize_title( $slug_base ),
 					'with_front' => false,
