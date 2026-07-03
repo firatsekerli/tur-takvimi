@@ -166,6 +166,7 @@ class Settings {
 			.tt-settings-card > h2 { margin: 12px 0 0; padding: 0; }
 			.tt-settings-card .form-table th { width: 170px; padding: 14px 10px 14px 0; }
 			.tt-settings-card .form-table td { padding: 14px 0; }
+			.tt-settings-card .description { display: block; margin-top: 6px; font-size: 12px; line-height: 1.5; }
 		</style>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Tur Takvimi — Settings', 'tur-takvimi' ); ?></h1>
@@ -239,7 +240,8 @@ class Settings {
 					</tr>
 					<tr>
 						<th><label for="tt_default_freq"><?php esc_html_e( 'Default visit frequency (weeks)', 'tur-takvimi' ); ?></label></th>
-						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[default_frequency_weeks]" id="tt_default_freq" type="number" min="1" max="52" value="<?php echo esc_attr( $s['default_frequency_weeks'] ); ?>"> <span class="description"><?php esc_html_e( 'Used for stops that have no frequency set.', 'tur-takvimi' ); ?></span></td>
+						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[default_frequency_weeks]" id="tt_default_freq" type="number" min="1" max="52" value="<?php echo esc_attr( $s['default_frequency_weeks'] ); ?>">
+						<p class="description"><?php esc_html_e( 'Used for stops that have no frequency set.', 'tur-takvimi' ); ?></p></td>
 					</tr>
 				</table>
 
@@ -249,7 +251,8 @@ class Settings {
 				<table class="form-table" role="presentation">
 					<tr>
 						<th><label for="tt_discount"><?php esc_html_e( 'Upfront discount (%)', 'tur-takvimi' ); ?></label></th>
-						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[discount_percent]" id="tt_discount" type="number" min="0" max="100" value="<?php echo esc_attr( $s['discount_percent'] ); ?>"> <span class="description"><?php esc_html_e( 'Used by the WooCommerce commerce layer.', 'tur-takvimi' ); ?></span></td>
+						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[discount_percent]" id="tt_discount" type="number" min="0" max="100" value="<?php echo esc_attr( $s['discount_percent'] ); ?>">
+						<p class="description"><?php esc_html_e( 'Used by the WooCommerce commerce layer.', 'tur-takvimi' ); ?></p></td>
 					</tr>
 					<tr>
 						<th><label for="tt_cutoff"><?php esc_html_e( 'Order cutoff (days before visit)', 'tur-takvimi' ); ?></label></th>
@@ -263,7 +266,8 @@ class Settings {
 				<table class="form-table" role="presentation">
 					<tr>
 						<th><label for="tt_radius"><?php esc_html_e( 'Service radius (km)', 'tur-takvimi' ); ?></label></th>
-						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[service_radius_km]" id="tt_radius" type="number" min="0" value="<?php echo esc_attr( $s['service_radius_km'] ); ?>"> <span class="description"><?php esc_html_e( '0 = no limit. When set, a postcode farther than this from every stop is treated as outside the delivery area.', 'tur-takvimi' ); ?></span></td>
+						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[service_radius_km]" id="tt_radius" type="number" min="0" value="<?php echo esc_attr( $s['service_radius_km'] ); ?>">
+						<p class="description"><?php esc_html_e( '0 = no limit. When set, a postcode farther than this from every stop is treated as outside the delivery area.', 'tur-takvimi' ); ?></p></td>
 					</tr>
 					<tr>
 						<th><label for="tt_geocoder"><?php esc_html_e( 'Geocoder', 'tur-takvimi' ); ?></label></th>
