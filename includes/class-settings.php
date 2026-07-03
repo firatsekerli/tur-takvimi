@@ -152,7 +152,7 @@ class Settings {
 	}
 
 	/**
-	 * Render the settings form.
+	 * Render the settings form, grouped into titled sections.
 	 */
 	public function render_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -164,6 +164,8 @@ class Settings {
 			<h1><?php esc_html_e( 'Tur Takvimi — Settings', 'tur-takvimi' ); ?></h1>
 			<form method="post" action="options.php">
 				<?php settings_fields( 'tur_takvimi' ); ?>
+
+				<h2 class="title"><?php esc_html_e( 'Brand', 'tur-takvimi' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th><label for="tt_brand_name"><?php esc_html_e( 'Brand name', 'tur-takvimi' ); ?></label></th>
@@ -175,8 +177,24 @@ class Settings {
 					</tr>
 					<tr>
 						<th><label for="tt_primary"><?php esc_html_e( 'Primary color', 'tur-takvimi' ); ?></label></th>
-						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[primary_color]" id="tt_primary" type="text" value="<?php echo esc_attr( $s['primary_color'] ); ?>"> <input name="<?php echo esc_attr( self::OPTION ); ?>[accent_color]" type="text" value="<?php echo esc_attr( $s['accent_color'] ); ?>"></td>
+						<td>
+							<input name="<?php echo esc_attr( self::OPTION ); ?>[primary_color]" id="tt_primary" type="color" value="<?php echo esc_attr( $s['primary_color'] ); ?>">
+							<code><?php echo esc_html( $s['primary_color'] ); ?></code>
+							<p class="description"><?php esc_html_e( 'Headings, buttons and highlights across the front-end widgets.', 'tur-takvimi' ); ?></p>
+						</td>
 					</tr>
+					<tr>
+						<th><label for="tt_accent"><?php esc_html_e( 'Accent color', 'tur-takvimi' ); ?></label></th>
+						<td>
+							<input name="<?php echo esc_attr( self::OPTION ); ?>[accent_color]" id="tt_accent" type="color" value="<?php echo esc_attr( $s['accent_color'] ); ?>">
+							<code><?php echo esc_html( $s['accent_color'] ); ?></code>
+							<p class="description"><?php esc_html_e( 'Secondary color: date chips, calendar day markers. Readable text colors are derived automatically.', 'tur-takvimi' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'Countries & currency', 'tur-takvimi' ); ?></h2>
+				<table class="form-table" role="presentation">
 					<tr>
 						<th><label for="tt_slug"><?php esc_html_e( 'Location URL base', 'tur-takvimi' ); ?></label></th>
 						<td><code>/</code><input name="<?php echo esc_attr( self::OPTION ); ?>[location_slug_base]" id="tt_slug" type="text" value="<?php echo esc_attr( $s['location_slug_base'] ); ?>"><code>/...</code>
@@ -198,6 +216,10 @@ class Settings {
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[countries]" id="tt_countries" type="text" class="regular-text" value="<?php echo esc_attr( implode( ', ', $country_pairs ) ); ?>" placeholder="DE:Almanya, NL:Hollanda">
 						<p class="description"><?php esc_html_e( 'Comma-separated ISO-2 codes the business delivers to, with an optional display name (e.g. DE:Almanya, NL:Hollanda). The postcode search auto-detects the country from these, and shows a country picker when more than one is listed.', 'tur-takvimi' ); ?></p></td>
 					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'Calendar & schedule', 'tur-takvimi' ); ?></h2>
+				<table class="form-table" role="presentation">
 					<tr>
 						<th><label for="tt_weeks"><?php esc_html_e( 'Calendar weeks shown', 'tur-takvimi' ); ?></label></th>
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[calendar_weeks]" id="tt_weeks" type="number" min="1" max="12" value="<?php echo esc_attr( $s['calendar_weeks'] ); ?>"></td>
@@ -206,6 +228,10 @@ class Settings {
 						<th><label for="tt_default_freq"><?php esc_html_e( 'Default visit frequency (weeks)', 'tur-takvimi' ); ?></label></th>
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[default_frequency_weeks]" id="tt_default_freq" type="number" min="1" max="52" value="<?php echo esc_attr( $s['default_frequency_weeks'] ); ?>"> <span class="description"><?php esc_html_e( 'Used for stops that have no frequency set.', 'tur-takvimi' ); ?></span></td>
 					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'Pre-orders (WooCommerce)', 'tur-takvimi' ); ?></h2>
+				<table class="form-table" role="presentation">
 					<tr>
 						<th><label for="tt_discount"><?php esc_html_e( 'Upfront discount (%)', 'tur-takvimi' ); ?></label></th>
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[discount_percent]" id="tt_discount" type="number" min="0" max="100" value="<?php echo esc_attr( $s['discount_percent'] ); ?>"> <span class="description"><?php esc_html_e( 'Used by the WooCommerce commerce layer.', 'tur-takvimi' ); ?></span></td>
@@ -214,6 +240,10 @@ class Settings {
 						<th><label for="tt_cutoff"><?php esc_html_e( 'Order cutoff (days before visit)', 'tur-takvimi' ); ?></label></th>
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[order_cutoff_days]" id="tt_cutoff" type="number" min="0" value="<?php echo esc_attr( $s['order_cutoff_days'] ); ?>"></td>
 					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'Postcode search & geocoding', 'tur-takvimi' ); ?></h2>
+				<table class="form-table" role="presentation">
 					<tr>
 						<th><label for="tt_radius"><?php esc_html_e( 'Service radius (km)', 'tur-takvimi' ); ?></label></th>
 						<td><input name="<?php echo esc_attr( self::OPTION ); ?>[service_radius_km]" id="tt_radius" type="number" min="0" value="<?php echo esc_attr( $s['service_radius_km'] ); ?>"> <span class="description"><?php esc_html_e( '0 = no limit. When set, a postcode farther than this from every stop is treated as outside the delivery area.', 'tur-takvimi' ); ?></span></td>
@@ -240,6 +270,7 @@ class Settings {
 						</td>
 					</tr>
 				</table>
+
 				<?php submit_button(); ?>
 			</form>
 

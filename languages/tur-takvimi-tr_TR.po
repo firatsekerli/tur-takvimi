@@ -828,3 +828,27 @@ msgstr "%d şehir"
 
 msgid "Visits per week (next 8 weeks)"
 msgstr "Haftalık ziyaretler (önümüzdeki 8 hafta)"
+
+msgid "Brand"
+msgstr "Marka"
+
+msgid "Accent color"
+msgstr "Vurgu rengi"
+
+msgid "Headings, buttons and highlights across the front-end widgets."
+msgstr "Ön yüz bileşenlerindeki başlıklar, düğmeler ve vurgular."
+
+msgid "Secondary color: date chips, calendar day markers. Readable text colors are derived automatically."
+msgstr "İkincil renk: tarih etiketleri, takvim gün işaretleri. Okunabilir yazı renkleri otomatik türetilir."
+
+msgid "Countries & currency"
+msgstr "Ülkeler ve para birimi"
+
+msgid "Calendar & schedule"
+msgstr "Takvim ve program"
+
+msgid "Pre-orders (WooCommerce)"
+msgstr "Ön sipariş (WooCommerce)"
+
+msgid "Postcode search & geocoding"
+msgstr "Posta kodu arama ve coğrafi kodlama"
