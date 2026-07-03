@@ -169,7 +169,7 @@ class Dashboard {
 			<?php
 			foreach ( $data['weeks'] as $week ) :
 				$h     = max( 3, (int) round( $week['count'] * 100 / $max ) );
-				$title = $week['range'] . ': ' . sprintf( /* translators: %d: number of city visits. */ __( '%d cities', 'tur-takvimi' ), (int) $week['count'] );
+				$title = ( $week['range'] ?? $week['label'] ) . ': ' . sprintf( /* translators: %d: number of city visits. */ __( '%d cities', 'tur-takvimi' ), (int) $week['count'] );
 				?>
 				<div class="tt-dash__bar" title="<?php echo esc_attr( $title ); ?>">
 					<i style="height:<?php echo (int) $h; ?>%"></i>
