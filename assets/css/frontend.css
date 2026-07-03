@@ -3,6 +3,8 @@
 :root {
 	--tt-primary: #e3242b;
 	--tt-accent: #16a34a;
+	--tt-primary-contrast: #ffffff;
+	--tt-accent-contrast: #ffffff;
 	--tt-secondary: #ffbe51;
 	--tt-bg: #f7f7f8;
 	--tt-card: #ffffff;
@@ -1100,12 +1102,14 @@
 	color: var(--tt-muted);
 }
 
+/* Solid accent chip; the text color is computed from the accent's
+   luminance (--tt-accent-contrast) so any brand palette stays readable. */
 .tt-explorer__stop-date {
 	flex: 0 0 auto;
 	font-size: 0.75rem;
 	font-weight: 700;
-	color: var(--tt-accent);
-	background: rgba( 22, 163, 74, 0.1 );
+	color: var(--tt-accent-contrast, #ffffff);
+	background: var(--tt-accent);
 	border-radius: 999px;
 	padding: 0.2rem 0.55rem;
 	white-space: nowrap;

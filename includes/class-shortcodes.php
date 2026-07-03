@@ -59,17 +59,43 @@ class Shortcodes {
 	}
 
 	/**
-	 * Inject white-label brand colors as CSS variables.
+	 * Inject white-label brand colors as CSS variables, plus computed
+	 * contrast colors so text on a brand-colored background stays readable
+	 * whatever palette the settings hold.
 	 */
 	private function inline_brand_styles(): void {
-		$primary = Settings::get( 'primary_color', '#e3242b' );
-		$accent  = Settings::get( 'accent_color', '#16a34a' );
+		$primary = (string) Settings::get( 'primary_color', '#e3242b' );
+		$accent  = (string) Settings::get( 'accent_color', '#16a34a' );
 		$css     = sprintf(
-			':root{--tt-primary:%s;--tt-accent:%s;}',
+			':root{--tt-primary:%s;--tt-accent:%s;--tt-primary-contrast:%s;--tt-accent-contrast:%s;}',
 			esc_attr( $primary ),
-			esc_attr( $accent )
+			esc_attr( $accent ),
+			esc_attr( self::contrast_color( $primary ) ),
+			esc_attr( self::contrast_color( $accent ) )
 		);
 		wp_add_inline_style( 'tur-takvimi', $css );
+	}
+
+	/**
+	 * Readable text color for a background: white on dark colors, near-black
+	 * on light ones (YIQ luminance).
+	 *
+	 * @param string $hex Background color (#rgb or #rrggbb).
+	 * @return string
+	 */
+	public static function contrast_color( string $hex ): string {
+		$hex = ltrim( trim( $hex ), '#' );
+		if ( 3 === strlen( $hex ) ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+		if ( ! preg_match( '/^[0-9a-fA-F]{6}$/', $hex ) ) {
+			return '#ffffff';
+		}
+		$r   = hexdec( substr( $hex, 0, 2 ) );
+		$g   = hexdec( substr( $hex, 2, 2 ) );
+		$b   = hexdec( substr( $hex, 4, 2 ) );
+		$yiq = ( ( $r * 299 ) + ( $g * 587 ) + ( $b * 114 ) ) / 1000;
+		return $yiq >= 150 ? '#1f2937' : '#ffffff';
 	}
 
 	/**
