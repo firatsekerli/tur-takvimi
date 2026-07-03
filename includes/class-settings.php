@@ -160,11 +160,20 @@ class Settings {
 		}
 		$s = wp_parse_args( get_option( self::OPTION, array() ), self::defaults() );
 		?>
+		<style>
+			.tt-settings-grid { display: grid; grid-template-columns: repeat( auto-fit, minmax( 420px, 1fr ) ); gap: 16px; max-width: 1200px; margin-top: 12px; }
+			.tt-settings-card { background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 4px 20px 14px; }
+			.tt-settings-card > h2 { margin: 12px 0 0; padding: 0; }
+			.tt-settings-card .form-table th { width: 170px; padding: 14px 10px 14px 0; }
+			.tt-settings-card .form-table td { padding: 14px 0; }
+		</style>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Tur Takvimi — Settings', 'tur-takvimi' ); ?></h1>
 			<form method="post" action="options.php">
 				<?php settings_fields( 'tur_takvimi' ); ?>
 
+				<div class="tt-settings-grid">
+				<section class="tt-settings-card">
 				<h2 class="title"><?php esc_html_e( 'Brand', 'tur-takvimi' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -193,6 +202,8 @@ class Settings {
 					</tr>
 				</table>
 
+				</section>
+				<section class="tt-settings-card">
 				<h2 class="title"><?php esc_html_e( 'Countries & currency', 'tur-takvimi' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -218,6 +229,8 @@ class Settings {
 					</tr>
 				</table>
 
+				</section>
+				<section class="tt-settings-card">
 				<h2 class="title"><?php esc_html_e( 'Calendar & schedule', 'tur-takvimi' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -230,6 +243,8 @@ class Settings {
 					</tr>
 				</table>
 
+				</section>
+				<section class="tt-settings-card">
 				<h2 class="title"><?php esc_html_e( 'Pre-orders (WooCommerce)', 'tur-takvimi' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -242,6 +257,8 @@ class Settings {
 					</tr>
 				</table>
 
+				</section>
+				<section class="tt-settings-card">
 				<h2 class="title"><?php esc_html_e( 'Postcode search & geocoding', 'tur-takvimi' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -270,6 +287,9 @@ class Settings {
 						</td>
 					</tr>
 				</table>
+
+				</section>
+				</div>
 
 				<?php submit_button(); ?>
 			</form>
