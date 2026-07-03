@@ -66,6 +66,7 @@ final class Plugin {
 			( new Importer() )->register();
 			( new Location_Meta() )->register();
 			( new Route_Meta() )->register();
+			( new Dashboard() )->register();
 		}
 
 		/**

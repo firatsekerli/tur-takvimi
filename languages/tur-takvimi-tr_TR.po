@@ -816,3 +816,15 @@ msgstr "Yaklaşık iğnelenmiş duraklar (posta kodu bölgesi)"
 
 msgid "Stops without a map pin"
 msgstr "Harita iğnesi olmayan duraklar"
+
+msgid "Overview"
+msgstr "Genel Bakış"
+
+msgid "Countries"
+msgstr "Ülkeler"
+
+msgid "%d cities"
+msgstr "%d şehir"
+
+msgid "Visits per week (next 8 weeks)"
+msgstr "Haftalık ziyaretler (önümüzdeki 8 hafta)"
