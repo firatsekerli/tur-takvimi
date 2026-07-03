@@ -59,8 +59,10 @@ class Dashboard {
 		$accent  = (string) Settings::get( 'accent_color', '#16a34a' );
 		?>
 		<style>
-			.tt-dash__grid { display: grid; grid-template-columns: repeat( auto-fit, minmax( 88px, 1fr ) ); gap: 8px; margin: 4px 0 10px; }
+			.tt-dash__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 4px 0 10px; }
 			.tt-dash__stat { background: #f6f7f7; border: 1px solid #dcdcde; border-radius: 8px; padding: 10px 6px; text-align: center; }
+			.tt-dash__stat:first-child { grid-column: 1 / -1; }
+			.tt-dash__stat:first-child .tt-dash__num { font-size: 2em; }
 			.tt-dash__num { display: block; font-size: 1.5em; font-weight: 700; line-height: 1.2; color: <?php echo esc_html( $primary ); ?>; }
 			.tt-dash__lbl { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #646970; margin-top: 2px; }
 			.tt-dash__next { margin: 0; }
@@ -85,13 +87,15 @@ class Dashboard {
 		$data = $this->collect();
 		$this->styles();
 
+		// Broadest number first: the top tile spans the row, then 2 + 2.
 		$tiles = array(
+			array( __( 'Stops', 'tur-takvimi' ), $data['stops'] ),
 			array( __( 'Locations', 'tur-takvimi' ), $data['cities'] ),
 			array( __( 'Routes', 'tur-takvimi' ), $data['routes'] ),
 			array( __( 'Regions', 'tur-takvimi' ), $data['regions'] ),
 			array( __( 'Countries', 'tur-takvimi' ), $data['countries'] ),
-			array( __( 'Stops', 'tur-takvimi' ), $data['stops'] ),
 		);
+		usort( $tiles, static fn( $a, $b ) => $b[1] <=> $a[1] );
 		?>
 		<div class="tt-dash__grid">
 			<?php foreach ( $tiles as $tile ) : ?>
@@ -164,9 +168,10 @@ class Dashboard {
 		<div class="tt-dash__bars">
 			<?php
 			foreach ( $data['weeks'] as $week ) :
-				$h = max( 3, (int) round( $week['count'] * 100 / $max ) );
+				$h     = max( 3, (int) round( $week['count'] * 100 / $max ) );
+				$title = $week['range'] . ': ' . sprintf( /* translators: %d: number of city visits. */ __( '%d cities', 'tur-takvimi' ), (int) $week['count'] );
 				?>
-				<div class="tt-dash__bar" title="<?php echo esc_attr( sprintf( /* translators: %d: number of city visits. */ __( '%d cities', 'tur-takvimi' ), (int) $week['count'] ) ); ?>">
+				<div class="tt-dash__bar" title="<?php echo esc_attr( $title ); ?>">
 					<i style="height:<?php echo (int) $h; ?>%"></i>
 					<span><?php echo esc_html( $week['label'] ); ?></span>
 				</div>
@@ -253,8 +258,10 @@ class Dashboard {
 
 		$week_bars = array();
 		for ( $i = 0; $i < 8; $i++ ) {
+			$start       = $monday->modify( '+' . $i . ' weeks' );
 			$week_bars[] = array(
-				'label' => wp_date( 'j M', $monday->modify( '+' . $i . ' weeks' )->getTimestamp() ),
+				'label' => wp_date( 'j M', $start->getTimestamp() ),
+				'range' => wp_date( 'j M', $start->getTimestamp() ) . ' – ' . wp_date( 'j M', $start->modify( '+6 days' )->getTimestamp() ),
 				'count' => (int) ( $weeks[ $i ] ?? 0 ),
 			);
 		}
