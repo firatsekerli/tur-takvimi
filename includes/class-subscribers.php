@@ -104,12 +104,13 @@ class Subscribers {
 				<?php // Honeypot: hidden from humans; a filled value means a bot. ?>
 				<input type="text" name="website" class="tt-signup__hp" tabindex="-1" autocomplete="off" aria-hidden="true" data-tt-su-hp>
 
-				<label class="tt-signup__optin">
-					<input type="checkbox" data-tt-su-optin>
-					<span><?php esc_html_e( 'Notify me on WhatsApp before deliveries in my area.', 'tur-takvimi' ); ?></span>
-				</label>
-
-				<p class="tt-signup__note"><?php esc_html_e( 'We only use your details for delivery notifications. Unsubscribe anytime.', 'tur-takvimi' ); ?></p>
+				<div class="tt-signup__consent">
+					<label class="tt-signup__optin">
+						<input type="checkbox" data-tt-su-optin>
+						<span><?php esc_html_e( 'Notify me on WhatsApp before deliveries in my area.', 'tur-takvimi' ); ?></span>
+					</label>
+					<span class="tt-signup__note"><?php esc_html_e( 'We only use your details for delivery notifications. Unsubscribe anytime.', 'tur-takvimi' ); ?></span>
+				</div>
 			</form>
 			<div class="tt-signup__result" data-tt-su-result aria-live="polite"></div>
 		</section>

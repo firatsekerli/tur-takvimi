@@ -1332,11 +1332,18 @@
 	opacity: 0;
 }
 
+.tt-signup__consent {
+	display: flex;
+	align-items: baseline;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-top: 1rem;
+}
+
 .tt-signup__optin {
 	display: flex;
 	align-items: flex-start;
 	gap: 0.5rem;
-	margin: 1rem 0 0;
 	cursor: pointer;
 }
 
@@ -1363,7 +1370,7 @@
 }
 
 .tt-signup__note {
-	margin: 0.75rem 0 0;
+	margin: 0;
 	font-size: 0.8rem;
 	color: var(--tt-muted);
 }
