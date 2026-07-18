@@ -176,6 +176,8 @@ class Whatsapp {
 					<?php endforeach; ?>
 				</table>
 
+				<?php Notifier::settings_section(); ?>
+
 				<?php submit_button(); ?>
 			</form>
 		</div>
@@ -339,6 +341,8 @@ class Whatsapp {
 		}
 		// phpcs:enable
 		update_option( self::CHANNELS_OPTION, $channels );
+
+		Notifier::save_from_post();
 
 		wp_safe_redirect( add_query_arg( 'updated', '1', admin_url( 'admin.php?page=tur-takvimi-whatsapp' ) ) );
 		exit;

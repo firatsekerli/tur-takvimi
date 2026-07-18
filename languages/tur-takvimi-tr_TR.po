@@ -852,3 +852,134 @@ msgstr "Ön sipariş (WooCommerce)"
 
 msgid "Postcode search & geocoding"
 msgstr "Posta kodu arama ve coğrafi kodlama"
+msgid "Get a WhatsApp heads-up before we visit your area"
+msgstr "Bölgenize gelmeden önce WhatsApp'tan haber alın"
+
+msgid "Your name"
+msgstr "Adınız"
+
+msgid "Email"
+msgstr "E-posta"
+
+msgid "Phone (WhatsApp)"
+msgstr "Telefon (WhatsApp)"
+
+msgid "Sign up"
+msgstr "Kaydol"
+
+msgid "Notify me on WhatsApp before deliveries in my area."
+msgstr "Bölgemdeki teslimatlardan önce bana WhatsApp'tan haber ver."
+
+msgid "We only use your details for delivery notifications. Unsubscribe anytime."
+msgstr "Bilgilerinizi yalnızca teslimat bildirimleri için kullanırız. İstediğiniz zaman çıkabilirsiniz."
+
+msgid "Thanks! You are signed up."
+msgstr "Teşekkürler! Kaydınız alındı."
+
+msgid "Too many attempts. Please try again later."
+msgstr "Çok fazla deneme yapıldı. Lütfen daha sonra tekrar deneyin."
+
+msgid "Please enter your name."
+msgstr "Lütfen adınızı girin."
+
+msgid "Please enter a valid email address."
+msgstr "Lütfen geçerli bir e-posta adresi girin."
+
+msgid "Please enter your postcode."
+msgstr "Lütfen posta kodunuzu girin."
+
+msgid "Please enter a valid phone number for WhatsApp reminders."
+msgstr "WhatsApp hatırlatmaları için lütfen geçerli bir telefon numarası girin."
+
+msgid "Thanks %1$s! %2$s is on our route — next visit: %3$s."
+msgstr "Teşekkürler %1$s! %2$s rotamızda — sıradaki ziyaret: %3$s."
+
+msgid "We'll send you a WhatsApp reminder before each visit."
+msgstr "Her ziyaretten önce size WhatsApp hatırlatması göndereceğiz."
+
+msgid "Saved! Your postcode isn't on a route yet — we'll let you know when we add it."
+msgstr "Kaydedildi! Posta kodunuz henüz bir rotada değil — eklediğimizde size haber vereceğiz."
+
+msgid "You will no longer receive WhatsApp delivery notifications. You can sign up again on our website at any time."
+msgstr "Artık WhatsApp teslimat bildirimleri almayacaksınız. İstediğiniz zaman web sitemizden tekrar kaydolabilirsiniz."
+
+msgid "Unsubscribed"
+msgstr "Abonelikten çıkıldı"
+
+msgid "Subscribers"
+msgstr "Aboneler"
+
+msgid "Subscriber deleted."
+msgstr "Abone silindi."
+
+msgid "%1$d subscribers, %2$d opted in to WhatsApp notifications."
+msgstr "%1$d abone, %2$d tanesi WhatsApp bildirimlerine onay verdi."
+
+msgid "Export CSV"
+msgstr "CSV dışa aktar"
+
+msgid "Name"
+msgstr "Ad"
+
+msgid "Phone"
+msgstr "Telefon"
+
+msgid "Signed up"
+msgstr "Kayıt tarihi"
+
+msgid "No subscribers yet."
+msgstr "Henüz abone yok."
+
+msgid "Delete this subscriber?"
+msgstr "Bu abone silinsin mi?"
+
+msgid "Delete"
+msgstr "Sil"
+
+msgid "Showing the latest 500 — use Export CSV for the full list."
+msgstr "Son 500 kayıt gösteriliyor — tam liste için CSV dışa aktarımı kullanın."
+
+msgid "Delivery reminders (WhatsApp Cloud API)"
+msgstr "Teslimat hatırlatmaları (WhatsApp Cloud API)"
+
+msgid "Sends opted-in subscribers a template message 7 days and 2 days before a tour reaches their postcode. Requires a Meta WhatsApp Business account: create a message template with three variables ({{1}} name, {{2}} city, {{3}} date), get it approved, and paste your credentials here."
+msgstr "Onay veren abonelere, bir tur posta kodlarına ulaşmadan 7 gün ve 2 gün önce şablon mesajı gönderir. Meta WhatsApp Business hesabı gerektirir: üç değişkenli ({{1}} ad, {{2}} şehir, {{3}} tarih) bir mesaj şablonu oluşturup onaylatın ve kimlik bilgilerinizi buraya yapıştırın."
+
+msgid "Enable reminders"
+msgstr "Hatırlatmaları etkinleştir"
+
+msgid "Send WhatsApp reminders automatically (daily)"
+msgstr "WhatsApp hatırlatmalarını otomatik gönder (günlük)"
+
+msgid "Access token"
+msgstr "Erişim belirteci (token)"
+
+msgid "A permanent System User token from Meta Business Manager with whatsapp_business_messaging permission."
+msgstr "Meta Business Manager'dan whatsapp_business_messaging izinli kalıcı bir Sistem Kullanıcısı belirteci."
+
+msgid "Phone number ID"
+msgstr "Telefon numarası kimliği"
+
+msgid "From WhatsApp → API Setup (the numeric ID, not the phone number itself)."
+msgstr "WhatsApp → API Kurulumu bölümünden (telefon numarasının kendisi değil, sayısal kimlik)."
+
+msgid "Template name / language"
+msgstr "Şablon adı / dili"
+
+msgid "Template language code"
+msgstr "Şablon dil kodu"
+
+msgid "The approved template and its language code (e.g. tr, de, nl). Body variables: {{1}} name, {{2}} city, {{3}} visit date."
+msgstr "Onaylı şablon ve dil kodu (örn. tr, de, nl). Gövde değişkenleri: {{1}} ad, {{2}} şehir, {{3}} ziyaret tarihi."
+
+msgid "Sending…"
+msgstr "Gönderiliyor…"
+
+msgid "Please fill in your name, email and postcode."
+msgstr "Lütfen adınızı, e-postanızı ve posta kodunuzu doldurun."
+
+msgid "Something went wrong. Please try again."
+msgstr "Bir şeyler ters gitti. Lütfen tekrar deneyin."
+
+msgid "Inline signup: name, email, phone, postcode + WhatsApp reminder opt-in."
+msgstr "Satır içi kayıt: ad, e-posta, telefon, posta kodu + WhatsApp hatırlatma onayı."

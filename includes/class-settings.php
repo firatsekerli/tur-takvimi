@@ -386,6 +386,11 @@ class Settings {
 					<td><code>id</code>, <code>heading</code>, <code>filter</code>, <code>align</code>, <code>class</code></td>
 				</tr>
 				<tr>
+					<td><code>[tur_takvimi_signup]</code></td>
+					<td><?php esc_html_e( 'Inline signup: name, email, phone, postcode + WhatsApp reminder opt-in.', 'tur-takvimi' ); ?></td>
+					<td><code>country</code>, <code>heading</code>, <code>align</code>, <code>class</code></td>
+				</tr>
+				<tr>
 					<td><code>[tur_takvimi_whatsapp]</code></td>
 					<td><?php esc_html_e( 'WhatsApp groups: pick-your-region list + the country channel.', 'tur-takvimi' ); ?></td>
 					<td><code>country</code>, <code>heading</code>, <code>class</code></td>

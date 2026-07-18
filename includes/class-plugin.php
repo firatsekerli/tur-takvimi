@@ -57,6 +57,8 @@ final class Plugin {
 		( new Map_Explorer() )->register();
 		( new Calendar() )->register();
 		( new Whatsapp() )->register();
+		( new Subscribers() )->register();
+		( new Notifier() )->register();
 
 		// Page builders render shortcodes out-of-band, so the per-shortcode
 		// asset enqueues never reach the editor canvas. Load them up-front there.
