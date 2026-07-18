@@ -290,7 +290,14 @@ class Notifier {
 		// Caller (Whatsapp::save_page) has verified capability + nonce.
 		$in = isset( $_POST['wa_api'] ) && is_array( $_POST['wa_api'] ) ? wp_unslash( $_POST['wa_api'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
 
-		$lang     = strtolower( sanitize_text_field( (string) ( $in['lang'] ?? 'tr' ) ) );
+		// Canonicalize the template language: "en", "en_US" and "en-us" are all
+		// accepted and stored in Meta's xx_XX form (codes are case-sensitive).
+		$lang = sanitize_text_field( (string) ( $in['lang'] ?? 'tr' ) );
+		if ( preg_match( '/^([A-Za-z]{2,3})(?:[_-]([A-Za-z]{2}))?$/', $lang, $m ) ) {
+			$lang = strtolower( $m[1] ) . ( isset( $m[2] ) && '' !== $m[2] ? '_' . strtoupper( $m[2] ) : '' );
+		} else {
+			$lang = 'tr';
+		}
 		$provider = sanitize_key( (string) ( $in['provider'] ?? 'cloud' ) );
 		$from     = preg_replace( '/[^0-9+]/', '', (string) ( $in['twilio_from'] ?? '' ) );
 		update_option(
@@ -301,7 +308,7 @@ class Notifier {
 				'token'              => sanitize_text_field( (string) ( $in['token'] ?? '' ) ),
 				'phone_id'           => preg_replace( '/\D/', '', (string) ( $in['phone_id'] ?? '' ) ),
 				'template'           => sanitize_key( (string) ( $in['template'] ?? '' ) ),
-				'lang'               => preg_match( '/^[a-z]{2}(_[A-Za-z]{2})?$/', $lang ) ? $lang : 'tr',
+				'lang'               => $lang,
 				'twilio_sid'         => sanitize_text_field( (string) ( $in['twilio_sid'] ?? '' ) ),
 				'twilio_token'       => sanitize_text_field( (string) ( $in['twilio_token'] ?? '' ) ),
 				'twilio_from'        => $from,
