@@ -51,6 +51,9 @@ class Shortcodes {
 					'noResult'  => __( 'No stop found for this postcode.', 'tur-takvimi' ),
 					'details'   => __( 'See delivery details', 'tur-takvimi' ),
 					'noDate'    => __( 'Not scheduled yet', 'tur-takvimi' ),
+					'sending'       => __( 'Sending…', 'tur-takvimi' ),
+					'signupMissing' => __( 'Please fill in your name, email and postcode.', 'tur-takvimi' ),
+					'signupError'   => __( 'Something went wrong. Please try again.', 'tur-takvimi' ),
 				),
 			)
 		);

@@ -40,6 +40,11 @@ The plugin has two layers:
 * `[tur_takvimi_map]` — the delivery-regions explorer (filterable map + stop
   list). Optional `country="DE"` hard-scopes it; `height="520"` sets the map
   height. On multi-country sites it shows a country filter automatically.
+* `[tur_takvimi_signup]` — inline signup form (name, email, phone, postcode)
+  with an explicit WhatsApp opt-in. Subscribers appear under Tur Takvimi →
+  Subscribers; with the WhatsApp Cloud API configured (Tur Takvimi →
+  WhatsApp), opted-in subscribers get a template reminder 7 days and 2 days
+  before a tour reaches their postcode.
 
 Shortcodes that print their own heading (`[tur_takvimi_calendar]` and
 `[tur_takvimi_city_stops]`) accept a `heading` attribute: omit it for the

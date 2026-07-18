@@ -200,6 +200,8 @@ class Activator {
 		$charset_collate = $wpdb->get_charset_collate();
 		$schedule        = $wpdb->prefix . 'tt_schedule';
 		$postcodes       = $wpdb->prefix . 'tt_postcodes';
+		$subscribers     = $wpdb->prefix . 'tt_subscribers';
+		$notify_log      = $wpdb->prefix . 'tt_notify_log';
 
 		// Schedule is a derived cache; drop it so key/column changes apply cleanly.
 		$wpdb->query( "DROP TABLE IF EXISTS {$schedule}" ); // phpcs:ignore WordPress.DB
@@ -230,7 +232,39 @@ class Activator {
 			KEY country_pc4 (country, pc4)
 		) {$charset_collate};";
 
+		// Subscriber data is user content — created if missing, never dropped.
+		$sql_subscribers = "CREATE TABLE {$subscribers} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			name VARCHAR(150) NOT NULL DEFAULT '',
+			email VARCHAR(190) NOT NULL DEFAULT '',
+			phone VARCHAR(32) NOT NULL DEFAULT '',
+			postcode VARCHAR(16) NOT NULL DEFAULT '',
+			country CHAR(2) NOT NULL DEFAULT '',
+			wa_optin TINYINT NOT NULL DEFAULT 0,
+			token VARCHAR(40) NOT NULL DEFAULT '',
+			created DATETIME NOT NULL,
+			PRIMARY KEY  (id),
+			KEY email (email),
+			KEY postcode (postcode),
+			KEY wa_optin (wa_optin)
+		) {$charset_collate};";
+
+		$sql_notify_log = "CREATE TABLE {$notify_log} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			subscriber_id BIGINT UNSIGNED NOT NULL,
+			location_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+			tour_date DATE NOT NULL,
+			kind VARCHAR(8) NOT NULL DEFAULT '',
+			status VARCHAR(20) NOT NULL DEFAULT 'pending',
+			detail VARCHAR(200) NOT NULL DEFAULT '',
+			sent DATETIME NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY sub_date_kind (subscriber_id, tour_date, kind)
+		) {$charset_collate};";
+
 		dbDelta( $sql_schedule );
 		dbDelta( $sql_postcodes );
+		dbDelta( $sql_subscribers );
+		dbDelta( $sql_notify_log );
 	}
 }

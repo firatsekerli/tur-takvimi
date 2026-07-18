@@ -144,12 +144,73 @@
 		} );
 	}
 
+	// Signup form: POSTs to /subscribe and shows the server's message.
+	function bindSignup( root ) {
+		var form = root.querySelector( '.tt-signup__form' );
+		var box = root.querySelector( '[data-tt-su-result]' );
+		if ( ! form || ! box ) {
+			return;
+		}
+
+		function field( name ) {
+			var node = root.querySelector( '[data-tt-su-' + name + ']' );
+			return node ? node.value.trim() : '';
+		}
+
+		function show( ok, message ) {
+			box.innerHTML = '';
+			box.appendChild( el( 'p', ok ? 'tt-signup__ok' : 'tt-signup__error', message ) );
+		}
+
+		form.addEventListener( 'submit', function ( e ) {
+			e.preventDefault();
+
+			var optinBox = root.querySelector( '[data-tt-su-optin]' );
+			var payload = {
+				name: field( 'name' ),
+				email: field( 'email' ),
+				phone: field( 'phone' ),
+				postcode: field( 'postcode' ),
+				country: root.getAttribute( 'data-country' ) || '',
+				optin: !! ( optinBox && optinBox.checked ),
+				website: field( 'hp' )
+			};
+
+			if ( ! payload.name || ! payload.email || ! payload.postcode ) {
+				show( false, cfg.i18n.signupMissing );
+				return;
+			}
+
+			show( true, cfg.i18n.sending );
+			fetch( cfg.rest + '/subscribe', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
+				body: JSON.stringify( payload )
+			} )
+				.then( function ( r ) {
+					return r.json();
+				} )
+				.then( function ( data ) {
+					show( !! ( data && data.ok ), ( data && data.message ) || cfg.i18n.signupError );
+					if ( data && data.ok ) {
+						form.reset();
+					}
+				} )
+				.catch( function () {
+					show( false, cfg.i18n.signupError );
+				} );
+		} );
+	}
+
 	function init() {
 		var widgets = document.querySelectorAll( '[data-tt-search]' );
 		Array.prototype.forEach.call( widgets, bind );
 
 		var calendars = document.querySelectorAll( '[data-tt-calendar]' );
 		Array.prototype.forEach.call( calendars, bindCalendar );
+
+		var signups = document.querySelectorAll( '[data-tt-signup]' );
+		Array.prototype.forEach.call( signups, bindSignup );
 	}
 
 	if ( document.readyState === 'loading' ) {
