@@ -972,6 +972,30 @@ msgstr "İçerik şablonu SID'i"
 msgid "The approved template's Content SID from Twilio's Content Template Builder (starts with HX). Use variables {{1}} name, {{2}} city, {{3}} visit date."
 msgstr "Twilio İçerik Şablonu Oluşturucusu'ndaki onaylı şablonun Content SID'i (HX ile başlar). {{1}} ad, {{2}} şehir, {{3}} ziyaret tarihi değişkenlerini kullanın."
 
+msgid "Test message"
+msgstr "Test mesajı"
+
+msgid "Send test message"
+msgstr "Test mesajı gönder"
+
+msgid "Sends one template message with sample values using the saved settings above — save your changes first. With the Meta test number, the recipient must be one of your (up to 5) verified numbers."
+msgstr "Yukarıdaki kayıtlı ayarları kullanarak örnek değerlerle tek bir şablon mesajı gönderir — önce değişikliklerinizi kaydedin. Meta test numarasıyla, alıcı (en fazla 5) doğrulanmış numaranızdan biri olmalıdır."
+
+msgid "Test message sent — check the phone."
+msgstr "Test mesajı gönderildi — telefonu kontrol edin."
+
+msgid "Sending failed:"
+msgstr "Gönderim başarısız:"
+
+msgid "Enter a valid phone number in international format."
+msgstr "Uluslararası biçimde geçerli bir telefon numarası girin."
+
+msgid "Fill in and save the provider settings first."
+msgstr "Önce sağlayıcı ayarlarını doldurup kaydedin."
+
+msgid "Test City"
+msgstr "Test Şehri"
+
 msgid "Enable reminders"
 msgstr "Hatırlatmaları etkinleştir"
 

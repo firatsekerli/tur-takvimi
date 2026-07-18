@@ -37,6 +37,7 @@ class Notifier {
 	 */
 	public function register(): void {
 		add_action( self::CRON_HOOK, array( $this, 'run_daily' ) );
+		add_action( 'wp_ajax_tur_takvimi_wa_test', array( $this, 'ajax_test' ) );
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
 			// Morning site time, so "we're coming" lands at a sensible hour.
 			wp_schedule_event( strtotime( 'tomorrow 09:00', current_time( 'timestamp' ) ), 'daily', self::CRON_HOOK );
@@ -66,18 +67,81 @@ class Notifier {
 	}
 
 	/**
-	 * Whether reminders are enabled and the active provider has every
-	 * credential it needs.
+	 * Whether the active provider has every credential it needs (regardless
+	 * of the enabled toggle — used by the manual test send too).
 	 */
-	public static function configured(): bool {
+	public static function has_credentials(): bool {
 		$s = self::settings();
-		if ( ! $s['enabled'] ) {
-			return false;
-		}
 		if ( 'twilio' === $s['provider'] ) {
 			return '' !== $s['twilio_sid'] && '' !== $s['twilio_token'] && '' !== $s['twilio_from'] && '' !== $s['twilio_content_sid'];
 		}
 		return '' !== $s['token'] && '' !== $s['phone_id'] && '' !== $s['template'];
+	}
+
+	/**
+	 * Whether reminders are enabled and the active provider has every
+	 * credential it needs.
+	 */
+	public static function configured(): bool {
+		return ! empty( self::settings()['enabled'] ) && self::has_credentials();
+	}
+
+	/**
+	 * Send one immediate test message to a typed number using the saved
+	 * settings, so the provider setup can be verified without waiting for the
+	 * daily cron. Returns the provider's exact error on failure.
+	 */
+	public function ajax_test(): void {
+		if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'tt_wa_test', '_wpnonce', false ) ) {
+			wp_send_json(
+				array(
+					'ok'    => false,
+					'error' => 'auth',
+				),
+				403
+			);
+		}
+
+		$raw = isset( $_GET['phone'] ) ? sanitize_text_field( wp_unslash( $_GET['phone'] ) ) : '';
+		$to  = self::normalize_phone( $raw, Country::default_code() );
+		if ( '' === $to ) {
+			wp_send_json(
+				array(
+					'ok'    => false,
+					'error' => __( 'Enter a valid phone number in international format.', 'tur-takvimi' ),
+				)
+			);
+		}
+		if ( ! self::has_credentials() ) {
+			wp_send_json(
+				array(
+					'ok'    => false,
+					'error' => __( 'Fill in and save the provider settings first.', 'tur-takvimi' ),
+				)
+			);
+		}
+
+		$user = wp_get_current_user();
+		try {
+			$date = ( new \DateTimeImmutable( current_time( 'Y-m-d' ) ) )->modify( '+2 days' )->format( 'Y-m-d' );
+		} catch ( \Exception $e ) {
+			$date = current_time( 'Y-m-d' );
+		}
+		$ok = $this->send_template(
+			$to,
+			array(
+				$user && '' !== $user->display_name ? $user->display_name : 'Test',
+				__( 'Test City', 'tur-takvimi' ),
+				Rest_Api::format_day( $date ),
+			)
+		);
+
+		wp_send_json(
+			array(
+				'ok'    => $ok,
+				'error' => $ok ? '' : $this->last_error,
+			)
+		);
 	}
 
 	/**
@@ -143,7 +207,60 @@ class Notifier {
 				<td><input type="text" id="tt_wa_twilio_content" class="regular-text" name="wa_api[twilio_content_sid]" value="<?php echo esc_attr( $s['twilio_content_sid'] ); ?>" placeholder="HX…">
 				<p class="description"><?php esc_html_e( 'The approved template\'s Content SID from Twilio\'s Content Template Builder (starts with HX). Use variables {{1}} name, {{2}} city, {{3}} visit date.', 'tur-takvimi' ); ?></p></td>
 			</tr>
+
+			<tr>
+				<th scope="row"><label for="tt_wa_test_phone"><?php esc_html_e( 'Test message', 'tur-takvimi' ); ?></label></th>
+				<td>
+					<input type="text" id="tt_wa_test_phone" placeholder="+49 172 1234567" data-tt-wa-test-nonce="<?php echo esc_attr( wp_create_nonce( 'tt_wa_test' ) ); ?>">
+					<button type="button" class="button" id="tt_wa_test_btn"><?php esc_html_e( 'Send test message', 'tur-takvimi' ); ?></button>
+					<p class="description"><?php esc_html_e( 'Sends one template message with sample values using the saved settings above — save your changes first. With the Meta test number, the recipient must be one of your (up to 5) verified numbers.', 'tur-takvimi' ); ?></p>
+					<p id="tt_wa_test_result" style="font-weight:600;"></p>
+				</td>
+			</tr>
 		</table>
+		<script>
+		( function () {
+			var btn = document.getElementById( 'tt_wa_test_btn' );
+			var input = document.getElementById( 'tt_wa_test_phone' );
+			var out = document.getElementById( 'tt_wa_test_result' );
+			if ( ! btn || ! input || ! out ) {
+				return;
+			}
+			var i18n = {
+				sending: <?php echo wp_json_encode( __( 'Sending…', 'tur-takvimi' ) ); ?>,
+				sent: <?php echo wp_json_encode( __( 'Test message sent — check the phone.', 'tur-takvimi' ) ); ?>,
+				failed: <?php echo wp_json_encode( __( 'Sending failed:', 'tur-takvimi' ) ); ?>
+			};
+			btn.addEventListener( 'click', function () {
+				var phone = input.value.trim();
+				if ( ! phone ) {
+					input.focus();
+					return;
+				}
+				btn.disabled = true;
+				out.style.color = '';
+				out.textContent = i18n.sending;
+				var url = ajaxurl + '?action=tur_takvimi_wa_test&_wpnonce=' + encodeURIComponent( input.getAttribute( 'data-tt-wa-test-nonce' ) ) + '&phone=' + encodeURIComponent( phone );
+				fetch( url, { credentials: 'same-origin' } )
+					.then( function ( r ) { return r.json(); } )
+					.then( function ( d ) {
+						btn.disabled = false;
+						if ( d && d.ok ) {
+							out.style.color = '#166534';
+							out.textContent = i18n.sent;
+						} else {
+							out.style.color = '#b91c1c';
+							out.textContent = i18n.failed + ' ' + ( ( d && d.error ) || 'unknown' );
+						}
+					} )
+					.catch( function () {
+						btn.disabled = false;
+						out.style.color = '#b91c1c';
+						out.textContent = i18n.failed + ' network';
+					} );
+			} );
+		}() );
+		</script>
 		<script>
 		( function () {
 			var sel = document.getElementById( 'tt_wa_provider' );
