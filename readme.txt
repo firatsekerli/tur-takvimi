@@ -46,8 +46,9 @@ The plugin has two layers:
   WhatsApp), opted-in subscribers get a template reminder 7 days and 2 days
   before a tour reaches their postcode.
 
-Shortcodes that print their own heading (`[tur_takvimi_calendar]` and
-`[tur_takvimi_city_stops]`) accept a `heading` attribute: omit it for the
+Shortcodes that print their own heading (`[tur_takvimi_calendar]`,
+`[tur_takvimi_city_stops]`, `[tur_takvimi_city]`, `[tur_takvimi_whatsapp]`
+and `[tur_takvimi_signup]`) accept a `heading` attribute: omit it for the
 default, set `heading="no"` (also `false`/`none`/`0`) to hide it when your page
 already has a title, or pass any text to override it, e.g.
 `[tur_takvimi_calendar heading="Yaklaşan teslimat günleri"]`.

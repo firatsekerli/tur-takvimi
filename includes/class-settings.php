@@ -324,7 +324,7 @@ class Settings {
 			</li>
 			<li>
 				<code>heading="no"</code> <?php esc_html_e( 'or', 'tur-takvimi' ); ?> <code>heading="Custom title"</code> —
-				<?php esc_html_e( 'hides or overrides the built-in heading (calendar and address-list only). Use "no" when your page already has a title.', 'tur-takvimi' ); ?>
+				<?php esc_html_e( 'hides or overrides the built-in heading (calendar, address list, city panel, WhatsApp list and signup form). Use "no" when your page already has a title.', 'tur-takvimi' ); ?>
 			</li>
 			<li>
 				<code>filter="no"</code> —

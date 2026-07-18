@@ -631,8 +631,8 @@ msgstr "dış öğeye kendi CSS sınıf(lar)ınızı ekler; böylece temadan/öz
 msgid "or"
 msgstr "veya"
 
-msgid "hides or overrides the built-in heading (calendar and address-list only). Use \"no\" when your page already has a title."
-msgstr "yerleşik başlığı gizler veya değiştirir (yalnızca takvim ve adres listesi). Sayfanızda zaten bir başlık varsa \"no\" kullanın."
+msgid "hides or overrides the built-in heading (calendar, address list, city panel, WhatsApp list and signup form). Use \"no\" when your page already has a title."
+msgstr "yerleşik başlığı gizler veya değiştirir (takvim, adres listesi, şehir paneli, WhatsApp listesi ve kayıt formu). Sayfanızda zaten bir başlık varsa \"no\" kullanın."
 
 msgid "Shortcode"
 msgstr "Kısa kod"
