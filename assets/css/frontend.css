@@ -1274,13 +1274,24 @@
 
 .tt-signup__grid {
 	display: grid;
-	grid-template-columns: repeat( 4, minmax( 0, 1fr ) );
+	/* Name and email get the room; phone and postcode stay compact; the
+	   submit button rides at the end of the same row. */
+	grid-template-columns: 1.25fr 1.25fr 0.9fr 0.6fr auto;
 	gap: 0.75rem;
+	align-items: end;
 }
 
 @media ( max-width: 900px ) {
 	.tt-signup__grid {
 		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+	}
+
+	.tt-signup__field--submit {
+		grid-column: 1 / -1;
+	}
+
+	.tt-signup__field--submit .tt-signup__button {
+		width: 100%;
 	}
 }
 
@@ -1334,31 +1345,17 @@
 	accent-color: var(--tt-accent);
 }
 
-.tt-signup__actions {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	flex-wrap: wrap;
-	margin-top: 1rem;
-}
-
-.tt-signup[data-tt-align="center"] .tt-signup__actions {
-	justify-content: center;
-}
-
-.tt-signup[data-tt-align="right"] .tt-signup__actions {
-	justify-content: flex-end;
-}
-
 .tt-signup__button {
-	background: var(--tt-accent);
+	background: var(--tt-primary);
 	color: #fff;
 	border: 0;
 	border-radius: 12px;
-	padding: 0.85rem 1.75rem;
+	padding: 0.85rem 1.5rem;
 	font-weight: 700;
 	font-size: 1rem;
+	line-height: 1.25;
 	cursor: pointer;
+	white-space: nowrap;
 }
 
 .tt-signup__button:hover {
@@ -1366,6 +1363,7 @@
 }
 
 .tt-signup__note {
+	margin: 0.75rem 0 0;
 	font-size: 0.8rem;
 	color: var(--tt-muted);
 }

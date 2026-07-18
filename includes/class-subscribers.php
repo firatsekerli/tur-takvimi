@@ -88,13 +88,16 @@ class Subscribers {
 						<label class="tt-signup__label" for="tt-su-email"><?php esc_html_e( 'Email', 'tur-takvimi' ); ?></label>
 						<input id="tt-su-email" class="tt-signup__input" type="email" autocomplete="email" data-tt-su-email required>
 					</div>
-					<div class="tt-signup__field">
+					<div class="tt-signup__field tt-signup__field--phone">
 						<label class="tt-signup__label" for="tt-su-phone"><?php esc_html_e( 'Phone (WhatsApp)', 'tur-takvimi' ); ?></label>
 						<input id="tt-su-phone" class="tt-signup__input" type="tel" autocomplete="tel" placeholder="+49 172 1234567" data-tt-su-phone required>
 					</div>
-					<div class="tt-signup__field">
+					<div class="tt-signup__field tt-signup__field--pc">
 						<label class="tt-signup__label" for="tt-su-postcode"><?php esc_html_e( 'Postcode', 'tur-takvimi' ); ?></label>
 						<input id="tt-su-postcode" class="tt-signup__input" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="<?php echo esc_attr( $example ); ?>" data-tt-su-postcode required>
+					</div>
+					<div class="tt-signup__field tt-signup__field--submit">
+						<button type="submit" class="tt-signup__button"><?php esc_html_e( 'Sign up', 'tur-takvimi' ); ?></button>
 					</div>
 				</div>
 
@@ -106,10 +109,7 @@ class Subscribers {
 					<span><?php esc_html_e( 'Notify me on WhatsApp before deliveries in my area.', 'tur-takvimi' ); ?></span>
 				</label>
 
-				<div class="tt-signup__actions">
-					<button type="submit" class="tt-signup__button"><?php esc_html_e( 'Sign up', 'tur-takvimi' ); ?></button>
-					<span class="tt-signup__note"><?php esc_html_e( 'We only use your details for delivery notifications. Unsubscribe anytime.', 'tur-takvimi' ); ?></span>
-				</div>
+				<p class="tt-signup__note"><?php esc_html_e( 'We only use your details for delivery notifications. Unsubscribe anytime.', 'tur-takvimi' ); ?></p>
 			</form>
 			<div class="tt-signup__result" data-tt-su-result aria-live="polite"></div>
 		</section>
