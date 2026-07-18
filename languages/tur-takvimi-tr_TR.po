@@ -1032,5 +1032,8 @@ msgstr "Lütfen adınızı, e-postanızı ve posta kodunuzu doldurun."
 msgid "Something went wrong. Please try again."
 msgstr "Bir şeyler ters gitti. Lütfen tekrar deneyin."
 
+msgid "You entered a phone number but didn't tick the WhatsApp box. Tick it to get delivery reminders — or press Sign up again to continue without them."
+msgstr "Telefon numarası yazdınız ama WhatsApp kutusunu işaretlemediniz. Teslimat hatırlatmaları almak için kutuyu işaretleyin — veya hatırlatma olmadan devam etmek için tekrar Kaydol'a basın."
+
 msgid "Inline signup: name, email, phone, postcode + WhatsApp reminder opt-in."
 msgstr "Satır içi kayıt: ad, e-posta, telefon, posta kodu + WhatsApp hatırlatma onayı."

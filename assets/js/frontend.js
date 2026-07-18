@@ -162,10 +162,37 @@
 			box.appendChild( el( 'p', ok ? 'tt-signup__ok' : 'tt-signup__error', message ) );
 		}
 
+		// Phone typed but the WhatsApp box left unticked is almost always an
+		// oversight: block the first submit with a highlighted nudge; a second
+		// submit proceeds without the opt-in (a deliberate choice).
+		var nudged = false;
+		var consent = root.querySelector( '.tt-signup__consent' );
+		var optinBox = root.querySelector( '[data-tt-su-optin]' );
+		if ( optinBox ) {
+			optinBox.addEventListener( 'change', function () {
+				nudged = false;
+				if ( consent ) {
+					consent.classList.remove( 'is-highlight' );
+				}
+			} );
+		}
+
 		form.addEventListener( 'submit', function ( e ) {
 			e.preventDefault();
 
-			var optinBox = root.querySelector( '[data-tt-su-optin]' );
+			if ( field( 'phone' ) && optinBox && ! optinBox.checked && ! nudged ) {
+				nudged = true;
+				if ( consent ) {
+					consent.classList.add( 'is-highlight' );
+				}
+				box.innerHTML = '';
+				box.appendChild( el( 'p', 'tt-signup__warn', cfg.i18n.optinNudge ) );
+				return;
+			}
+			if ( consent ) {
+				consent.classList.remove( 'is-highlight' );
+			}
+
 			var payload = {
 				name: field( 'name' ),
 				email: field( 'email' ),

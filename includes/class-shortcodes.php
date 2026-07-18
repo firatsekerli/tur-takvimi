@@ -54,6 +54,7 @@ class Shortcodes {
 					'sending'       => __( 'Sending…', 'tur-takvimi' ),
 					'signupMissing' => __( 'Please fill in your name, email and postcode.', 'tur-takvimi' ),
 					'signupError'   => __( 'Something went wrong. Please try again.', 'tur-takvimi' ),
+					'optinNudge'    => __( 'You entered a phone number but didn\'t tick the WhatsApp box. Tick it to get delivery reminders — or press Sign up again to continue without them.', 'tur-takvimi' ),
 				),
 			)
 		);
