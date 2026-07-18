@@ -46,17 +46,38 @@ class Notifier {
 	/**
 	 * Stored API settings with defaults.
 	 *
-	 * @return array{enabled:bool,token:string,phone_id:string,template:string,lang:string}
+	 * @return array{enabled:bool,provider:string,token:string,phone_id:string,template:string,lang:string,twilio_sid:string,twilio_token:string,twilio_from:string,twilio_content_sid:string}
 	 */
 	public static function settings(): array {
-		$s = (array) get_option( self::OPTION, array() );
+		$s        = (array) get_option( self::OPTION, array() );
+		$provider = (string) ( $s['provider'] ?? 'cloud' );
 		return array(
-			'enabled'  => ! empty( $s['enabled'] ),
-			'token'    => (string) ( $s['token'] ?? '' ),
-			'phone_id' => (string) ( $s['phone_id'] ?? '' ),
-			'template' => (string) ( $s['template'] ?? '' ),
-			'lang'     => (string) ( $s['lang'] ?? 'tr' ),
+			'enabled'            => ! empty( $s['enabled'] ),
+			'provider'           => in_array( $provider, array( 'cloud', 'twilio' ), true ) ? $provider : 'cloud',
+			'token'              => (string) ( $s['token'] ?? '' ),
+			'phone_id'           => (string) ( $s['phone_id'] ?? '' ),
+			'template'           => (string) ( $s['template'] ?? '' ),
+			'lang'               => (string) ( $s['lang'] ?? 'tr' ),
+			'twilio_sid'         => (string) ( $s['twilio_sid'] ?? '' ),
+			'twilio_token'       => (string) ( $s['twilio_token'] ?? '' ),
+			'twilio_from'        => (string) ( $s['twilio_from'] ?? '' ),
+			'twilio_content_sid' => (string) ( $s['twilio_content_sid'] ?? '' ),
 		);
+	}
+
+	/**
+	 * Whether reminders are enabled and the active provider has every
+	 * credential it needs.
+	 */
+	public static function configured(): bool {
+		$s = self::settings();
+		if ( ! $s['enabled'] ) {
+			return false;
+		}
+		if ( 'twilio' === $s['provider'] ) {
+			return '' !== $s['twilio_sid'] && '' !== $s['twilio_token'] && '' !== $s['twilio_from'] && '' !== $s['twilio_content_sid'];
+		}
+		return '' !== $s['token'] && '' !== $s['phone_id'] && '' !== $s['template'];
 	}
 
 	/**
@@ -65,9 +86,9 @@ class Notifier {
 	public static function settings_section(): void {
 		$s = self::settings();
 		?>
-		<h2 style="margin-top:2rem"><?php esc_html_e( 'Delivery reminders (WhatsApp Cloud API)', 'tur-takvimi' ); ?></h2>
+		<h2 style="margin-top:2rem"><?php esc_html_e( 'Delivery reminders (WhatsApp)', 'tur-takvimi' ); ?></h2>
 		<p class="description" style="max-width:50rem">
-			<?php esc_html_e( 'Sends opted-in subscribers a template message 7 days and 2 days before a tour reaches their postcode. Requires a Meta WhatsApp Business account: create a message template with three variables ({{1}} name, {{2}} city, {{3}} date), get it approved, and paste your credentials here.', 'tur-takvimi' ); ?>
+			<?php esc_html_e( 'Sends opted-in subscribers a template message 7 days and 2 days before a tour reaches their postcode. Create a WhatsApp template with three variables ({{1}} name, {{2}} city, {{3}} date), get it approved, then connect either the Meta Cloud API directly or your Twilio account.', 'tur-takvimi' ); ?>
 		</p>
 		<table class="form-table" role="presentation">
 			<tr>
@@ -75,16 +96,26 @@ class Notifier {
 				<td><label><input type="checkbox" name="wa_api[enabled]" value="1" <?php checked( $s['enabled'] ); ?>> <?php esc_html_e( 'Send WhatsApp reminders automatically (daily)', 'tur-takvimi' ); ?></label></td>
 			</tr>
 			<tr>
+				<th scope="row"><label for="tt_wa_provider"><?php esc_html_e( 'Provider', 'tur-takvimi' ); ?></label></th>
+				<td>
+					<select id="tt_wa_provider" name="wa_api[provider]">
+						<option value="cloud" <?php selected( $s['provider'], 'cloud' ); ?>><?php esc_html_e( 'Meta Cloud API (direct)', 'tur-takvimi' ); ?></option>
+						<option value="twilio" <?php selected( $s['provider'], 'twilio' ); ?>>Twilio</option>
+					</select>
+				</td>
+			</tr>
+
+			<tr class="tt-wa-cloud">
 				<th scope="row"><label for="tt_wa_token"><?php esc_html_e( 'Access token', 'tur-takvimi' ); ?></label></th>
 				<td><input type="password" id="tt_wa_token" class="regular-text" name="wa_api[token]" value="<?php echo esc_attr( $s['token'] ); ?>" autocomplete="off">
 				<p class="description"><?php esc_html_e( 'A permanent System User token from Meta Business Manager with whatsapp_business_messaging permission.', 'tur-takvimi' ); ?></p></td>
 			</tr>
-			<tr>
+			<tr class="tt-wa-cloud">
 				<th scope="row"><label for="tt_wa_phone_id"><?php esc_html_e( 'Phone number ID', 'tur-takvimi' ); ?></label></th>
 				<td><input type="text" id="tt_wa_phone_id" class="regular-text" name="wa_api[phone_id]" value="<?php echo esc_attr( $s['phone_id'] ); ?>">
 				<p class="description"><?php esc_html_e( 'From WhatsApp → API Setup (the numeric ID, not the phone number itself).', 'tur-takvimi' ); ?></p></td>
 			</tr>
-			<tr>
+			<tr class="tt-wa-cloud">
 				<th scope="row"><label for="tt_wa_template"><?php esc_html_e( 'Template name / language', 'tur-takvimi' ); ?></label></th>
 				<td>
 					<input type="text" id="tt_wa_template" name="wa_api[template]" value="<?php echo esc_attr( $s['template'] ); ?>" placeholder="teslimat_hatirlatma">
@@ -92,7 +123,46 @@ class Notifier {
 					<p class="description"><?php esc_html_e( 'The approved template and its language code (e.g. tr, de, nl). Body variables: {{1}} name, {{2}} city, {{3}} visit date.', 'tur-takvimi' ); ?></p>
 				</td>
 			</tr>
+
+			<tr class="tt-wa-twilio">
+				<th scope="row"><label for="tt_wa_twilio_sid"><?php esc_html_e( 'Account SID', 'tur-takvimi' ); ?></label></th>
+				<td><input type="text" id="tt_wa_twilio_sid" class="regular-text" name="wa_api[twilio_sid]" value="<?php echo esc_attr( $s['twilio_sid'] ); ?>" placeholder="AC…">
+				<p class="description"><?php esc_html_e( 'From the Twilio Console dashboard.', 'tur-takvimi' ); ?></p></td>
+			</tr>
+			<tr class="tt-wa-twilio">
+				<th scope="row"><label for="tt_wa_twilio_token"><?php esc_html_e( 'Auth token', 'tur-takvimi' ); ?></label></th>
+				<td><input type="password" id="tt_wa_twilio_token" class="regular-text" name="wa_api[twilio_token]" value="<?php echo esc_attr( $s['twilio_token'] ); ?>" autocomplete="off"></td>
+			</tr>
+			<tr class="tt-wa-twilio">
+				<th scope="row"><label for="tt_wa_twilio_from"><?php esc_html_e( 'WhatsApp sender number', 'tur-takvimi' ); ?></label></th>
+				<td><input type="text" id="tt_wa_twilio_from" name="wa_api[twilio_from]" value="<?php echo esc_attr( $s['twilio_from'] ); ?>" placeholder="+4915123456789">
+				<p class="description"><?php esc_html_e( 'Your Twilio WhatsApp-enabled number in international format — or the Twilio Sandbox number while testing.', 'tur-takvimi' ); ?></p></td>
+			</tr>
+			<tr class="tt-wa-twilio">
+				<th scope="row"><label for="tt_wa_twilio_content"><?php esc_html_e( 'Content template SID', 'tur-takvimi' ); ?></label></th>
+				<td><input type="text" id="tt_wa_twilio_content" class="regular-text" name="wa_api[twilio_content_sid]" value="<?php echo esc_attr( $s['twilio_content_sid'] ); ?>" placeholder="HX…">
+				<p class="description"><?php esc_html_e( 'The approved template\'s Content SID from Twilio\'s Content Template Builder (starts with HX). Use variables {{1}} name, {{2}} city, {{3}} visit date.', 'tur-takvimi' ); ?></p></td>
+			</tr>
 		</table>
+		<script>
+		( function () {
+			var sel = document.getElementById( 'tt_wa_provider' );
+			if ( ! sel ) {
+				return;
+			}
+			function toggle() {
+				var twilio = 'twilio' === sel.value;
+				Array.prototype.forEach.call( document.querySelectorAll( '.tt-wa-cloud' ), function ( r ) {
+					r.style.display = twilio ? 'none' : '';
+				} );
+				Array.prototype.forEach.call( document.querySelectorAll( '.tt-wa-twilio' ), function ( r ) {
+					r.style.display = twilio ? '' : 'none';
+				} );
+			}
+			sel.addEventListener( 'change', toggle );
+			toggle();
+		}() );
+		</script>
 		<?php
 	}
 
@@ -103,15 +173,22 @@ class Notifier {
 		// Caller (Whatsapp::save_page) has verified capability + nonce.
 		$in = isset( $_POST['wa_api'] ) && is_array( $_POST['wa_api'] ) ? wp_unslash( $_POST['wa_api'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
 
-		$lang = strtolower( sanitize_text_field( (string) ( $in['lang'] ?? 'tr' ) ) );
+		$lang     = strtolower( sanitize_text_field( (string) ( $in['lang'] ?? 'tr' ) ) );
+		$provider = sanitize_key( (string) ( $in['provider'] ?? 'cloud' ) );
+		$from     = preg_replace( '/[^0-9+]/', '', (string) ( $in['twilio_from'] ?? '' ) );
 		update_option(
 			self::OPTION,
 			array(
-				'enabled'  => ! empty( $in['enabled'] ),
-				'token'    => sanitize_text_field( (string) ( $in['token'] ?? '' ) ),
-				'phone_id' => preg_replace( '/\D/', '', (string) ( $in['phone_id'] ?? '' ) ),
-				'template' => sanitize_key( (string) ( $in['template'] ?? '' ) ),
-				'lang'     => preg_match( '/^[a-z]{2}(_[A-Za-z]{2})?$/', $lang ) ? $lang : 'tr',
+				'enabled'            => ! empty( $in['enabled'] ),
+				'provider'           => in_array( $provider, array( 'cloud', 'twilio' ), true ) ? $provider : 'cloud',
+				'token'              => sanitize_text_field( (string) ( $in['token'] ?? '' ) ),
+				'phone_id'           => preg_replace( '/\D/', '', (string) ( $in['phone_id'] ?? '' ) ),
+				'template'           => sanitize_key( (string) ( $in['template'] ?? '' ) ),
+				'lang'               => preg_match( '/^[a-z]{2}(_[A-Za-z]{2})?$/', $lang ) ? $lang : 'tr',
+				'twilio_sid'         => sanitize_text_field( (string) ( $in['twilio_sid'] ?? '' ) ),
+				'twilio_token'       => sanitize_text_field( (string) ( $in['twilio_token'] ?? '' ) ),
+				'twilio_from'        => $from,
+				'twilio_content_sid' => sanitize_text_field( (string) ( $in['twilio_content_sid'] ?? '' ) ),
 			)
 		);
 	}
@@ -189,8 +266,7 @@ class Notifier {
 	 * Match opted-in subscribers to upcoming visits and send the reminders.
 	 */
 	public function run_daily(): void {
-		$s = self::settings();
-		if ( ! $s['enabled'] || '' === $s['token'] || '' === $s['phone_id'] || '' === $s['template'] ) {
+		if ( ! self::configured() ) {
 			return;
 		}
 
@@ -302,7 +378,7 @@ class Notifier {
 	private $last_error = '';
 
 	/**
-	 * Send one approved-template message via the Cloud API.
+	 * Send one approved-template message via the configured provider.
 	 *
 	 * @param string   $to     Recipient phone (international digits, no +).
 	 * @param string[] $params Body variables ({{1}}, {{2}}, {{3}}…).
@@ -312,6 +388,34 @@ class Notifier {
 		$this->last_error = '';
 		$s                = self::settings();
 
+		/**
+		 * Short-circuit filter so a custom provider (360dialog, MessageBird…)
+		 * can take over sending. Return true/false to skip the built-in call.
+		 *
+		 * @param bool|null $handled  Null when unhandled.
+		 * @param string    $to       Recipient phone (international digits, no +).
+		 * @param string[]  $params   Template body variables in order.
+		 * @param string    $provider The configured provider slug.
+		 */
+		$handled = apply_filters( 'tur_takvimi_send_whatsapp', null, $to, $params, $s['provider'] );
+		if ( null !== $handled ) {
+			return (bool) $handled;
+		}
+
+		return 'twilio' === $s['provider']
+			? $this->send_twilio( $to, $params, $s )
+			: $this->send_cloud( $to, $params, $s );
+	}
+
+	/**
+	 * Meta WhatsApp Business Cloud API sender.
+	 *
+	 * @param string   $to     Recipient phone (international digits, no +).
+	 * @param string[] $params Body variables.
+	 * @param array    $s      Settings.
+	 * @return bool
+	 */
+	private function send_cloud( string $to, array $params, array $s ): bool {
 		$body = array(
 			'messaging_product' => 'whatsapp',
 			'to'                => $to,
@@ -334,19 +438,6 @@ class Notifier {
 			),
 		);
 
-		/**
-		 * Short-circuit filter so a different provider (Twilio, 360dialog…)
-		 * can take over sending. Return true/false to skip the Cloud API call.
-		 *
-		 * @param bool|null $handled Null when unhandled.
-		 * @param string    $to      Recipient phone.
-		 * @param array     $body    Prepared Cloud API payload.
-		 */
-		$handled = apply_filters( 'tur_takvimi_send_whatsapp', null, $to, $body );
-		if ( null !== $handled ) {
-			return (bool) $handled;
-		}
-
 		$url      = 'https://graph.facebook.com/v21.0/' . rawurlencode( $s['phone_id'] ) . '/messages';
 		$response = wp_remote_post(
 			$url,
@@ -359,7 +450,54 @@ class Notifier {
 				'body'    => wp_json_encode( $body ),
 			)
 		);
+		return $this->check_response( $response );
+	}
 
+	/**
+	 * Twilio sender: an approved Content Template addressed by its SID, with
+	 * variables as a {"1": …} map (Twilio's Content API shape).
+	 *
+	 * @param string   $to     Recipient phone (international digits, no +).
+	 * @param string[] $params Body variables.
+	 * @param array    $s      Settings.
+	 * @return bool
+	 */
+	private function send_twilio( string $to, array $params, array $s ): bool {
+		$vars = array();
+		foreach ( array_values( $params ) as $i => $p ) {
+			$vars[ (string) ( $i + 1 ) ] = (string) $p;
+		}
+
+		$from = $s['twilio_from'];
+		if ( 0 !== strpos( $from, '+' ) ) {
+			$from = '+' . preg_replace( '/\D/', '', $from );
+		}
+
+		$response = wp_remote_post(
+			'https://api.twilio.com/2010-04-01/Accounts/' . rawurlencode( $s['twilio_sid'] ) . '/Messages.json',
+			array(
+				'timeout' => 15,
+				'headers' => array(
+					'Authorization' => 'Basic ' . base64_encode( $s['twilio_sid'] . ':' . $s['twilio_token'] ),
+				),
+				'body'    => array(
+					'To'               => 'whatsapp:+' . $to,
+					'From'             => 'whatsapp:' . $from,
+					'ContentSid'       => $s['twilio_content_sid'],
+					'ContentVariables' => wp_json_encode( $vars ),
+				),
+			)
+		);
+		return $this->check_response( $response );
+	}
+
+	/**
+	 * Evaluate a provider HTTP response, recording the error detail on failure.
+	 *
+	 * @param array|\WP_Error $response wp_remote_post() result.
+	 * @return bool
+	 */
+	private function check_response( $response ): bool {
 		if ( is_wp_error( $response ) ) {
 			$this->last_error = $response->get_error_message();
 			return false;

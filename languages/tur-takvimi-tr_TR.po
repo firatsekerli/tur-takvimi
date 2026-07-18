@@ -939,11 +939,38 @@ msgstr "Sil"
 msgid "Showing the latest 500 — use Export CSV for the full list."
 msgstr "Son 500 kayıt gösteriliyor — tam liste için CSV dışa aktarımı kullanın."
 
-msgid "Delivery reminders (WhatsApp Cloud API)"
-msgstr "Teslimat hatırlatmaları (WhatsApp Cloud API)"
+msgid "Delivery reminders (WhatsApp)"
+msgstr "Teslimat hatırlatmaları (WhatsApp)"
 
-msgid "Sends opted-in subscribers a template message 7 days and 2 days before a tour reaches their postcode. Requires a Meta WhatsApp Business account: create a message template with three variables ({{1}} name, {{2}} city, {{3}} date), get it approved, and paste your credentials here."
-msgstr "Onay veren abonelere, bir tur posta kodlarına ulaşmadan 7 gün ve 2 gün önce şablon mesajı gönderir. Meta WhatsApp Business hesabı gerektirir: üç değişkenli ({{1}} ad, {{2}} şehir, {{3}} tarih) bir mesaj şablonu oluşturup onaylatın ve kimlik bilgilerinizi buraya yapıştırın."
+msgid "Sends opted-in subscribers a template message 7 days and 2 days before a tour reaches their postcode. Create a WhatsApp template with three variables ({{1}} name, {{2}} city, {{3}} date), get it approved, then connect either the Meta Cloud API directly or your Twilio account."
+msgstr "Onay veren abonelere, bir tur posta kodlarına ulaşmadan 7 gün ve 2 gün önce şablon mesajı gönderir. Üç değişkenli ({{1}} ad, {{2}} şehir, {{3}} tarih) bir WhatsApp şablonu oluşturup onaylatın; ardından doğrudan Meta Cloud API'yi veya Twilio hesabınızı bağlayın."
+
+msgid "Provider"
+msgstr "Sağlayıcı"
+
+msgid "Meta Cloud API (direct)"
+msgstr "Meta Cloud API (doğrudan)"
+
+msgid "Account SID"
+msgstr "Hesap SID'i"
+
+msgid "Auth token"
+msgstr "Auth token"
+
+msgid "From the Twilio Console dashboard."
+msgstr "Twilio Konsolu panosundan."
+
+msgid "WhatsApp sender number"
+msgstr "WhatsApp gönderici numarası"
+
+msgid "Your Twilio WhatsApp-enabled number in international format — or the Twilio Sandbox number while testing."
+msgstr "Uluslararası biçimde Twilio WhatsApp numaranız — veya test sırasında Twilio Sandbox numarası."
+
+msgid "Content template SID"
+msgstr "İçerik şablonu SID'i"
+
+msgid "The approved template's Content SID from Twilio's Content Template Builder (starts with HX). Use variables {{1}} name, {{2}} city, {{3}} visit date."
+msgstr "Twilio İçerik Şablonu Oluşturucusu'ndaki onaylı şablonun Content SID'i (HX ile başlar). {{1}} ad, {{2}} şehir, {{3}} ziyaret tarihi değişkenlerini kullanın."
 
 msgid "Enable reminders"
 msgstr "Hatırlatmaları etkinleştir"

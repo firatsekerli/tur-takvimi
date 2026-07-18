@@ -42,9 +42,9 @@ The plugin has two layers:
   height. On multi-country sites it shows a country filter automatically.
 * `[tur_takvimi_signup]` — inline signup form (name, email, phone, postcode)
   with an explicit WhatsApp opt-in. Subscribers appear under Tur Takvimi →
-  Subscribers; with the WhatsApp Cloud API configured (Tur Takvimi →
-  WhatsApp), opted-in subscribers get a template reminder 7 days and 2 days
-  before a tour reaches their postcode.
+  Subscribers; with WhatsApp sending configured (Meta Cloud API or Twilio —
+  Tur Takvimi → WhatsApp), opted-in subscribers get a template reminder
+  7 days and 2 days before a tour reaches their postcode.
 
 Shortcodes that print their own heading (`[tur_takvimi_calendar]`,
 `[tur_takvimi_city_stops]`, `[tur_takvimi_city]`, `[tur_takvimi_whatsapp]`
